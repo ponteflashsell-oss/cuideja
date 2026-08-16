@@ -10,33 +10,80 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CuidadoresRouteImport } from './routes/cuidadores'
+import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
+import { Route as SegurancaRouteImport } from './routes/seguranca'
+import { Route as TermosRouteImport } from './routes/termos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CuidadoresRoute = CuidadoresRouteImport.update({
+  id: '/cuidadores',
+  path: '/cuidadores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParaProfissionaisRoute = ParaProfissionaisRouteImport.update({
+  id: '/para-profissionais',
+  path: '/para-profissionais',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegurancaRoute = SegurancaRouteImport.update({
+  id: '/seguranca',
+  path: '/seguranca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cuidadores': typeof CuidadoresRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/seguranca': typeof SegurancaRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cuidadores': typeof CuidadoresRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/seguranca': typeof SegurancaRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cuidadores': typeof CuidadoresRoute
+  '/para-profissionais': typeof ParaProfissionaisRoute
+  '/seguranca': typeof SegurancaRoute
+  '/termos': typeof TermosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/cuidadores' | '/para-profissionais' | '/seguranca' | '/termos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/cuidadores' | '/para-profissionais' | '/seguranca' | '/termos'
+  id:
+    | '__root__'
+    | '/'
+    | '/cuidadores'
+    | '/para-profissionais'
+    | '/seguranca'
+    | '/termos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CuidadoresRoute: typeof CuidadoresRoute
+  ParaProfissionaisRoute: typeof ParaProfissionaisRoute
+  SegurancaRoute: typeof SegurancaRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +95,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cuidadores': {
+      id: '/cuidadores'
+      path: '/cuidadores'
+      fullPath: '/cuidadores'
+      preLoaderRoute: typeof CuidadoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/para-profissionais': {
+      id: '/para-profissionais'
+      path: '/para-profissionais'
+      fullPath: '/para-profissionais'
+      preLoaderRoute: typeof ParaProfissionaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguranca': {
+      id: '/seguranca'
+      path: '/seguranca'
+      fullPath: '/seguranca'
+      preLoaderRoute: typeof SegurancaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CuidadoresRoute: CuidadoresRoute,
+  ParaProfissionaisRoute: ParaProfissionaisRoute,
+  SegurancaRoute: SegurancaRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
