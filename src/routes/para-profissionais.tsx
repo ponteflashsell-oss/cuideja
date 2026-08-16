@@ -214,7 +214,7 @@ function Field({
   label: string;
   name: string;
   type?: string;
-  erro?: string;
+  erro?: string | undefined;
 }) {
   return (
     <div className="grid gap-2">
