@@ -219,7 +219,9 @@ export function PerfilProfissional() {
             {documentos.map((base) => {
               const doc = verificado
                 ? base
-                : { ...base, status: "pendente" as const, enviadoEm: undefined };
+                : base.id === "selfie" && biometriaEnviada
+                  ? { ...base, status: "em_analise" as const, enviadoEm: "agora" }
+                  : { ...base, status: "pendente" as const, enviadoEm: undefined };
               return (
               <li
                 key={doc.id}
@@ -246,12 +248,13 @@ export function PerfilProfissional() {
               );
             })}
           </ul>
+          <CapturaSelfie onConcluir={() => setBiometriaEnviada(true)} />
           <Button
             variant="outline"
-            className="mt-4 w-full gap-2"
-            onClick={() => toast.info("Upload de documentos entra com o cadastro na nuvem.")}
+            className="mt-2 w-full gap-2"
+            onClick={() => toast.info("Upload de certificados entra com o cadastro na nuvem.")}
           >
-            <Upload className="size-4" /> Enviar novo documento
+            <Upload className="size-4" /> Enviar certificado ou diploma
           </Button>
           <p className="mt-3 text-xs text-muted-foreground">
             O selo "Perfil Verificado" é emitido pela administração após a checagem de CPF,
