@@ -9,8 +9,8 @@ import {
   UserRound,
   Wallet,
 } from "lucide-react";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
+import { PainelHeader } from "@/components/painel/PainelHeader";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PerfilProfissional } from "@/components/painel/PerfilProfissional";
