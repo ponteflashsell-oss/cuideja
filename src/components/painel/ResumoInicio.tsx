@@ -36,7 +36,7 @@ export function ResumoInicio({
   onIr: (secao: SecaoPainel) => void;
   status: PerfilStatus;
 }) {
-  const primeiroNome = status.nome ? status.nome.split(" ")[0] : "cuidadora";
+  const primeiroNome = status.nome ? (status.nome.split(" ")[0] ?? "cuidadora") : "cuidadora";
 
   if (!status.verificado) {
     return <ResumoVerificacao onIr={onIr} status={status} primeiroNome={primeiroNome} />;
