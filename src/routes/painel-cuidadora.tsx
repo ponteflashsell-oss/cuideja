@@ -1,13 +1,25 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing } from "lucide-react";
+import {
+  BellRing,
+  CalendarDays,
+  LayoutDashboard,
+  MessageSquare,
+  Search,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { PerfilProfissional } from "@/components/painel/PerfilProfissional";
 import { MuralOportunidades } from "@/components/painel/MuralOportunidades";
 import { Negociacoes } from "@/components/painel/Negociacoes";
 import { Agenda } from "@/components/painel/Agenda";
 import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
+import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
+
 
 export const Route = createFileRoute("/painel-cuidadora")({
   head: () => ({
