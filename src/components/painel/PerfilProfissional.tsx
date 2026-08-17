@@ -22,13 +22,15 @@ const statusLabel = {
 } as const;
 
 export function PerfilProfissional() {
-  const [tags, setTags] = useState<string[]>(especialidadesAtivas);
-  const [bio, setBio] = useState(perfilCuidadora.bio);
-  const [tarifas, setTarifas] = useState(perfilCuidadora.tarifas);
-  const [nome, setNome] = useState(perfilCuidadora.nome);
-  const [bairros, setBairros] = useState(perfilCuidadora.bairros.join(", "));
-  const [verificado, setVerificado] = useState(perfilCuidadora.verificado);
+  const [tags, setTags] = useState<string[]>([]);
+  const [bio, setBio] = useState("");
+  const [tarifas, setTarifas] = useState({ hora: 0, diaria: 0, plantao12: 0, plantao24: 0 });
+  const [nome, setNome] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [bairros, setBairros] = useState("");
+  const [verificado, setVerificado] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
 
   useEffect(() => {
     let ativo = true;
