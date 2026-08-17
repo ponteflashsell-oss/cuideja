@@ -105,7 +105,12 @@ export function PerfilProfissional() {
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative">
             <span className="flex size-20 items-center justify-center rounded-full bg-muted font-display text-2xl">
-              AP
+              {nome
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((p) => p[0]?.toUpperCase())
+                .join("") || "?"}
             </span>
             <button
               type="button"
@@ -118,14 +123,17 @@ export function PerfilProfissional() {
           </div>
           <div>
             <h2 className="text-2xl">{nome || "Seu nome"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {perfilCuidadora.idade} anos · {perfilCuidadora.cidade}
-            </p>
-            {verificado && (
+            <p className="text-sm text-muted-foreground">{cidade || "Informe sua cidade"}</p>
+            {verificado ? (
               <Badge className="mt-2 gap-1">
                 <ShieldCheck className="size-3" /> Perfil Verificado
               </Badge>
+            ) : (
+              <Badge variant="secondary" className="mt-2 gap-1">
+                <ShieldCheck className="size-3" /> Perfil em verificação
+              </Badge>
             )}
+
           </div>
         </div>
 
