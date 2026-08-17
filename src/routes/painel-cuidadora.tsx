@@ -1,13 +1,25 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BellRing } from "lucide-react";
+import {
+  BellRing,
+  CalendarDays,
+  LayoutDashboard,
+  MessageSquare,
+  Search,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { PerfilProfissional } from "@/components/painel/PerfilProfissional";
 import { MuralOportunidades } from "@/components/painel/MuralOportunidades";
 import { Negociacoes } from "@/components/painel/Negociacoes";
 import { Agenda } from "@/components/painel/Agenda";
 import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
+import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
+
 
 export const Route = createFileRoute("/painel-cuidadora")({
   head: () => ({
@@ -32,38 +44,57 @@ export const Route = createFileRoute("/painel-cuidadora")({
 });
 
 const secoes = [
-  { value: "perfil", label: "Meu perfil" },
-  { value: "mural", label: "Mural de vagas" },
-  { value: "negociacoes", label: "Negociações" },
-  { value: "agenda", label: "Minha agenda" },
-  { value: "carteira", label: "Carteira e avaliações" },
+  { value: "inicio", label: "Início", ajuda: "Resumo do dia", icone: LayoutDashboard },
+  { value: "perfil", label: "Meu perfil", ajuda: "Sua vitrine e tarifas", icone: UserRound },
+  { value: "mural", label: "Vagas", ajuda: "Trabalhos perto de você", icone: Search },
+  { value: "negociacoes", label: "Conversas", ajuda: "Convites e propostas", icone: MessageSquare },
+  { value: "agenda", label: "Agenda", ajuda: "Disponibilidade e plantões", icone: CalendarDays },
+  { value: "carteira", label: "Carteira", ajuda: "Ganhos e avaliações", icone: Wallet },
 ] as const;
 
 function PainelCuidadoraPage() {
+  const [secao, setSecao] = useState<SecaoPainel>("inicio");
+  const atual = secoes.find((s) => s.value === secao)!;
+
   return (
     <div className="min-h-screen">
       <Header />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <h1 className="text-4xl md:text-5xl">Painel da cuidadora</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Tudo o que você precisa para trabalhar com autonomia: vitrine, vagas na sua região,
-          negociação direta com as famílias, escala e finanças.
+          Comece pelo <strong>Início</strong>: ele mostra o que precisa da sua atenção hoje e leva você
+          direto para a seção certa.
         </p>
 
         <div className="surface-card mt-6 flex flex-wrap items-center gap-3 p-4 text-sm">
-          <BellRing className="size-4 text-primary" />
-          <span>Nova vaga para plantão de 12h perto de você — bairro Centro, R$ 320.</span>
+          <BellRing className="size-4 shrink-0 text-primary" />
+          <span className="flex-1">
+            Nova vaga para plantão de 12h perto de você — bairro Centro, R$ 320.
+          </span>
+          <Button size="sm" onClick={() => setSecao("mural")}>
+            Ver vaga
+          </Button>
         </div>
 
-        <Tabs defaultValue="perfil" className="mt-8">
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
+        <Tabs value={secao} onValueChange={(v) => setSecao(v as SecaoPainel)} className="mt-8">
+          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 p-1 md:grid-cols-6">
             {secoes.map((s) => (
-              <TabsTrigger key={s.value} value={s.value} className="text-xs sm:text-sm">
+              <TabsTrigger
+                key={s.value}
+                value={s.value}
+                className="flex-col gap-1 py-2.5 text-xs sm:text-sm"
+              >
+                <s.icone className="size-4" />
                 {s.label}
               </TabsTrigger>
             ))}
           </TabsList>
 
+          <p className="mt-3 text-sm text-muted-foreground">{atual.ajuda}</p>
+
+          <TabsContent value="inicio" className="mt-6">
+            <ResumoInicio onIr={setSecao} />
+          </TabsContent>
           <TabsContent value="perfil" className="mt-6">
             <PerfilProfissional />
           </TabsContent>
