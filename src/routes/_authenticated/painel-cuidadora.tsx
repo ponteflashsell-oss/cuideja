@@ -21,7 +21,7 @@ import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
 import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
 
 
-export const Route = createFileRoute("/painel-cuidadora")({
+export const Route = createFileRoute("/_authenticated/painel-cuidadora")({
   head: () => ({
     meta: [
       { title: "Painel da cuidadora: perfil, vagas e agenda | CuidaJá" },
