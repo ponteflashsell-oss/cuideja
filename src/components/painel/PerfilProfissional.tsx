@@ -76,7 +76,9 @@ export function PerfilProfissional() {
     const { error } = await supabase.from("profiles").upsert({
       id: auth.user.id,
       nome: nome.trim().slice(0, 80),
+      cidade: cidade.trim().slice(0, 60),
       bio: bio.trim().slice(0, 400),
+
       bairros: bairros
         .split(",")
         .map((b) => b.trim())
