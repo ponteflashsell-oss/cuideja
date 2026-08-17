@@ -8,12 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  documentos,
-  especialidadesAtivas,
-  perfilCuidadora,
-  tagsCuidado,
-} from "@/data/painel-cuidadora";
+import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
+
 
 const statusLabel = {
   aprovado: "Aprovado",
