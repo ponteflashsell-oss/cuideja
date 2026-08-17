@@ -148,6 +148,15 @@ export function PerfilProfissional() {
             />
           </div>
           <div className="grid gap-1.5">
+            <Label htmlFor="cidade">Cidade</Label>
+            <Input
+              id="cidade"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              maxLength={60}
+            />
+          </div>
+          <div className="grid gap-1.5 sm:col-span-2">
             <Label htmlFor="bairros">Bairros de atuação</Label>
             <Input
               id="bairros"
@@ -156,6 +165,7 @@ export function PerfilProfissional() {
               maxLength={160}
             />
           </div>
+
         </div>
 
         <div className="mt-4 grid gap-1.5">
