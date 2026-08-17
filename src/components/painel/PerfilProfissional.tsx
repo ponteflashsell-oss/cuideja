@@ -40,17 +40,19 @@ export function PerfilProfissional() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "nome, bio, bairros, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado",
+          "nome, cidade, bio, bairros, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado",
         )
         .eq("id", auth.user.id)
         .maybeSingle();
       if (!ativo || !data) return;
       if (data.nome) setNome(data.nome);
+      if (data.cidade) setCidade(data.cidade);
       if (data.bio) setBio(data.bio);
       if (data.bairros?.length) setBairros(data.bairros.join(", "));
       if (data.especialidades?.length) setTags(data.especialidades);
       setVerificado(data.verificado);
       if (Number(data.tarifa_hora) > 0) {
+
         setTarifas({
           hora: Number(data.tarifa_hora),
           diaria: Number(data.tarifa_diaria),
