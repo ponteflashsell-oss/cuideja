@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
+import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
 
 
 const statusLabel = {
