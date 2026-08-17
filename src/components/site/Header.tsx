@@ -66,11 +66,15 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            <Link to="/entrar" onClick={() => setOpen(false)}>
+              Sou cuidadora · Entrar
+            </Link>
             <Button asChild size="sm" className="mt-2">
               <Link to="/cuidadores" onClick={() => setOpen(false)}>
                 Buscar agora
               </Link>
             </Button>
+
           </div>
         </div>
       )}
