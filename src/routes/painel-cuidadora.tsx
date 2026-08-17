@@ -115,9 +115,4 @@ function PainelCuidadoraPage() {
       <Footer />
     </div>
   );
-
-      </main>
-      <Footer />
-    </div>
-  );
 }
