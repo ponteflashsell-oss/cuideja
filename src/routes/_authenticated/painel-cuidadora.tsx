@@ -9,8 +9,8 @@ import {
   UserRound,
   Wallet,
 } from "lucide-react";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
+import { PainelHeader } from "@/components/painel/PainelHeader";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PerfilProfissional } from "@/components/painel/PerfilProfissional";
@@ -21,7 +21,7 @@ import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
 import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
 
 
-export const Route = createFileRoute("/painel-cuidadora")({
+export const Route = createFileRoute("/_authenticated/painel-cuidadora")({
   head: () => ({
     meta: [
       { title: "Painel da cuidadora: perfil, vagas e agenda | CuidaJá" },
@@ -58,7 +58,7 @@ function PainelCuidadoraPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <PainelHeader />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <h1 className="text-4xl md:text-5xl">Painel da cuidadora</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
@@ -112,7 +112,6 @@ function PainelCuidadoraPage() {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
     </div>
   );
 }
