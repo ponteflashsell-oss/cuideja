@@ -4,11 +4,14 @@ import {
   BellRing,
   CalendarDays,
   LayoutDashboard,
+  Lock,
   MessageSquare,
   Search,
+  ShieldCheck,
   UserRound,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PainelHeader } from "@/components/painel/PainelHeader";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +21,10 @@ import { MuralOportunidades } from "@/components/painel/MuralOportunidades";
 import { Negociacoes } from "@/components/painel/Negociacoes";
 import { Agenda } from "@/components/painel/Agenda";
 import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
+import { AcessoBloqueado } from "@/components/painel/AcessoBloqueado";
 import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
+import { usePerfilStatus } from "@/hooks/usePerfilStatus";
+
 
 
 export const Route = createFileRoute("/_authenticated/painel-cuidadora")({
