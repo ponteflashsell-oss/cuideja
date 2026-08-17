@@ -58,7 +58,7 @@ function PainelCuidadoraPage() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <PainelHeader />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <h1 className="text-4xl md:text-5xl">Painel da cuidadora</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
@@ -112,7 +112,6 @@ function PainelCuidadoraPage() {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
     </div>
   );
 }
