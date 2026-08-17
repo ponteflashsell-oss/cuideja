@@ -58,9 +58,24 @@ const secoes = [
   { value: "carteira", label: "Carteira", ajuda: "Ganhos e avaliações", icone: Wallet },
 ] as const;
 
+const bloqueaveis: SecaoPainel[] = ["mural", "negociacoes", "agenda", "carteira"];
+
 function PainelCuidadoraPage() {
   const [secao, setSecao] = useState<SecaoPainel>("inicio");
+  const { carregando, verificado, cadastroCompleto } = usePerfilStatus();
   const atual = secoes.find((s) => s.value === secao)!;
+
+  const bloqueada = (valor: SecaoPainel) =>
+    !verificado && !carregando && bloqueaveis.includes(valor);
+
+  const irPara = (valor: SecaoPainel) => {
+    if (bloqueada(valor)) {
+      toast.info("Libere esta seção concluindo a verificação do seu perfil.");
+      setSecao("perfil");
+      return;
+    }
+    setSecao(valor);
+  };
 
   return (
     <div className="min-h-screen">
@@ -72,51 +87,79 @@ function PainelCuidadoraPage() {
           direto para a seção certa.
         </p>
 
-        <div className="surface-card mt-6 flex flex-wrap items-center gap-3 p-4 text-sm">
-          <BellRing className="size-4 shrink-0 text-primary" />
-          <span className="flex-1">
-            Nova vaga para plantão de 12h perto de você — bairro Centro, R$ 320.
-          </span>
-          <Button size="sm" onClick={() => setSecao("mural")}>
-            Ver vaga
-          </Button>
-        </div>
+        {!carregando && !verificado ? (
+          <div className="surface-card mt-6 flex flex-wrap items-center gap-3 p-4 text-sm">
+            <ShieldCheck className="size-4 shrink-0 text-primary" />
+            <span className="flex-1">
+              Seu perfil está <strong>em verificação</strong>. Vagas, conversas, agenda e carteira
+              ficam bloqueadas até a aprovação.
+            </span>
+            <Button size="sm" onClick={() => setSecao("perfil")}>
+              Concluir verificação
+            </Button>
+          </div>
+        ) : (
+          <div className="surface-card mt-6 flex flex-wrap items-center gap-3 p-4 text-sm">
+            <BellRing className="size-4 shrink-0 text-primary" />
+            <span className="flex-1">
+              Nova vaga para plantão de 12h perto de você — bairro Centro, R$ 320.
+            </span>
+            <Button size="sm" onClick={() => setSecao("mural")}>
+              Ver vaga
+            </Button>
+          </div>
+        )}
 
-        <Tabs value={secao} onValueChange={(v) => setSecao(v as SecaoPainel)} className="mt-8">
+        <Tabs value={secao} onValueChange={(v) => irPara(v as SecaoPainel)} className="mt-8">
           <TabsList className="grid h-auto w-full grid-cols-3 gap-1 p-1 md:grid-cols-6">
-            {secoes.map((s) => (
-              <TabsTrigger
-                key={s.value}
-                value={s.value}
-                className="flex-col gap-1 py-2.5 text-xs sm:text-sm"
-              >
-                <s.icone className="size-4" />
-                {s.label}
-              </TabsTrigger>
-            ))}
+            {secoes.map((s) => {
+              const trancada = bloqueada(s.value);
+              return (
+                <TabsTrigger
+                  key={s.value}
+                  value={s.value}
+                  className="flex-col gap-1 py-2.5 text-xs sm:text-sm"
+                  aria-label={trancada ? `${s.label} (bloqueada)` : s.label}
+                >
+                  {trancada ? <Lock className="size-4" /> : <s.icone className="size-4" />}
+                  <span className={trancada ? "opacity-60" : undefined}>{s.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           <p className="mt-3 text-sm text-muted-foreground">{atual.ajuda}</p>
 
           <TabsContent value="inicio" className="mt-6">
-            <ResumoInicio onIr={setSecao} />
+            <ResumoInicio onIr={irPara} />
           </TabsContent>
           <TabsContent value="perfil" className="mt-6">
             <PerfilProfissional />
           </TabsContent>
-          <TabsContent value="mural" className="mt-6">
-            <MuralOportunidades />
-          </TabsContent>
-          <TabsContent value="negociacoes" className="mt-6">
-            <Negociacoes />
-          </TabsContent>
-          <TabsContent value="agenda" className="mt-6">
-            <Agenda />
-          </TabsContent>
-          <TabsContent value="carteira" className="mt-6">
-            <CarteiraAvaliacoes />
-          </TabsContent>
+          {bloqueaveis.map((valor) => {
+            const meta = secoes.find((s) => s.value === valor)!;
+            return (
+              <TabsContent key={valor} value={valor} className="mt-6">
+                {bloqueada(valor) ? (
+                  <AcessoBloqueado
+                    secao={meta.label}
+                    cadastroCompleto={cadastroCompleto}
+                    onIrPerfil={() => setSecao("perfil")}
+                  />
+                ) : valor === "mural" ? (
+                  <MuralOportunidades />
+                ) : valor === "negociacoes" ? (
+                  <Negociacoes />
+                ) : valor === "agenda" ? (
+                  <Agenda />
+                ) : (
+                  <CarteiraAvaliacoes />
+                )}
+              </TabsContent>
+            );
+          })}
         </Tabs>
+
       </main>
     </div>
   );
