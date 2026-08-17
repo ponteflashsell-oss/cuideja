@@ -27,6 +27,7 @@ export function PerfilProfissional() {
   const [bairros, setBairros] = useState("");
   const [verificado, setVerificado] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [biometriaEnviada, setBiometriaEnviada] = useState(false);
 
 
   useEffect(() => {
