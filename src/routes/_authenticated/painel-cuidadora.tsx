@@ -62,7 +62,8 @@ const bloqueaveis: SecaoPainel[] = ["mural", "negociacoes", "agenda", "carteira"
 
 function PainelCuidadoraPage() {
   const [secao, setSecao] = useState<SecaoPainel>("inicio");
-  const { carregando, verificado, cadastroCompleto } = usePerfilStatus();
+  const status = usePerfilStatus();
+  const { carregando, verificado, cadastroCompleto } = status;
   const atual = secoes.find((s) => s.value === secao)!;
 
   const bloqueada = (valor: SecaoPainel) =>
@@ -131,7 +132,7 @@ function PainelCuidadoraPage() {
           <p className="mt-3 text-sm text-muted-foreground">{atual.ajuda}</p>
 
           <TabsContent value="inicio" className="mt-6">
-            <ResumoInicio onIr={irPara} />
+            <ResumoInicio onIr={irPara} status={status} />
           </TabsContent>
           <TabsContent value="perfil" className="mt-6">
             <PerfilProfissional />

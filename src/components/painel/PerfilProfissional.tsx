@@ -216,7 +216,11 @@ export function PerfilProfissional() {
             <FileCheck2 className="size-4 text-primary" /> Certificados e documentos
           </h3>
           <ul className="mt-4 grid gap-3">
-            {documentos.map((doc) => (
+            {documentos.map((base) => {
+              const doc = verificado
+                ? base
+                : { ...base, status: "pendente" as const, enviadoEm: undefined };
+              return (
               <li
                 key={doc.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted px-3 py-2.5"
@@ -239,7 +243,8 @@ export function PerfilProfissional() {
                   {statusLabel[doc.status]}
                 </Badge>
               </li>
-            ))}
+              );
+            })}
           </ul>
           <Button
             variant="outline"
