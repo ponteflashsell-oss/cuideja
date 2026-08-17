@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Camera, FileCheck2, ShieldCheck, Upload, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import {
   documentos,
   especialidadesAtivas,
@@ -24,6 +25,72 @@ export function PerfilProfissional() {
   const [tags, setTags] = useState<string[]>(especialidadesAtivas);
   const [bio, setBio] = useState(perfilCuidadora.bio);
   const [tarifas, setTarifas] = useState(perfilCuidadora.tarifas);
+  const [nome, setNome] = useState(perfilCuidadora.nome);
+  const [bairros, setBairros] = useState(perfilCuidadora.bairros.join(", "));
+  const [verificado, setVerificado] = useState(perfilCuidadora.verificado);
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select(
+          "nome, bio, bairros, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado",
+        )
+        .eq("id", auth.user.id)
+        .maybeSingle();
+      if (!ativo || !data) return;
+      if (data.nome) setNome(data.nome);
+      if (data.bio) setBio(data.bio);
+      if (data.bairros?.length) setBairros(data.bairros.join(", "));
+      if (data.especialidades?.length) setTags(data.especialidades);
+      setVerificado(data.verificado);
+      if (Number(data.tarifa_hora) > 0) {
+        setTarifas({
+          hora: Number(data.tarifa_hora),
+          diaria: Number(data.tarifa_diaria),
+          plantao12: Number(data.tarifa_plantao12),
+          plantao24: Number(data.tarifa_plantao24),
+        });
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const salvar = async (mensagem: string) => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) {
+      toast.error("Sessão expirada. Entre novamente.");
+      return;
+    }
+    setSalvando(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: auth.user.id,
+      nome: nome.trim().slice(0, 80),
+      bio: bio.trim().slice(0, 400),
+      bairros: bairros
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean)
+        .slice(0, 12),
+      especialidades: tags,
+      tarifa_hora: tarifas.hora,
+      tarifa_diaria: tarifas.diaria,
+      tarifa_plantao12: tarifas.plantao12,
+      tarifa_plantao24: tarifas.plantao24,
+    });
+    setSalvando(false);
+    if (error) {
+      toast.error("Não foi possível salvar agora.");
+      return;
+    }
+    toast.success(mensagem);
+  };
 
   const toggleTag = (tag: string) =>
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -46,11 +113,11 @@ export function PerfilProfissional() {
             </button>
           </div>
           <div>
-            <h2 className="text-2xl">{perfilCuidadora.nome}</h2>
+            <h2 className="text-2xl">{nome || "Seu nome"}</h2>
             <p className="text-sm text-muted-foreground">
               {perfilCuidadora.idade} anos · {perfilCuidadora.cidade}
             </p>
-            {perfilCuidadora.verificado && (
+            {verificado && (
               <Badge className="mt-2 gap-1">
                 <ShieldCheck className="size-3" /> Perfil Verificado
               </Badge>
@@ -61,13 +128,19 @@ export function PerfilProfissional() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">
             <Label htmlFor="nome">Nome exibido</Label>
-            <Input id="nome" defaultValue={perfilCuidadora.nome} maxLength={80} />
+            <Input
+              id="nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              maxLength={80}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="bairros">Bairros de atuação</Label>
             <Input
               id="bairros"
-              defaultValue={perfilCuidadora.bairros.join(", ")}
+              value={bairros}
+              onChange={(e) => setBairros(e.target.value)}
               maxLength={160}
             />
           </div>
@@ -112,7 +185,7 @@ export function PerfilProfissional() {
           </div>
         </div>
 
-        <Button className="mt-6" onClick={() => toast.success("Perfil atualizado.")}>
+        <Button className="mt-6" disabled={salvando} onClick={() => salvar("Perfil atualizado.")}>
           Salvar vitrine
         </Button>
       </section>
@@ -196,7 +269,8 @@ export function PerfilProfissional() {
           <Button
             variant="secondary"
             className="mt-4 w-full"
-            onClick={() => toast.success("Tarifas salvas.")}
+            disabled={salvando}
+            onClick={() => salvar("Tarifas salvas.")}
           >
             Salvar tarifas
           </Button>
