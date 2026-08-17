@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          bairros: string[]
+          bio: string
+          cidade: string
+          created_at: string
+          especialidades: string[]
+          id: string
+          nome: string
+          tarifa_diaria: number
+          tarifa_hora: number
+          tarifa_plantao12: number
+          tarifa_plantao24: number
+          updated_at: string
+          verificado: boolean
+        }
+        Insert: {
+          bairros?: string[]
+          bio?: string
+          cidade?: string
+          created_at?: string
+          especialidades?: string[]
+          id: string
+          nome?: string
+          tarifa_diaria?: number
+          tarifa_hora?: number
+          tarifa_plantao12?: number
+          tarifa_plantao24?: number
+          updated_at?: string
+          verificado?: boolean
+        }
+        Update: {
+          bairros?: string[]
+          bio?: string
+          cidade?: string
+          created_at?: string
+          especialidades?: string[]
+          id?: string
+          nome?: string
+          tarifa_diaria?: number
+          tarifa_hora?: number
+          tarifa_plantao12?: number
+          tarifa_plantao24?: number
+          updated_at?: string
+          verificado?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
