@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 const nav = [
   { to: "/cuidadores", label: "Encontrar cuidadores" },
   { to: "/para-profissionais", label: "Para profissionais" },
-  { to: "/painel-cuidadora", label: "Painel da cuidadora" },
   { to: "/seguranca", label: "Segurança e verificação" },
   { to: "/termos", label: "Termos" },
 ] as const;
+
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -39,8 +39,9 @@ export function Header() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/para-profissionais">Sou cuidador(a)</Link>
+            <Link to="/entrar">Sou cuidadora · Entrar</Link>
           </Button>
+
           <Button asChild size="sm">
             <Link to="/cuidadores">Buscar agora</Link>
           </Button>
