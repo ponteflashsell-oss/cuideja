@@ -8,12 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  documentos,
-  especialidadesAtivas,
-  perfilCuidadora,
-  tagsCuidado,
-} from "@/data/painel-cuidadora";
+import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
+
 
 const statusLabel = {
   aprovado: "Aprovado",
@@ -22,13 +18,15 @@ const statusLabel = {
 } as const;
 
 export function PerfilProfissional() {
-  const [tags, setTags] = useState<string[]>(especialidadesAtivas);
-  const [bio, setBio] = useState(perfilCuidadora.bio);
-  const [tarifas, setTarifas] = useState(perfilCuidadora.tarifas);
-  const [nome, setNome] = useState(perfilCuidadora.nome);
-  const [bairros, setBairros] = useState(perfilCuidadora.bairros.join(", "));
-  const [verificado, setVerificado] = useState(perfilCuidadora.verificado);
+  const [tags, setTags] = useState<string[]>([]);
+  const [bio, setBio] = useState("");
+  const [tarifas, setTarifas] = useState({ hora: 0, diaria: 0, plantao12: 0, plantao24: 0 });
+  const [nome, setNome] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [bairros, setBairros] = useState("");
+  const [verificado, setVerificado] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
 
   useEffect(() => {
     let ativo = true;
@@ -38,17 +36,19 @@ export function PerfilProfissional() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "nome, bio, bairros, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado",
+          "nome, cidade, bio, bairros, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado",
         )
         .eq("id", auth.user.id)
         .maybeSingle();
       if (!ativo || !data) return;
       if (data.nome) setNome(data.nome);
+      if (data.cidade) setCidade(data.cidade);
       if (data.bio) setBio(data.bio);
       if (data.bairros?.length) setBairros(data.bairros.join(", "));
       if (data.especialidades?.length) setTags(data.especialidades);
       setVerificado(data.verificado);
       if (Number(data.tarifa_hora) > 0) {
+
         setTarifas({
           hora: Number(data.tarifa_hora),
           diaria: Number(data.tarifa_diaria),
@@ -72,7 +72,9 @@ export function PerfilProfissional() {
     const { error } = await supabase.from("profiles").upsert({
       id: auth.user.id,
       nome: nome.trim().slice(0, 80),
+      cidade: cidade.trim().slice(0, 60),
       bio: bio.trim().slice(0, 400),
+
       bairros: bairros
         .split(",")
         .map((b) => b.trim())
@@ -101,7 +103,12 @@ export function PerfilProfissional() {
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative">
             <span className="flex size-20 items-center justify-center rounded-full bg-muted font-display text-2xl">
-              AP
+              {nome
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((p) => p[0]?.toUpperCase())
+                .join("") || "?"}
             </span>
             <button
               type="button"
@@ -114,14 +121,17 @@ export function PerfilProfissional() {
           </div>
           <div>
             <h2 className="text-2xl">{nome || "Seu nome"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {perfilCuidadora.idade} anos · {perfilCuidadora.cidade}
-            </p>
-            {verificado && (
+            <p className="text-sm text-muted-foreground">{cidade || "Informe sua cidade"}</p>
+            {verificado ? (
               <Badge className="mt-2 gap-1">
                 <ShieldCheck className="size-3" /> Perfil Verificado
               </Badge>
+            ) : (
+              <Badge variant="secondary" className="mt-2 gap-1">
+                <ShieldCheck className="size-3" /> Perfil em verificação
+              </Badge>
             )}
+
           </div>
         </div>
 
@@ -136,6 +146,15 @@ export function PerfilProfissional() {
             />
           </div>
           <div className="grid gap-1.5">
+            <Label htmlFor="cidade">Cidade</Label>
+            <Input
+              id="cidade"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              maxLength={60}
+            />
+          </div>
+          <div className="grid gap-1.5 sm:col-span-2">
             <Label htmlFor="bairros">Bairros de atuação</Label>
             <Input
               id="bairros"
@@ -144,6 +163,7 @@ export function PerfilProfissional() {
               maxLength={160}
             />
           </div>
+
         </div>
 
         <div className="mt-4 grid gap-1.5">
