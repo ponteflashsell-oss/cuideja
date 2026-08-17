@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CuidadoresRouteImport } from './routes/cuidadores'
+import { Route as PainelCuidadoraRouteImport } from './routes/painel-cuidadora'
 import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as TermosRouteImport } from './routes/termos'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const CuidadoresRoute = CuidadoresRouteImport.update({
   id: '/cuidadores',
   path: '/cuidadores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelCuidadoraRoute = PainelCuidadoraRouteImport.update({
+  id: '/painel-cuidadora',
+  path: '/painel-cuidadora',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParaProfissionaisRoute = ParaProfissionaisRouteImport.update({
@@ -44,6 +50,7 @@ const TermosRoute = TermosRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cuidadores': typeof CuidadoresRoute
+  '/painel-cuidadora': typeof PainelCuidadoraRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cuidadores': typeof CuidadoresRoute
+  '/painel-cuidadora': typeof PainelCuidadoraRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cuidadores': typeof CuidadoresRoute
+  '/painel-cuidadora': typeof PainelCuidadoraRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -66,13 +75,25 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/cuidadores' | '/para-profissionais' | '/seguranca' | '/termos'
+    | '/'
+    | '/cuidadores'
+    | '/painel-cuidadora'
+    | '/para-profissionais'
+    | '/seguranca'
+    | '/termos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cuidadores' | '/para-profissionais' | '/seguranca' | '/termos'
+  to:
+    | '/'
+    | '/cuidadores'
+    | '/painel-cuidadora'
+    | '/para-profissionais'
+    | '/seguranca'
+    | '/termos'
   id:
     | '__root__'
     | '/'
     | '/cuidadores'
+    | '/painel-cuidadora'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
@@ -81,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CuidadoresRoute: typeof CuidadoresRoute
+  PainelCuidadoraRoute: typeof PainelCuidadoraRoute
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
   SegurancaRoute: typeof SegurancaRoute
   TermosRoute: typeof TermosRoute
@@ -100,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/cuidadores'
       fullPath: '/cuidadores'
       preLoaderRoute: typeof CuidadoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-cuidadora': {
+      id: '/painel-cuidadora'
+      path: '/painel-cuidadora'
+      fullPath: '/painel-cuidadora'
+      preLoaderRoute: typeof PainelCuidadoraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/para-profissionais': {
@@ -129,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CuidadoresRoute: CuidadoresRoute,
+  PainelCuidadoraRoute: PainelCuidadoraRoute,
   ParaProfissionaisRoute: ParaProfissionaisRoute,
   SegurancaRoute: SegurancaRoute,
   TermosRoute: TermosRoute,

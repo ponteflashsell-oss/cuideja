@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 const nav = [
   { to: "/cuidadores", label: "Encontrar cuidadores" },
   { to: "/para-profissionais", label: "Para profissionais" },
+  { to: "/painel-cuidadora", label: "Painel da cuidadora" },
   { to: "/seguranca", label: "Segurança e verificação" },
   { to: "/termos", label: "Termos" },
 ] as const;
