@@ -70,11 +70,14 @@ export type Database = {
           cpf_valido: boolean
           created_at: string
           data_nascimento: string
+          documento_path: string
           face_confere: boolean
           id: string
           nome_documento: string
           observacoes: string
+          revisao_manual: boolean
           score: number
+          selfie_path: string
           status: string
           tipo_documento: string
           updated_at: string
@@ -87,11 +90,14 @@ export type Database = {
           cpf_valido?: boolean
           created_at?: string
           data_nascimento?: string
+          documento_path?: string
           face_confere?: boolean
           id?: string
           nome_documento?: string
           observacoes?: string
+          revisao_manual?: boolean
           score?: number
+          selfie_path?: string
           status?: string
           tipo_documento?: string
           updated_at?: string
@@ -104,11 +110,14 @@ export type Database = {
           cpf_valido?: boolean
           created_at?: string
           data_nascimento?: string
+          documento_path?: string
           face_confere?: boolean
           id?: string
           nome_documento?: string
           observacoes?: string
+          revisao_manual?: boolean
           score?: number
+          selfie_path?: string
           status?: string
           tipo_documento?: string
           updated_at?: string
