@@ -104,37 +104,87 @@ Regras: cpf apenas dígitos; data_nascimento em DD/MM/AAAA; face_confere true s�
 export type ResultadoAntecedentes = {
   status: "nao_consultado" | "limpo" | "com_apontamento" | "erro";
   dados: unknown;
+  fonte: string;
 };
 
+export type ConfigAntecedentes = {
+  /** "sinic" (CAC/SINIC2), "infosimples" ou vazio (sem consulta automática). */
+  provedor: string | undefined;
+  token: string | undefined;
+  /** URL do endpoint SINIC2/CAC do convênio (só para provedor "sinic"). */
+  url: string | undefined;
+};
+
+function classificar(texto: string): "limpo" | "com_apontamento" {
+  const t = texto.toLowerCase();
+  const limpo =
+    t.includes("nada consta") ||
+    t.includes("nao consta") ||
+    t.includes("não consta") ||
+    t.includes("negativa");
+  return limpo ? "limpo" : "com_apontamento";
+}
+
 /**
- * Consulta antecedentes/CPF na Infosimples quando o token estiver configurado.
- * Sem token, a etapa fica pendente para a revisão humana.
+ * Consulta a Certidão de Antecedentes Criminais.
+ *
+ * - provedor "sinic": chama o endpoint CAC/SINIC2 do convênio (Polícia Federal),
+ *   informado em ANTECEDENTES_API_URL, com token Bearer.
+ * - provedor "infosimples": usa a consulta de antecedentes criminais da Infosimples.
+ * - sem configuração: a etapa fica pendente para revisão humana.
  */
 export async function consultarAntecedentes(
   cpf: string,
   nascimento: string,
-  token: string | undefined,
+  nome: string,
+  config: ConfigAntecedentes,
 ): Promise<ResultadoAntecedentes> {
-  if (!token) return { status: "nao_consultado", dados: null };
+  const provedor = (config.provedor ?? (config.token ? "infosimples" : "")).toLowerCase();
+  if (!provedor || !config.token) {
+    return { status: "nao_consultado", dados: null, fonte: provedor || "revisao_humana" };
+  }
+
   try {
+    if (provedor === "sinic") {
+      if (!config.url) return { status: "nao_consultado", dados: null, fonte: "sinic" };
+      const resposta = await fetch(config.url, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${config.token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ cpf, nome, data_nascimento: nascimento }),
+      });
+      const json = (await resposta.json()) as unknown;
+      if (!resposta.ok) return { status: "erro", dados: json, fonte: "sinic" };
+      return { status: classificar(JSON.stringify(json)), dados: json, fonte: "sinic" };
+    }
+
     const corpo = new URLSearchParams({
-      token,
+      token: config.token,
       timeout: "300",
       cpf,
+      nome,
       birthdate: nascimento,
     });
-    const resposta = await fetch("https://api.infosimples.com/api/v2/consultas/receita-federal/cpf", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: corpo,
-    });
+    const resposta = await fetch(
+      "https://api.infosimples.com/api/v2/consultas/policia-federal/antecedentes-criminais",
+      {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: corpo,
+      },
+    );
     const json = (await resposta.json()) as { code?: number; data?: unknown };
-    if (json.code !== 200) return { status: "erro", dados: json };
-    const texto = JSON.stringify(json.data ?? {}).toLowerCase();
-    const regular = texto.includes("regular");
-    return { status: regular ? "limpo" : "com_apontamento", dados: json.data ?? null };
+    if (json.code !== 200) return { status: "erro", dados: json, fonte: "infosimples" };
+    return {
+      status: classificar(JSON.stringify(json.data ?? {})),
+      dados: json.data ?? null,
+      fonte: "infosimples",
+    };
   } catch (erro) {
-    console.error("[verificacao] infosimples", erro);
-    return { status: "erro", dados: null };
+    console.error("[verificacao] antecedentes", provedor, erro);
+    return { status: "erro", dados: null, fonte: provedor };
   }
 }
+
