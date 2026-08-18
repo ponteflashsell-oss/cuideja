@@ -62,6 +62,60 @@ export type Database = {
         }
         Relationships: []
       }
+      verificacoes: {
+        Row: {
+          antecedentes_dados: Json | null
+          antecedentes_status: string
+          cpf: string
+          cpf_valido: boolean
+          created_at: string
+          data_nascimento: string
+          face_confere: boolean
+          id: string
+          nome_documento: string
+          observacoes: string
+          score: number
+          status: string
+          tipo_documento: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          antecedentes_dados?: Json | null
+          antecedentes_status?: string
+          cpf?: string
+          cpf_valido?: boolean
+          created_at?: string
+          data_nascimento?: string
+          face_confere?: boolean
+          id?: string
+          nome_documento?: string
+          observacoes?: string
+          score?: number
+          status?: string
+          tipo_documento?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          antecedentes_dados?: Json | null
+          antecedentes_status?: string
+          cpf?: string
+          cpf_valido?: boolean
+          created_at?: string
+          data_nascimento?: string
+          face_confere?: boolean
+          id?: string
+          nome_documento?: string
+          observacoes?: string
+          score?: number
+          status?: string
+          tipo_documento?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
