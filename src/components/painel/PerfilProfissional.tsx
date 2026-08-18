@@ -250,7 +250,7 @@ export function PerfilProfissional() {
               );
             })}
           </ul>
-          <CapturaSelfie onConcluir={() => setBiometriaEnviada(true)} />
+          <AnaliseIdentidade onEnviado={() => setBiometriaEnviada(true)} />
           <Button
             variant="outline"
             className="mt-2 w-full gap-2"
