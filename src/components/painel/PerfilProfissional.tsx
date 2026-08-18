@@ -220,9 +220,12 @@ export function PerfilProfissional() {
           </h3>
           <ul className="mt-4 grid gap-3">
             {documentos.map((base) => {
+              const enviado =
+                (base.id === "selfie" && biometriaEnviada) ||
+                (base.id === "documento" && docEnviado);
               const doc = verificado
                 ? base
-                : base.id === "selfie" && biometriaEnviada
+                : enviado
                   ? { ...base, status: "em_analise" as const, enviadoEm: "agora" }
                   : { ...base, status: "pendente" as const, enviadoEm: undefined };
               return (
@@ -251,6 +254,7 @@ export function PerfilProfissional() {
               );
             })}
           </ul>
+          <EnvioDocumento onEnviado={() => setDocEnviado(true)} />
           <AnaliseIdentidade onEnviado={() => setBiometriaEnviada(true)} />
           <Button
             variant="outline"
