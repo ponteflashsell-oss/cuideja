@@ -35,7 +35,7 @@ export type Documento = {
 export const documentos: Documento[] = [
   { id: "curso", nome: "Curso de Cuidador de Idosos", status: "aprovado", enviadoEm: "12/03/2026" },
   { id: "coren", nome: "Diploma Técnico de Enfermagem", status: "aprovado", enviadoEm: "12/03/2026" },
-  { id: "antecedentes", nome: "Certidão de antecedentes criminais", status: "em_analise", enviadoEm: "02/08/2026" },
+  { id: "documento", nome: "Documento oficial com foto (CNH ou RG)", status: "em_analise", enviadoEm: "02/08/2026" },
   { id: "selfie", nome: "Selfie + documento com foto", status: "pendente" },
 ];
 

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
 import { AnaliseIdentidade } from "@/components/painel/AnaliseIdentidade";
+import { EnvioDocumento } from "@/components/painel/EnvioDocumento";
 
 
 const statusLabel = {
@@ -28,6 +29,7 @@ export function PerfilProfissional() {
   const [verificado, setVerificado] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [biometriaEnviada, setBiometriaEnviada] = useState(false);
+  const [docEnviado, setDocEnviado] = useState(false);
 
 
   useEffect(() => {
@@ -219,9 +221,12 @@ export function PerfilProfissional() {
           </h3>
           <ul className="mt-4 grid gap-3">
             {documentos.map((base) => {
+              const enviado =
+                (base.id === "selfie" && biometriaEnviada) ||
+                (base.id === "documento" && docEnviado);
               const doc = verificado
                 ? base
-                : base.id === "selfie" && biometriaEnviada
+                : enviado
                   ? { ...base, status: "em_analise" as const, enviadoEm: "agora" }
                   : { ...base, status: "pendente" as const, enviadoEm: undefined };
               return (
@@ -250,6 +255,7 @@ export function PerfilProfissional() {
               );
             })}
           </ul>
+          <EnvioDocumento onEnviado={() => setDocEnviado(true)} />
           <AnaliseIdentidade onEnviado={() => setBiometriaEnviada(true)} />
           <Button
             variant="outline"
