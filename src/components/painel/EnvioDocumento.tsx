@@ -9,7 +9,9 @@ const MAX_MB = 10;
 export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string) => void }) {
   const inputCamera = useRef<HTMLInputElement | null>(null);
   const inputArquivo = useRef<HTMLInputElement | null>(null);
-  const [arquivo, setArquivo] = useState<{ nome: string; previa?: string } | null>(null);
+  const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
+    null,
+  );
 
   const receber = (files: FileList | null) => {
     const file = files?.[0];
