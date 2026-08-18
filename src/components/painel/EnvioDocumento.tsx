@@ -2,12 +2,12 @@ import { useRef, useState } from "react";
 import { Camera, FileUp, IdCard, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { CapturaDocumento } from "./CapturaDocumento";
 
 const TIPOS = "image/*,application/pdf";
 const MAX_MB = 10;
 
 export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string) => void }) {
-  const inputCamera = useRef<HTMLInputElement | null>(null);
   const inputArquivo = useRef<HTMLInputElement | null>(null);
   const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
     null,
@@ -26,14 +26,19 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
     toast.success("Documento enviado para conferência.");
   };
 
+  const aoFotografar = (imagem: string) => {
+    setArquivo({ nome: "foto_documento.jpg", previa: imagem });
+    onEnviado?.("foto_documento.jpg");
+  };
+
   return (
     <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
       <h4 className="flex items-center gap-2 text-sm font-medium">
         <IdCard className="size-4 text-primary" /> Documento oficial com foto
       </h4>
       <p className="mt-1 text-xs text-muted-foreground">
-        Aceitamos <strong>CNH</strong> ou <strong>RG (identidade)</strong> — foto tirada na hora pela
-        câmera do celular, imagem da galeria ou arquivo PDF, com os dados legíveis e sem reflexo.
+        Aceitamos <strong>CNH</strong> ou <strong>RG (identidade)</strong> — foto tirada na hora
+        pela câmera do celular, com os dados legíveis e sem reflexo.
       </p>
 
       {arquivo ? (
@@ -50,14 +55,6 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
       ) : null}
 
       <input
-        ref={inputCamera}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => receber(e.target.files)}
-      />
-      <input
         ref={inputArquivo}
         type="file"
         accept={TIPOS}
@@ -66,9 +63,11 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
       />
 
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button className="flex-1 gap-2" onClick={() => inputCamera.current?.click()}>
-          <Camera className="size-4" /> Abrir câmera e fotografar
-        </Button>
+        <CapturaDocumento onConcluir={aoFotografar}>
+          <Button className="flex-1 gap-2">
+            <Camera className="size-4" /> Abrir câmera e fotografar
+          </Button>
+        </CapturaDocumento>
         <Button
           variant="outline"
           className="flex-1 gap-2"
