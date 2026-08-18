@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
-import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
+import { AnaliseIdentidade } from "@/components/painel/AnaliseIdentidade";
 
 
 const statusLabel = {
@@ -250,7 +250,7 @@ export function PerfilProfissional() {
               );
             })}
           </ul>
-          <CapturaSelfie onConcluir={() => setBiometriaEnviada(true)} />
+          <AnaliseIdentidade onEnviado={() => setBiometriaEnviada(true)} />
           <Button
             variant="outline"
             className="mt-2 w-full gap-2"
