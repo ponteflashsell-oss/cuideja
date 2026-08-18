@@ -29,6 +29,7 @@ export function PerfilProfissional() {
   const [verificado, setVerificado] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [biometriaEnviada, setBiometriaEnviada] = useState(false);
+  const [docEnviado, setDocEnviado] = useState(false);
 
 
   useEffect(() => {
