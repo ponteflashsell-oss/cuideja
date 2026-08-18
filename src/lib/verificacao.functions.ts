@@ -23,8 +23,14 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
     const antecedentes = await consultarAntecedentes(
       leitura.cpf,
       leitura.data_nascimento,
-      process.env["INFOSIMPLES_TOKEN"],
+      leitura.nome,
+      {
+        provedor: process.env["ANTECEDENTES_PROVEDOR"],
+        token: process.env["ANTECEDENTES_API_TOKEN"] ?? process.env["INFOSIMPLES_TOKEN"],
+        url: process.env["ANTECEDENTES_API_URL"],
+      },
     );
+
 
     let score = 0;
     if (leitura.documento_legivel) score += 25;
