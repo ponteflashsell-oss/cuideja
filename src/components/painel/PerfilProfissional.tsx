@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { documentos, tagsCuidado } from "@/data/painel-cuidadora";
 import { AnaliseIdentidade } from "@/components/painel/AnaliseIdentidade";
+import { EnvioDocumento } from "@/components/painel/EnvioDocumento";
 
 
 const statusLabel = {
