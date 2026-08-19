@@ -17,6 +17,7 @@ type Resultado = {
   documentoLegivel: boolean;
   antecedentes: string;
   observacoes: string;
+  revisaoManual?: boolean;
 };
 
 const rotuloAntecedentes: Record<string, string> = {
@@ -32,7 +33,7 @@ function Item({ ok, texto }: { ok: boolean; texto: string }) {
       {ok ? (
         <CheckCircle2 className="size-4 text-primary" />
       ) : (
-        <XCircle className="size-4 text-destructive" />
+        <Clock className="size-4 text-muted-foreground" />
       )}
       <span className={ok ? "" : "text-muted-foreground"}>{texto}</span>
     </li>
