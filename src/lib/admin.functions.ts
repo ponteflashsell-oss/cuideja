@@ -106,11 +106,12 @@ export const decidirVerificacao = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await exigirAdmin(context);
 
-    const atualizacao: Record<string, unknown> = {
+    const atualizacao = {
       status: data.decisao,
       revisao_manual: false,
+      ...(data.observacoes !== undefined ? { observacoes: data.observacoes } : {}),
     };
-    if (data.observacoes !== undefined) atualizacao["observacoes"] = data.observacoes;
+
 
     const { error } = await context.supabase
       .from("verificacoes")

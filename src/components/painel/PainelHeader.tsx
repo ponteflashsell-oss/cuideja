@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { HeartHandshake, LogOut } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { HeartHandshake, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { souAdmin } from "@/lib/admin.functions";
+
 
 export function PainelHeader() {
   const navigate = useNavigate();
@@ -13,6 +16,10 @@ export function PainelHeader() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
   }, []);
+
+  const checarAdmin = useServerFn(souAdmin);
+  const acesso = useQuery({ queryKey: ["admin", "acesso"], queryFn: () => checarAdmin() });
+
 
   const sair = async () => {
     await queryClient.cancelQueries();
@@ -34,9 +41,17 @@ export function PainelHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {acesso.data?.admin && (
+            <Button asChild variant="secondary" size="sm" className="gap-2">
+              <Link to="/admin">
+                <ShieldCheck className="size-4" /> Admin
+              </Link>
+            </Button>
+          )}
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link to="/">Ver site</Link>
           </Button>
+
           <Button variant="outline" size="sm" className="gap-2" onClick={sair}>
             <LogOut className="size-4" /> Sair
           </Button>
