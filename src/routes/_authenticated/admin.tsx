@@ -149,7 +149,12 @@ function AdminPage() {
             <TabsTrigger value="verificacoes">Verificações</TabsTrigger>
             <TabsTrigger value="cuidadoras">Cuidadoras</TabsTrigger>
             <TabsTrigger value="familias">Famílias</TabsTrigger>
+            <TabsTrigger value="documentos">Documentos</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="documentos" className="mt-5">
+            <ArquivoDocumentos />
+          </TabsContent>
 
           <TabsContent value="verificacoes" className="mt-5">
             <FilaVerificacoes
