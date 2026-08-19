@@ -142,3 +142,111 @@ export const definirVerificado = createServerFn({ method: "POST" })
     if (error) throw new Error("Não foi possível atualizar o perfil.");
     return { ok: true };
   });
+
+/** Arquivo jurídico: todos os documentos e fotos enviados por cuidadoras e famílias. */
+export const listarDocumentosNuvem = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await exigirAdmin(context);
+
+    const [{ data: docs }, { data: verifs }, { data: perfis }] = await Promise.all([
+      context.supabase
+        .from("documentos")
+        .select("id, user_id, tipo, nome_arquivo, caminho, mime, tamanho, origem, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      context.supabase
+        .from("verificacoes")
+        .select("id, user_id, selfie_path, documento_path, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(300),
+      context.supabase.from("profiles").select("id, nome, tipo"),
+    ]);
+
+    const perfil = new Map<string, { nome: string; tipo: string }>();
+    for (const p of perfis ?? []) perfil.set(p.id, { nome: p.nome, tipo: p.tipo });
+
+    type Arquivo = {
+      chave: string;
+      user_id: string;
+      nome: string;
+      conta: string;
+      tipo: string;
+      caminho: string;
+      origem: string;
+      criado_em: string;
+    };
+
+    const itens: Arquivo[] = [];
+    const push = (
+      user_id: string,
+      tipo: string,
+      caminho: string,
+      origem: string,
+      criado_em: string,
+      chave: string,
+    ) => {
+      if (!caminho) return;
+      const p = perfil.get(user_id);
+      itens.push({
+        chave,
+        user_id,
+        nome: p?.nome || "(sem nome)",
+        conta: p?.tipo === "familia" ? "familia" : "cuidadora",
+        tipo,
+        caminho,
+        origem,
+        criado_em,
+      });
+    };
+
+    for (const v of verifs ?? []) {
+      push(v.user_id, "selfie", v.selfie_path, "camera", v.created_at, `v-selfie-${v.id}`);
+      push(v.user_id, "documento_identidade", v.documento_path, "camera", v.created_at, `v-doc-${v.id}`);
+    }
+    for (const d of docs ?? []) {
+      push(d.user_id, d.tipo, d.caminho, d.origem, d.created_at, `d-${d.id}`);
+    }
+
+    itens.sort((a, b) => (a.criado_em < b.criado_em ? 1 : -1));
+    return itens;
+  });
+
+/** Gera link temporário e grava quem acessou o arquivo (trilha de auditoria). */
+export const abrirDocumentoNuvem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ caminho: z.string().min(3), userId: z.string().uuid().optional() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: url, error } = await supabaseAdmin.storage
+      .from("verificacoes")
+      .createSignedUrl(data.caminho, 600);
+    if (error || !url?.signedUrl) throw new Error("Não foi possível abrir o arquivo.");
+
+    await supabaseAdmin.from("admin_auditoria").insert({
+      admin_id: context.userId,
+      user_id: data.userId ?? null,
+      acao: "abriu_documento",
+      caminho: data.caminho,
+      detalhe: "link temporário de 10 minutos",
+    });
+
+    return { url: url.signedUrl };
+  });
+
+export const listarAuditoria = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await exigirAdmin(context);
+    const { data, error } = await context.supabase
+      .from("admin_auditoria")
+      .select("id, admin_id, user_id, acao, caminho, detalhe, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error("Não foi possível carregar a auditoria.");
+    return data ?? [];
+  });

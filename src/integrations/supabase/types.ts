@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_auditoria: {
+        Row: {
+          acao: string
+          admin_id: string
+          caminho: string
+          created_at: string
+          detalhe: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          acao: string
+          admin_id: string
+          caminho?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          acao?: string
+          admin_id?: string
+          caminho?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      documentos: {
+        Row: {
+          caminho: string
+          created_at: string
+          id: string
+          mime: string
+          nome_arquivo: string
+          origem: string
+          tamanho: number
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caminho: string
+          created_at?: string
+          id?: string
+          mime?: string
+          nome_arquivo?: string
+          origem?: string
+          tamanho?: number
+          tipo?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caminho?: string
+          created_at?: string
+          id?: string
+          mime?: string
+          nome_arquivo?: string
+          origem?: string
+          tamanho?: number
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bairros: string[]
