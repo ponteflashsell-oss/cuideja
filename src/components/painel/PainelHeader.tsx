@@ -17,6 +17,10 @@ export function PainelHeader() {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
   }, []);
 
+  const checarAdmin = useServerFn(souAdmin);
+  const acesso = useQuery({ queryKey: ["admin", "acesso"], queryFn: () => checarAdmin() });
+
+
   const sair = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
