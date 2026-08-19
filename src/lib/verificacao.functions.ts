@@ -137,7 +137,7 @@ export const obterUltimaVerificacao = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("verificacoes")
       .select(
-        "status, score, nome_documento, cpf, tipo_documento, cpf_valido, face_confere, antecedentes_status, observacoes, created_at",
+        "status, score, nome_documento, cpf, tipo_documento, cpf_valido, face_confere, antecedentes_status, observacoes, revisao_manual, created_at",
       )
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
