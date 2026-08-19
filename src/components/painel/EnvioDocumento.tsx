@@ -115,12 +115,23 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
         <Button
           variant="outline"
           className="flex-1 gap-2"
+          disabled={enviando}
           onClick={() => inputArquivo.current?.click()}
         >
-          {arquivo ? <RefreshCw className="size-4" /> : <FileUp className="size-4" />}
-          {arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
+          {enviando ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : arquivo ? (
+            <RefreshCw className="size-4" />
+          ) : (
+            <FileUp className="size-4" />
+          )}
+          {enviando ? "Guardando…" : arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
         </Button>
       </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Seus arquivos ficam guardados em nuvem privada e são acessados apenas pela equipe de
+        conferência, com registro de auditoria (LGPD).
+      </p>
     </div>
   );
 }
