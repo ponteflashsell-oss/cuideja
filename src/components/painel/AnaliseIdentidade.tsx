@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, Loader2, ScanFace, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Loader2, ScanFace } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
@@ -17,6 +17,7 @@ type Resultado = {
   documentoLegivel: boolean;
   antecedentes: string;
   observacoes: string;
+  revisaoManual?: boolean;
 };
 
 const rotuloAntecedentes: Record<string, string> = {
@@ -32,7 +33,7 @@ function Item({ ok, texto }: { ok: boolean; texto: string }) {
       {ok ? (
         <CheckCircle2 className="size-4 text-primary" />
       ) : (
-        <XCircle className="size-4 text-destructive" />
+        <Clock className="size-4 text-muted-foreground" />
       )}
       <span className={ok ? "" : "text-muted-foreground"}>{texto}</span>
     </li>
@@ -58,9 +59,10 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
           tipoDocumento: registro.tipo_documento,
           cpfValido: registro.cpf_valido,
           faceConfere: registro.face_confere,
-          documentoLegivel: true,
+          documentoLegivel: registro.cpf_valido || registro.score > 0,
           antecedentes: registro.antecedentes_status,
           observacoes: registro.observacoes,
+          revisaoManual: registro.revisao_manual,
         });
         onEnviado?.();
       })
@@ -77,8 +79,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
       const dados = (await analisar({ data: imagens })) as Resultado;
       setResultado(dados);
       onEnviado?.();
-      if (dados.status === "reprovado") {
-        toast.error("A leitura automática não confirmou seus dados. Refaça as fotos.");
+      if (dados.revisaoManual) {
+        toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
       } else {
         toast.success("Documento lido e enviado para aprovação final.");
       }
@@ -96,14 +98,15 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
           <ScanFace className="size-4 text-primary" /> Checagem automática de identidade
         </h4>
         {resultado ? (
-          <Badge variant={resultado.status === "reprovado" ? "outline" : "secondary"}>
-            {resultado.status === "reprovado" ? "Refazer captura" : "Em análise"}
+          <Badge variant="secondary">
+            {resultado.revisaoManual ? "Conferência manual" : "Em análise"}
           </Badge>
         ) : null}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Ao capturar selfie + documento, o sistema lê os dados do RG/CNH, valida o CPF, compara o
-        rosto com a foto do documento e envia para a checagem de antecedentes.
+        Ao capturar selfie + documento, o sistema lê os dados do RG/CNH, valida o CPF e compara o
+        rosto com a foto do documento. As fotos ficam guardadas em segurança: o que a leitura
+        automática não confirmar é conferido manualmente pela nossa equipe.
       </p>
 
       <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
@@ -117,21 +120,49 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
       {resultado ? (
         <div className="mt-4 grid gap-2">
           <ul className="grid gap-1.5">
-            <Item ok={resultado.documentoLegivel} texto="Documento legível" />
+            <Item
+              ok={resultado.documentoLegivel}
+              texto={
+                resultado.documentoLegivel
+                  ? "Documento legível"
+                  : "Documento aguardando conferência manual"
+              }
+            />
             <Item
               ok={resultado.cpfValido}
-              texto={`CPF ${resultado.cpf || "não identificado"} ${resultado.cpfValido ? "válido" : "inválido"}`}
+              texto={
+                resultado.cpfValido
+                  ? `CPF ${resultado.cpf} validado`
+                  : "CPF será conferido manualmente pela equipe"
+              }
             />
-            <Item ok={resultado.faceConfere} texto="Rosto da selfie confere com o documento" />
+            <Item
+              ok={resultado.faceConfere}
+              texto={
+                resultado.faceConfere
+                  ? "Rosto da selfie confere com o documento"
+                  : "Comparação de rosto em conferência manual"
+              }
+            />
           </ul>
           <p className="text-xs text-muted-foreground">
-            Nome no documento: <strong>{resultado.nome || "não identificado"}</strong> ·{" "}
-            {resultado.tipoDocumento?.toUpperCase() || "DOC"} · pontuação {resultado.score}/100
+            Nome no documento:{" "}
+            <strong>{resultado.nome || "aguardando conferência manual"}</strong>
+            {resultado.tipoDocumento && resultado.tipoDocumento !== "outro"
+              ? ` · ${resultado.tipoDocumento.toUpperCase()}`
+              : ""}{" "}
+            · pontuação automática {resultado.score}/100
           </p>
           <p className="flex items-start gap-2 text-xs text-muted-foreground">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-primary" />
             Antecedentes: {rotuloAntecedentes[resultado.antecedentes] ?? resultado.antecedentes}
           </p>
+          {resultado.revisaoManual ? (
+            <p className="text-xs text-muted-foreground">
+              Seu envio foi salvo e está na fila de análise humana — você não precisa refazer as
+              fotos. Avisamos aqui quando a verificação for concluída.
+            </p>
+          ) : null}
           {resultado.observacoes ? (
             <p className="text-xs text-muted-foreground">Observações: {resultado.observacoes}</p>
           ) : null}
