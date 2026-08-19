@@ -41,9 +41,17 @@ export function PainelHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {acesso.data?.admin && (
+            <Button asChild variant="secondary" size="sm" className="gap-2">
+              <Link to="/admin">
+                <ShieldCheck className="size-4" /> Admin
+              </Link>
+            </Button>
+          )}
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link to="/">Ver site</Link>
           </Button>
+
           <Button variant="outline" size="sm" className="gap-2" onClick={sair}>
             <LogOut className="size-4" /> Sair
           </Button>
