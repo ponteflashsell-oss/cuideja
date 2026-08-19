@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
-import { Camera, FileUp, IdCard, RefreshCw } from "lucide-react";
+import { Camera, FileUp, IdCard, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { registrarDocumento } from "@/lib/documentos.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
 
 const TIPOS = "image/*,application/pdf";
@@ -9,11 +12,49 @@ const MAX_MB = 10;
 
 export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string) => void }) {
   const inputArquivo = useRef<HTMLInputElement | null>(null);
+  const registrar = useServerFn(registrarDocumento);
+  const [enviando, setEnviando] = useState(false);
   const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
     null,
   );
 
-  const receber = (files: FileList | null) => {
+  const guardarNaNuvem = async (
+    corpo: Blob,
+    nome: string,
+    mime: string,
+    origem: "camera" | "upload",
+  ) => {
+    setEnviando(true);
+    try {
+      const { data: sessao } = await supabase.auth.getUser();
+      const userId = sessao.user?.id;
+      if (!userId) throw new Error("sem sessão");
+      const extensao = mime === "application/pdf" ? "pdf" : "jpg";
+      const caminho = `${userId}/documentos/${Date.now()}-documento.${extensao}`;
+      const { error } = await supabase.storage
+        .from("verificacoes")
+        .upload(caminho, corpo, { contentType: mime, upsert: true });
+      if (error) throw error;
+      await registrar({
+        data: {
+          caminho,
+          nomeArquivo: nome,
+          tipo: "documento_oficial",
+          mime,
+          tamanho: corpo.size,
+          origem,
+        },
+      });
+      toast.success("Documento guardado com segurança para conferência.");
+    } catch (erro) {
+      console.error("[documento] envio", erro);
+      toast.error("Não foi possível guardar o documento. Tente novamente.");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const receber = async (files: FileList | null) => {
     const file = files?.[0];
     if (!file) return;
     if (file.size > MAX_MB * 1024 * 1024) {
@@ -23,12 +64,15 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
     const previa = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
     setArquivo({ nome: file.name, previa });
     onEnviado?.(file.name);
-    toast.success("Documento enviado para conferência.");
+    await guardarNaNuvem(file, file.name, file.type || "application/octet-stream", "upload");
   };
 
-  const aoFotografar = (imagem: string) => {
+  const aoFotografar = async (imagem: string) => {
     setArquivo({ nome: "foto_documento.jpg", previa: imagem });
     onEnviado?.("foto_documento.jpg");
+    const resposta = await fetch(imagem);
+    const blob = await resposta.blob();
+    await guardarNaNuvem(blob, "foto_documento.jpg", blob.type || "image/jpeg", "camera");
   };
 
   return (
