@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, Loader2, ScanFace, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Loader2, ScanFace } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
