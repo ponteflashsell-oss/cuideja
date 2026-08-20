@@ -104,9 +104,9 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         ) : null}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Ao capturar selfie + documento, o sistema lê os dados do RG/CNH, valida o CPF e compara o
-        rosto com a foto do documento. As fotos ficam guardadas em segurança: o que a leitura
-        automática não confirmar é conferido manualmente pela nossa equipe.
+        Uma única foto do seu rosto com o documento ao lado: o sistema lê os dados do RG/CNH, valida
+        o CPF e compara o rosto com a foto do documento. A imagem fica guardada em segurança: o que a
+        leitura automática não confirmar é conferido manualmente pela nossa equipe.
       </p>
 
       <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
