@@ -14,10 +14,28 @@ const MAX_MB = 10;
 export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string) => void }) {
   const inputArquivo = useRef<HTMLInputElement | null>(null);
   const registrar = useServerFn(registrarDocumento);
+  const listar = useServerFn(listarMeusDocumentos);
   const [enviando, setEnviando] = useState(false);
+  const [jaEnviado, setJaEnviado] = useState(false);
   const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
     null,
   );
+
+  useEffect(() => {
+    let ativo = true;
+    void listar()
+      .then((docs) => {
+        const oficial = docs.find((d) => d.tipo === "documento_oficial");
+        if (!ativo || !oficial) return;
+        setJaEnviado(true);
+        setArquivo({ nome: oficial.nome_arquivo || "documento enviado" });
+      })
+      .catch(() => undefined);
+    return () => {
+      ativo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const guardarNaNuvem = async (
     corpo: Blob,
