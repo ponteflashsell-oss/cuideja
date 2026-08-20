@@ -74,7 +74,13 @@ export const listarVerificacoes = createServerFn({ method: "GET" })
 export const imagensVerificacao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ selfiePath: z.string(), documentoPath: z.string() }).parse(input),
+    z
+      .object({
+        selfiePath: z.string(),
+        documentoPath: z.string(),
+        userId: z.string().uuid().optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await exigirAdmin(context);
@@ -86,11 +92,40 @@ export const imagensVerificacao = createServerFn({ method: "POST" })
         .createSignedUrl(caminho, 600);
       return url?.signedUrl ?? "";
     };
+
+    // O documento oficial vem do arquivo enviado pela cuidadora (foto ou PDF).
+    // A foto rosto+documento (selfie) nunca é reaproveitada como documento.
+    let documentoPath = "";
+    let documentoMime = "";
+    let documentoNome = "";
+    if (data.userId) {
+      const { data: doc } = await supabaseAdmin
+        .from("documentos")
+        .select("caminho, mime, nome_arquivo")
+        .eq("user_id", data.userId)
+        .eq("tipo", "documento_oficial")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (doc) {
+        documentoPath = doc.caminho;
+        documentoMime = doc.mime ?? "";
+        documentoNome = doc.nome_arquivo ?? "";
+      }
+    }
+    if (!documentoPath && data.documentoPath !== data.selfiePath) {
+      documentoPath = data.documentoPath;
+    }
+
     return {
       selfie: await assinar(data.selfiePath),
-      documento: await assinar(data.documentoPath),
+      documento: await assinar(documentoPath),
+      documentoMime,
+      documentoNome,
+      documentoPdf: documentoMime === "application/pdf" || /\.pdf$/i.test(documentoPath),
     };
   });
+
 
 export const decidirVerificacao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
