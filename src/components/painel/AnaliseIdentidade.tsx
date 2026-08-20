@@ -50,7 +50,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
   useEffect(() => {
     let ativo = true;
-    void buscar()
+    const carregar = () =>
+      void buscar()
       .then((registro) => {
         if (!ativo || !registro) return;
         setResultado({
