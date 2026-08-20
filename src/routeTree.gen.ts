@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminEntrarRouteImport } from './routes/admin-entrar'
 import { Route as CuidadoresRouteImport } from './routes/cuidadores'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEntrarRoute = AdminEntrarRouteImport.update({
+  id: '/admin-entrar',
+  path: '/admin-entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CuidadoresRoute = CuidadoresRouteImport.update({
@@ -67,6 +73,7 @@ const AuthenticatedPainelCuidadoraRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
@@ -134,6 +146,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdminEntrarRoute: typeof AdminEntrarRoute
   CuidadoresRoute: typeof CuidadoresRoute
   EntrarRoute: typeof EntrarRoute
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-entrar': {
+      id: '/admin-entrar'
+      path: '/admin-entrar'
+      fullPath: '/admin-entrar'
+      preLoaderRoute: typeof AdminEntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cuidadores': {
@@ -225,6 +245,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdminEntrarRoute: AdminEntrarRoute,
   CuidadoresRoute: CuidadoresRoute,
   EntrarRoute: EntrarRoute,
   ParaProfissionaisRoute: ParaProfissionaisRoute,
