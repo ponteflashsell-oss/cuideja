@@ -11,12 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminEntrarRouteImport } from './routes/admin-entrar'
 import { Route as CuidadoresRouteImport } from './routes/cuidadores'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedPainelCuidadoraRouteImport } from './routes/_authenticated/painel-cuidadora'
 
 const IndexRoute = IndexRouteImport.update({
@@ -26,6 +27,16 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEntrarRoute = AdminEntrarRouteImport.update({
+  id: '/admin-entrar',
+  path: '/admin-entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CuidadoresRoute = CuidadoresRouteImport.update({
@@ -53,11 +64,6 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedPainelCuidadoraRoute =
   AuthenticatedPainelCuidadoraRouteImport.update({
     id: '/painel-cuidadora',
@@ -67,73 +73,81 @@ const AuthenticatedPainelCuidadoraRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/admin': typeof AdminRoute
+  '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
-    | '/admin'
     | '/painel-cuidadora'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
-    | '/admin'
     | '/painel-cuidadora'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
+    | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
-    | '/_authenticated/admin'
     | '/_authenticated/painel-cuidadora'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdminRoute: typeof AdminRoute
+  AdminEntrarRoute: typeof AdminEntrarRoute
   CuidadoresRoute: typeof CuidadoresRoute
   EntrarRoute: typeof EntrarRoute
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
@@ -155,6 +169,20 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-entrar': {
+      id: '/admin-entrar'
+      path: '/admin-entrar'
+      fullPath: '/admin-entrar'
+      preLoaderRoute: typeof AdminEntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cuidadores': {
@@ -192,13 +220,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/painel-cuidadora': {
       id: '/_authenticated/painel-cuidadora'
       path: '/painel-cuidadora'
@@ -210,12 +231,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedPainelCuidadoraRoute: typeof AuthenticatedPainelCuidadoraRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedPainelCuidadoraRoute: AuthenticatedPainelCuidadoraRoute,
 }
 
@@ -225,6 +244,8 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdminRoute: AdminRoute,
+  AdminEntrarRoute: AdminEntrarRoute,
   CuidadoresRoute: CuidadoresRoute,
   EntrarRoute: EntrarRoute,
   ParaProfissionaisRoute: ParaProfissionaisRoute,
