@@ -113,11 +113,23 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
       <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
 
+      {foto ? (
+        <div className="mt-3 grid gap-1.5">
+          <p className="text-xs font-medium">Rosto com o documento (foto enviada)</p>
+          <FotoAmpliavel
+            src={foto}
+            alt="Rosto com o documento oficial"
+            legenda="Foto única enviada para prova de vida: rosto e documento juntos."
+          />
+        </div>
+      ) : null}
+
       {analisando ? (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" /> Lendo documento e comparando com a selfie…
         </p>
       ) : null}
+
 
       {resultado ? (
         <div className="mt-4 grid gap-2">
