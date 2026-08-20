@@ -119,7 +119,7 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
       return;
     }
     const previa = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
-    setArquivo({ nome: file.name, previa });
+    setArquivo({ nome: file.name, previa, pdf: file.type === "application/pdf" });
     onEnviado?.(file.name);
     await guardarNaNuvem(file, file.name, file.type || "application/octet-stream", "upload");
   };
