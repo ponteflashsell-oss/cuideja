@@ -21,6 +21,16 @@ export const registrarDocumento = createServerFn({ method: "POST" })
     if (!data.caminho.startsWith(`${context.userId}/`)) {
       throw new Error("Caminho de arquivo inválido.");
     }
+    const { data: existente } = await context.supabase
+      .from("documentos")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("tipo", data.tipo)
+      .limit(1)
+      .maybeSingle();
+    if (existente) {
+      throw new Error("Você já enviou este documento. A equipe está conferindo.");
+    }
     const { error } = await context.supabase.from("documentos").insert({
       user_id: context.userId,
       caminho: data.caminho,
