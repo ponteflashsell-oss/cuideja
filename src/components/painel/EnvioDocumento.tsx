@@ -144,16 +144,29 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
 
       {arquivo ? (
         <div className="mt-3 grid gap-1.5">
-          {arquivo.previa ? (
+          {arquivo.previa && !arquivo.pdf ? (
             <FotoAmpliavel
               src={arquivo.previa}
               alt="Documento oficial com foto"
               legenda="Apenas o documento oficial (CNH ou RG), sem o rosto."
             />
           ) : null}
-          <p className="text-xs text-muted-foreground">Enviado: {arquivo.nome}</p>
+          <p className="text-xs text-muted-foreground">
+            {arquivo.pdf ? "PDF salvo no seu arquivo: " : "Enviado: "}
+            {arquivo.nome}
+          </p>
+          {arquivo.caminho ? (
+            <button
+              type="button"
+              onClick={() => void verArquivo()}
+              className="justify-self-start text-xs text-primary underline"
+            >
+              {arquivo.pdf ? "Abrir PDF salvo" : "Abrir arquivo salvo"}
+            </button>
+          ) : null}
         </div>
       ) : null}
+
 
       <input
         ref={inputArquivo}
