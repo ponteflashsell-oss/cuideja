@@ -101,7 +101,7 @@ function AdminPage() {
   if (acesso.isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <PainelHeader />
+        <AdminHeader />
         <p className="mx-auto max-w-6xl px-5 py-16 text-sm text-muted-foreground">Carregando…</p>
       </div>
     );
@@ -110,7 +110,7 @@ function AdminPage() {
   if (!habilitado) {
     return (
       <div className="min-h-screen bg-background">
-        <PainelHeader />
+        <AdminHeader />
         <div className="mx-auto max-w-2xl px-5 py-20 text-center">
           <ShieldAlert className="mx-auto size-10 text-muted-foreground" />
           <h1 className="mt-4 font-display text-2xl font-semibold">Área restrita</h1>
@@ -132,7 +132,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PainelHeader />
+      <AdminHeader />
       <main className="mx-auto max-w-6xl px-5 py-8">
         <header className="mb-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
