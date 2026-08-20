@@ -317,7 +317,12 @@ function FilaVerificacoes({
   const decidir = useServerFn(decidirVerificacao);
   const buscarImagens = useServerFn(imagensVerificacao);
   const [aberta, setAberta] = useState<any | null>(null);
-  const [imagens, setImagens] = useState<{ selfie: string; documento: string } | null>(null);
+  const [imagens, setImagens] = useState<{
+    selfie: string;
+    documento: string;
+    documentoPdf?: boolean;
+    documentoNome?: string;
+  } | null>(null);
 
   const mutacao = useMutation({
     mutationFn: (v: { verificacaoId: string; userId: string; decisao: "aprovado" | "reprovado" }) =>
@@ -334,13 +339,18 @@ function FilaVerificacoes({
     setImagens(null);
     try {
       const urls = await buscarImagens({
-        data: { selfiePath: v.selfie_path ?? "", documentoPath: v.documento_path ?? "" },
+        data: {
+          selfiePath: v.selfie_path ?? "",
+          documentoPath: v.documento_path ?? "",
+          userId: v.user_id,
+        },
       });
       setImagens(urls);
     } catch {
       toast.error("Não foi possível abrir as imagens.");
     }
   };
+
 
   if (carregando) return <p className="text-sm text-muted-foreground">Carregando verificações…</p>;
   if (!itens.length)
