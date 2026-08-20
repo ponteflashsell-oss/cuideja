@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
-import { Camera, FileUp, IdCard, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, CheckCircle2, FileUp, IdCard, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { registrarDocumento } from "@/lib/documentos.functions";
+import { listarMeusDocumentos, registrarDocumento } from "@/lib/documentos.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
 import { FotoAmpliavel } from "./FotoAmpliavel";
 
