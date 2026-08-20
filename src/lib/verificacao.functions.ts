@@ -19,6 +19,17 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
       dataUrlParaArquivo,
     } = await import("./verificacao.server");
 
+    // Envio único: se já existe verificação, não permite refazer.
+    const { data: jaEnviado } = await context.supabase
+      .from("verificacoes")
+      .select("id")
+      .eq("user_id", context.userId)
+      .limit(1)
+      .maybeSingle();
+    if (jaEnviado) {
+      throw new Error("Você já enviou sua foto de verificação. Aguarde a conferência da equipe.");
+    }
+
     const apiKey = process.env["LOVABLE_API_KEY"];
 
     // 1) Guarda as imagens sempre — mesmo se a leitura automática falhar,
