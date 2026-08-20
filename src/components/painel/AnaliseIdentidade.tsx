@@ -106,8 +106,14 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
           <ScanFace className="size-4 text-primary" /> Checagem automática de identidade
         </h4>
         {resultado ? (
-          <Badge variant="secondary">
-            {resultado.revisaoManual ? "Conferência manual" : "Em análise"}
+          <Badge variant={reprovado ? "destructive" : "secondary"}>
+            {reprovado
+              ? "Reprovado — reenvio liberado"
+              : resultado.status === "aprovado"
+                ? "Aprovado"
+                : resultado.revisaoManual
+                  ? "Conferência manual"
+                  : "Em análise"}
           </Badge>
         ) : null}
       </div>
