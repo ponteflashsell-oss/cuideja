@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
-import { Camera, FileUp, IdCard, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, CheckCircle2, FileUp, IdCard, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { registrarDocumento } from "@/lib/documentos.functions";
+import { listarMeusDocumentos, registrarDocumento } from "@/lib/documentos.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
 import { FotoAmpliavel } from "./FotoAmpliavel";
 
@@ -14,10 +14,28 @@ const MAX_MB = 10;
 export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string) => void }) {
   const inputArquivo = useRef<HTMLInputElement | null>(null);
   const registrar = useServerFn(registrarDocumento);
+  const listar = useServerFn(listarMeusDocumentos);
   const [enviando, setEnviando] = useState(false);
+  const [jaEnviado, setJaEnviado] = useState(false);
   const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
     null,
   );
+
+  useEffect(() => {
+    let ativo = true;
+    void listar()
+      .then((docs) => {
+        const oficial = docs.find((d) => d.tipo === "documento_oficial");
+        if (!ativo || !oficial) return;
+        setJaEnviado(true);
+        setArquivo({ nome: oficial.nome_arquivo || "documento enviado" });
+      })
+      .catch(() => undefined);
+    return () => {
+      ativo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const guardarNaNuvem = async (
     corpo: Blob,
@@ -46,10 +64,15 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
           origem,
         },
       });
+      setJaEnviado(true);
       toast.success("Documento guardado com segurança para conferência.");
     } catch (erro) {
       console.error("[documento] envio", erro);
-      toast.error("Não foi possível guardar o documento. Tente novamente.");
+      toast.error(
+        erro instanceof Error && erro.message.includes("já enviou")
+          ? erro.message
+          : "Não foi possível guardar o documento. Tente novamente.",
+      );
     } finally {
       setEnviando(false);
     }
@@ -107,28 +130,35 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
         onChange={(e) => receber(e.target.files)}
       />
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <CapturaDocumento onConcluir={aoFotografar}>
-          <Button className="flex-1 gap-2">
-            <Camera className="size-4" /> Abrir câmera e fotografar
+      {jaEnviado ? (
+        <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
+          <CheckCircle2 className="size-4 shrink-0 text-primary" />
+          Documento já enviado — o envio é único e está na fila de conferência da equipe.
+        </p>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <CapturaDocumento onConcluir={aoFotografar}>
+            <Button className="flex-1 gap-2" disabled={enviando}>
+              <Camera className="size-4" /> Abrir câmera e fotografar
+            </Button>
+          </CapturaDocumento>
+          <Button
+            variant="outline"
+            className="flex-1 gap-2"
+            disabled={enviando}
+            onClick={() => inputArquivo.current?.click()}
+          >
+            {enviando ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : arquivo ? (
+              <RefreshCw className="size-4" />
+            ) : (
+              <FileUp className="size-4" />
+            )}
+            {enviando ? "Guardando…" : arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
           </Button>
-        </CapturaDocumento>
-        <Button
-          variant="outline"
-          className="flex-1 gap-2"
-          disabled={enviando}
-          onClick={() => inputArquivo.current?.click()}
-        >
-          {enviando ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : arquivo ? (
-            <RefreshCw className="size-4" />
-          ) : (
-            <FileUp className="size-4" />
-          )}
-          {enviando ? "Guardando…" : arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
-        </Button>
-      </div>
+        </div>
+      )}
       <p className="mt-2 text-[11px] text-muted-foreground">
         Seus arquivos ficam guardados em nuvem privada e são acessados apenas pela equipe de
         conferência, com registro de auditoria (LGPD).
