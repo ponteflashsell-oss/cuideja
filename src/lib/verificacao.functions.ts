@@ -19,14 +19,15 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
       dataUrlParaArquivo,
     } = await import("./verificacao.server");
 
-    // Envio único: se já existe verificação, não permite refazer.
-    const { data: jaEnviado } = await context.supabase
+    // Envio único: só libera novo envio quando a última verificação foi reprovada.
+    const { data: ultima } = await context.supabase
       .from("verificacoes")
-      .select("id")
+      .select("status")
       .eq("user_id", context.userId)
+      .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (jaEnviado) {
+    if (ultima && ultima.status !== "reprovado") {
       throw new Error("Você já enviou sua foto de verificação. Aguarde a conferência da equipe.");
     }
 
