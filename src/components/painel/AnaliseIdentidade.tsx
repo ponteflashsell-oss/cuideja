@@ -125,13 +125,22 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         leitura automática não confirmar é conferido manualmente pela nossa equipe.
       </p>
 
-      {resultado ? (
+      {resultado && !reprovado ? (
         <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
           <CheckCircle2 className="size-4 shrink-0 text-primary" />
-          Foto de verificação já enviada — o envio é único. Não é necessário (nem possível) repetir.
+          Foto de verificação já enviada — o envio é único. Só é possível reenviar se a equipe
+          reprovar o envio.
         </p>
       ) : (
-        <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+        <>
+          {reprovado ? (
+            <p className="mt-3 flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-muted-foreground">
+              <AlertTriangle className="size-4 shrink-0 text-destructive" />
+              Envio reprovado pela equipe. Faça uma nova foto do rosto com o documento.
+            </p>
+          ) : null}
+          <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+        </>
       )}
 
       {foto ? (
