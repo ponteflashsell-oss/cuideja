@@ -44,6 +44,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
   const analisar = useServerFn(analisarVerificacao);
   const buscar = useServerFn(obterUltimaVerificacao);
   const [analisando, setAnalisando] = useState(false);
+  const [foto, setFoto] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
   useEffect(() => {
