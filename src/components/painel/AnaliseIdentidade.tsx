@@ -112,7 +112,14 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         leitura automática não confirmar é conferido manualmente pela nossa equipe.
       </p>
 
-      <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+      {resultado ? (
+        <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
+          <CheckCircle2 className="size-4 shrink-0 text-primary" />
+          Foto de verificação já enviada — o envio é único. Não é necessário (nem possível) repetir.
+        </p>
+      ) : (
+        <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+      )}
 
       {foto ? (
         <div className="mt-3 grid gap-1.5">
