@@ -70,8 +70,12 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         onEnviado?.();
       })
       .catch(() => undefined);
+    carregar();
+    // Enquanto aguarda análise, verifica a cada 20s se a equipe decidiu.
+    const timer = window.setInterval(carregar, 20_000);
     return () => {
       ativo = false;
+      window.clearInterval(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
