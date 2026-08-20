@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -13,7 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PainelHeader } from "@/components/painel/PainelHeader";
+import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 import {
   decidirVerificacao,
   definirVerificado,
@@ -36,7 +37,12 @@ import {
   souAdmin,
 } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/admin")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin-entrar" });
+  },
   head: () => ({
     meta: [
       { title: "Admin: cadastros de cuidadoras e famílias | CuidaJá" },
