@@ -64,17 +64,31 @@ export function usePerfilStatus(): PerfilStatus {
         tarifas: Number(data?.tarifa_hora ?? 0) > 0,
       };
 
+      const verificado = Boolean(data?.verificado);
+
       setStatus({
         carregando: false,
-        verificado: Boolean(data?.verificado),
+        verificado,
         cadastroCompleto: Object.values(etapas).every(Boolean),
         nome: data?.nome?.trim() ?? "",
         cidade: data?.cidade?.trim() ?? "",
         etapas,
       });
-    })();
+
+      // Aprovação recém-liberada: recarrega a página para abrir o acesso completo.
+      if (verificado && jaVerificado === false && iniciado) {
+        window.location.reload();
+        return;
+      }
+      jaVerificado = verificado;
+      iniciado = true;
+    };
+    void carregar();
+    // Perfis aguardando análise: consulta a cada 20s até a equipe aprovar.
+    const timer = window.setInterval(() => void carregar(), 20_000);
     return () => {
       ativo = false;
+      window.clearInterval(timer);
     };
   }, []);
 
