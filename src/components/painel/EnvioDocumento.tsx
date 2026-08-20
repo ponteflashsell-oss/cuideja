@@ -23,16 +23,21 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
 
   useEffect(() => {
     let ativo = true;
-    void listar()
-      .then((docs) => {
-        const oficial = docs.find((d) => d.tipo === "documento_oficial");
-        if (!ativo || !oficial) return;
-        setJaEnviado(true);
-        setArquivo({ nome: oficial.nome_arquivo || "documento enviado" });
-      })
-      .catch(() => undefined);
+    const carregar = () =>
+      void Promise.all([listar(), buscarVerificacao()])
+        .then(([docs, verificacao]) => {
+          if (!ativo) return;
+          const oficial = docs.find((d) => d.tipo === "documento_oficial");
+          const reprovado = verificacao?.status === "reprovado";
+          setJaEnviado(Boolean(oficial) && !reprovado);
+          if (oficial) setArquivo({ nome: oficial.nome_arquivo || "documento enviado" });
+        })
+        .catch(() => undefined);
+    carregar();
+    const timer = window.setInterval(carregar, 20_000);
     return () => {
       ativo = false;
+      window.clearInterval(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
