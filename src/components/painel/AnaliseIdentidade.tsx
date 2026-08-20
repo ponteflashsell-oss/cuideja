@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock, Loader2, ScanFace } from "lucide-re
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
+import { FotoAmpliavel } from "@/components/painel/FotoAmpliavel";
 import { analisarVerificacao, obterUltimaVerificacao } from "@/lib/verificacao.functions";
 
 type Resultado = {
@@ -44,6 +45,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
   const analisar = useServerFn(analisarVerificacao);
   const buscar = useServerFn(obterUltimaVerificacao);
   const [analisando, setAnalisando] = useState(false);
+  const [foto, setFoto] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
   useEffect(() => {
@@ -75,6 +77,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
   const enviar = async (imagens: { selfie: string; documento: string }) => {
     setAnalisando(true);
+    setFoto(imagens.selfie);
     try {
       const dados = (await analisar({ data: imagens })) as Resultado;
       setResultado(dados);
@@ -111,11 +114,23 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
       <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
 
+      {foto ? (
+        <div className="mt-3 grid gap-1.5">
+          <p className="text-xs font-medium">Rosto com o documento (foto enviada)</p>
+          <FotoAmpliavel
+            src={foto}
+            alt="Rosto com o documento oficial"
+            legenda="Foto única enviada para prova de vida: rosto e documento juntos."
+          />
+        </div>
+      ) : null}
+
       {analisando ? (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" /> Lendo documento e comparando com a selfie…
         </p>
       ) : null}
+
 
       {resultado ? (
         <div className="mt-4 grid gap-2">

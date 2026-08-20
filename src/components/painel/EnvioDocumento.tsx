@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { registrarDocumento } from "@/lib/documentos.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
+import { FotoAmpliavel } from "./FotoAmpliavel";
 
 const TIPOS = "image/*,application/pdf";
 const MAX_MB = 10;
@@ -86,12 +87,12 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
       </p>
 
       {arquivo ? (
-        <div className="mt-3 grid gap-2">
+        <div className="mt-3 grid gap-1.5">
           {arquivo.previa ? (
-            <img
+            <FotoAmpliavel
               src={arquivo.previa}
-              alt="Prévia do documento enviado"
-              className="max-h-56 w-full rounded-lg object-contain bg-background"
+              alt="Documento oficial com foto"
+              legenda="Apenas o documento oficial (CNH ou RG), sem o rosto."
             />
           ) : null}
           <p className="text-xs text-muted-foreground">Enviado: {arquivo.nome}</p>
