@@ -16,6 +16,7 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
   const inputArquivo = useRef<HTMLInputElement | null>(null);
   const registrar = useServerFn(registrarDocumento);
   const listar = useServerFn(listarMeusDocumentos);
+  const buscarVerificacao = useServerFn(obterUltimaVerificacao);
   const [enviando, setEnviando] = useState(false);
   const [jaEnviado, setJaEnviado] = useState(false);
   const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
