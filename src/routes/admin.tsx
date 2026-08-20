@@ -430,24 +430,54 @@ function FilaVerificacoes({
           </DialogHeader>
           {imagens ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                { rotulo: "Selfie", url: imagens.selfie },
-                { rotulo: "Documento", url: imagens.documento },
-              ].map((img) => (
-                <figure key={img.rotulo} className="space-y-2">
-                  <figcaption className="text-xs text-muted-foreground">{img.rotulo}</figcaption>
-                  {img.url ? (
-                    <img
-                      src={img.url}
-                      alt={`${img.rotulo} enviada para verificação`}
-                      className="w-full rounded-lg border border-border object-cover"
+              <figure className="space-y-2">
+                <figcaption className="text-xs text-muted-foreground">
+                  Rosto com o documento (selfie)
+                </figcaption>
+                {imagens.selfie ? (
+                  <img
+                    src={imagens.selfie}
+                    alt="Rosto com o documento enviado para verificação"
+                    className="w-full rounded-lg border border-border object-cover"
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Imagem não disponível.</p>
+                )}
+              </figure>
+              <figure className="space-y-2">
+                <figcaption className="text-xs text-muted-foreground">
+                  Documento oficial com foto {imagens.documentoNome ? `· ${imagens.documentoNome}` : ""}
+                </figcaption>
+                {!imagens.documento ? (
+                  <p className="text-xs text-muted-foreground">
+                    Documento oficial ainda não enviado pela cuidadora.
+                  </p>
+                ) : imagens.documentoPdf ? (
+                  <div className="space-y-2">
+                    <iframe
+                      src={imagens.documento}
+                      title="Documento oficial em PDF"
+                      className="h-64 w-full rounded-lg border border-border"
                     />
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Imagem não disponível.</p>
-                  )}
-                </figure>
-              ))}
+                    <a
+                      href={imagens.documento}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary underline"
+                    >
+                      Abrir PDF em nova aba
+                    </a>
+                  </div>
+                ) : (
+                  <img
+                    src={imagens.documento}
+                    alt="Documento oficial com foto"
+                    className="w-full rounded-lg border border-border object-cover"
+                  />
+                )}
+              </figure>
             </div>
+
           ) : (
             <p className="text-sm text-muted-foreground">Carregando imagens…</p>
           )}
