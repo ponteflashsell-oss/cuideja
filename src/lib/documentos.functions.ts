@@ -29,7 +29,17 @@ export const registrarDocumento = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
     if (existente) {
-      throw new Error("Você já enviou este documento. A equipe está conferindo.");
+      // Reenvio liberado apenas quando a última verificação foi reprovada.
+      const { data: ultima } = await context.supabase
+        .from("verificacoes")
+        .select("status")
+        .eq("user_id", context.userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!ultima || ultima.status !== "reprovado") {
+        throw new Error("Você já enviou este documento. A equipe está conferindo.");
+      }
     }
     const { error } = await context.supabase.from("documentos").insert({
       user_id: context.userId,
