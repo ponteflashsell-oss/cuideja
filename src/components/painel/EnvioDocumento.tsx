@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { listarMeusDocumentos, registrarDocumento } from "@/lib/documentos.functions";
+import { obterUltimaVerificacao } from "@/lib/verificacao.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
 import { FotoAmpliavel } from "./FotoAmpliavel";
 
