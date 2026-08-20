@@ -59,9 +59,25 @@ export const listarMeusDocumentos = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("documentos")
-      .select("id, tipo, nome_arquivo, mime, tamanho, origem, created_at")
+      .select("id, tipo, nome_arquivo, mime, tamanho, origem, created_at, caminho")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error("Não foi possível carregar seus documentos.");
     return data ?? [];
   });
+
+/** Link temporário para a cuidadora reabrir o próprio arquivo (foto ou PDF). */
+export const abrirMeuDocumento = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ caminho: z.string().min(3).max(400) }).parse(input))
+  .handler(async ({ data, context }) => {
+    if (!data.caminho.startsWith(`${context.userId}/`)) {
+      throw new Error("Arquivo inválido.");
+    }
+    const { data: url, error } = await context.supabase.storage
+      .from("verificacoes")
+      .createSignedUrl(data.caminho, 600);
+    if (error || !url?.signedUrl) throw new Error("Não foi possível abrir o arquivo.");
+    return { url: url.signedUrl };
+  });
+
