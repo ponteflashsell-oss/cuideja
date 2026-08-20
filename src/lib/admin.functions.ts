@@ -64,6 +64,7 @@ export const listarVerificacoes = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("verificacoes")
       .select("*")
+      .not("status", "in", "(aprovado,reprovado)")
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error("Não foi possível carregar as verificações.");
