@@ -80,6 +80,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reprovado = resultado?.status === "reprovado";
+
   const enviar = async (imagens: { selfie: string; documento: string }) => {
     setAnalisando(true);
     setFoto(imagens.selfie);
