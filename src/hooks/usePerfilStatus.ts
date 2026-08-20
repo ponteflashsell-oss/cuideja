@@ -39,7 +39,8 @@ export function usePerfilStatus(): PerfilStatus {
 
   useEffect(() => {
     let ativo = true;
-    (async () => {
+    let jaVerificado = false;
+    const carregar = async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) {
         if (ativo) setStatus({ ...vazio, carregando: false });
