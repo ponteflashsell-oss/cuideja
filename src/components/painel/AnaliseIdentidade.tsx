@@ -50,7 +50,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
   useEffect(() => {
     let ativo = true;
-    void buscar()
+    const carregar = () =>
+      void buscar()
       .then((registro) => {
         if (!ativo || !registro) return;
         setResultado({
@@ -69,11 +70,17 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         onEnviado?.();
       })
       .catch(() => undefined);
+    carregar();
+    // Enquanto aguarda análise, verifica a cada 20s se a equipe decidiu.
+    const timer = window.setInterval(carregar, 20_000);
     return () => {
       ativo = false;
+      window.clearInterval(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const reprovado = resultado?.status === "reprovado";
 
   const enviar = async (imagens: { selfie: string; documento: string }) => {
     setAnalisando(true);
@@ -101,8 +108,14 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
           <ScanFace className="size-4 text-primary" /> Checagem automática de identidade
         </h4>
         {resultado ? (
-          <Badge variant="secondary">
-            {resultado.revisaoManual ? "Conferência manual" : "Em análise"}
+          <Badge variant={reprovado ? "destructive" : "secondary"}>
+            {reprovado
+              ? "Reprovado — reenvio liberado"
+              : resultado.status === "aprovado"
+                ? "Aprovado"
+                : resultado.revisaoManual
+                  ? "Conferência manual"
+                  : "Em análise"}
           </Badge>
         ) : null}
       </div>
@@ -112,13 +125,22 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         leitura automática não confirmar é conferido manualmente pela nossa equipe.
       </p>
 
-      {resultado ? (
+      {resultado && !reprovado ? (
         <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
           <CheckCircle2 className="size-4 shrink-0 text-primary" />
-          Foto de verificação já enviada — o envio é único. Não é necessário (nem possível) repetir.
+          Foto de verificação já enviada — o envio é único. Só é possível reenviar se a equipe
+          reprovar o envio.
         </p>
       ) : (
-        <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+        <>
+          {reprovado ? (
+            <p className="mt-3 flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-muted-foreground">
+              <AlertTriangle className="size-4 shrink-0 text-destructive" />
+              Envio reprovado pela equipe. Faça uma nova foto do rosto com o documento.
+            </p>
+          ) : null}
+          <CapturaSelfie onConcluir={(imagens) => void enviar(imagens)} />
+        </>
       )}
 
       {foto ? (
