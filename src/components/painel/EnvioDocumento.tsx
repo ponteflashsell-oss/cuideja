@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { registrarDocumento } from "@/lib/documentos.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
+import { FotoAmpliavel } from "./FotoAmpliavel";
 
 const TIPOS = "image/*,application/pdf";
 const MAX_MB = 10;
