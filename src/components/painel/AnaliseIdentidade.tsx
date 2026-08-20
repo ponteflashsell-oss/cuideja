@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock, Loader2, ScanFace } from "lucide-re
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
+import { FotoAmpliavel } from "@/components/painel/FotoAmpliavel";
 import { analisarVerificacao, obterUltimaVerificacao } from "@/lib/verificacao.functions";
 
 type Resultado = {
