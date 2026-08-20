@@ -64,10 +64,15 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
           origem,
         },
       });
+      setJaEnviado(true);
       toast.success("Documento guardado com segurança para conferência.");
     } catch (erro) {
       console.error("[documento] envio", erro);
-      toast.error("Não foi possível guardar o documento. Tente novamente.");
+      toast.error(
+        erro instanceof Error && erro.message.includes("já enviou")
+          ? erro.message
+          : "Não foi possível guardar o documento. Tente novamente.",
+      );
     } finally {
       setEnviando(false);
     }
