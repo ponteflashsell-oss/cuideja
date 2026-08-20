@@ -4,7 +4,12 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { listarMeusDocumentos, registrarDocumento } from "@/lib/documentos.functions";
+import {
+  abrirMeuDocumento,
+  listarMeusDocumentos,
+  registrarDocumento,
+} from "@/lib/documentos.functions";
+
 import { obterUltimaVerificacao } from "@/lib/verificacao.functions";
 import { CapturaDocumento } from "./CapturaDocumento";
 import { FotoAmpliavel } from "./FotoAmpliavel";
@@ -16,12 +21,16 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
   const inputArquivo = useRef<HTMLInputElement | null>(null);
   const registrar = useServerFn(registrarDocumento);
   const listar = useServerFn(listarMeusDocumentos);
+  const abrirArquivo = useServerFn(abrirMeuDocumento);
   const buscarVerificacao = useServerFn(obterUltimaVerificacao);
   const [enviando, setEnviando] = useState(false);
   const [jaEnviado, setJaEnviado] = useState(false);
-  const [arquivo, setArquivo] = useState<{ nome: string; previa?: string | undefined } | null>(
-    null,
-  );
+  const [arquivo, setArquivo] = useState<{
+    nome: string;
+    previa?: string | undefined;
+    caminho?: string | undefined;
+    pdf?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -32,7 +41,13 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
           const oficial = docs.find((d) => d.tipo === "documento_oficial");
           const reprovado = verificacao?.status === "reprovado";
           setJaEnviado(Boolean(oficial) && !reprovado);
-          if (oficial) setArquivo({ nome: oficial.nome_arquivo || "documento enviado" });
+          if (oficial)
+            setArquivo({
+              nome: oficial.nome_arquivo || "documento enviado",
+              caminho: oficial.caminho,
+              pdf:
+                oficial.mime === "application/pdf" || /\.pdf$/i.test(oficial.nome_arquivo ?? ""),
+            });
         })
         .catch(() => undefined);
     carregar();
@@ -43,6 +58,17 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const verArquivo = async () => {
+    if (!arquivo?.caminho) return;
+    try {
+      const { url } = await abrirArquivo({ data: { caminho: arquivo.caminho } });
+      window.open(url, "_blank", "noopener");
+    } catch {
+      toast.error("Não foi possível abrir o arquivo agora.");
+    }
+  };
+
 
   const guardarNaNuvem = async (
     corpo: Blob,
@@ -93,7 +119,7 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
       return;
     }
     const previa = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
-    setArquivo({ nome: file.name, previa });
+    setArquivo({ nome: file.name, previa, pdf: file.type === "application/pdf" });
     onEnviado?.(file.name);
     await guardarNaNuvem(file, file.name, file.type || "application/octet-stream", "upload");
   };
@@ -118,16 +144,29 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
 
       {arquivo ? (
         <div className="mt-3 grid gap-1.5">
-          {arquivo.previa ? (
+          {arquivo.previa && !arquivo.pdf ? (
             <FotoAmpliavel
               src={arquivo.previa}
               alt="Documento oficial com foto"
               legenda="Apenas o documento oficial (CNH ou RG), sem o rosto."
             />
           ) : null}
-          <p className="text-xs text-muted-foreground">Enviado: {arquivo.nome}</p>
+          <p className="text-xs text-muted-foreground">
+            {arquivo.pdf ? "PDF salvo no seu arquivo: " : "Enviado: "}
+            {arquivo.nome}
+          </p>
+          {arquivo.caminho ? (
+            <button
+              type="button"
+              onClick={() => void verArquivo()}
+              className="justify-self-start text-xs text-primary underline"
+            >
+              {arquivo.pdf ? "Abrir PDF salvo" : "Abrir arquivo salvo"}
+            </button>
+          ) : null}
         </div>
       ) : null}
+
 
       <input
         ref={inputArquivo}
