@@ -130,28 +130,35 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
         onChange={(e) => receber(e.target.files)}
       />
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <CapturaDocumento onConcluir={aoFotografar}>
-          <Button className="flex-1 gap-2">
-            <Camera className="size-4" /> Abrir câmera e fotografar
+      {jaEnviado ? (
+        <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
+          <CheckCircle2 className="size-4 shrink-0 text-primary" />
+          Documento já enviado — o envio é único e está na fila de conferência da equipe.
+        </p>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <CapturaDocumento onConcluir={aoFotografar}>
+            <Button className="flex-1 gap-2" disabled={enviando}>
+              <Camera className="size-4" /> Abrir câmera e fotografar
+            </Button>
+          </CapturaDocumento>
+          <Button
+            variant="outline"
+            className="flex-1 gap-2"
+            disabled={enviando}
+            onClick={() => inputArquivo.current?.click()}
+          >
+            {enviando ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : arquivo ? (
+              <RefreshCw className="size-4" />
+            ) : (
+              <FileUp className="size-4" />
+            )}
+            {enviando ? "Guardando…" : arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
           </Button>
-        </CapturaDocumento>
-        <Button
-          variant="outline"
-          className="flex-1 gap-2"
-          disabled={enviando}
-          onClick={() => inputArquivo.current?.click()}
-        >
-          {enviando ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : arquivo ? (
-            <RefreshCw className="size-4" />
-          ) : (
-            <FileUp className="size-4" />
-          )}
-          {enviando ? "Guardando…" : arquivo ? "Trocar arquivo" : "Enviar arquivo (foto ou PDF)"}
-        </Button>
-      </div>
+        </div>
+      )}
       <p className="mt-2 text-[11px] text-muted-foreground">
         Seus arquivos ficam guardados em nuvem privada e são acessados apenas pela equipe de
         conferência, com registro de auditoria (LGPD).
