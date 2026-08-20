@@ -75,6 +75,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
   const enviar = async (imagens: { selfie: string; documento: string }) => {
     setAnalisando(true);
+    setFoto(imagens.selfie);
     try {
       const dados = (await analisar({ data: imagens })) as Resultado;
       setResultado(dados);
