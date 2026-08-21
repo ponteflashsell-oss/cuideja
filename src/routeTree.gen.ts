@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AdminEntrarRouteImport } from './routes/admin-entrar'
 import { Route as CuidadoresRouteImport } from './routes/cuidadores'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as FamiliaEntrarRouteImport } from './routes/familia-entrar'
 import { Route as ParaProfissionaisRouteImport } from './routes/para-profissionais'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as TermosRouteImport } from './routes/termos'
@@ -49,6 +50,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FamiliaEntrarRoute = FamiliaEntrarRouteImport.update({
+  id: '/familia-entrar',
+  path: '/familia-entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParaProfissionaisRoute = ParaProfissionaisRouteImport.update({
   id: '/para-profissionais',
   path: '/para-profissionais',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
+  '/familia-entrar': typeof FamiliaEntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
+  '/familia-entrar': typeof FamiliaEntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/admin-entrar': typeof AdminEntrarRoute
   '/cuidadores': typeof CuidadoresRoute
   '/entrar': typeof EntrarRoute
+  '/familia-entrar': typeof FamiliaEntrarRoute
   '/para-profissionais': typeof ParaProfissionaisRoute
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
+    | '/familia-entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
+    | '/familia-entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin-entrar'
     | '/cuidadores'
     | '/entrar'
+    | '/familia-entrar'
     | '/para-profissionais'
     | '/seguranca'
     | '/termos'
@@ -150,6 +162,7 @@ export interface RootRouteChildren {
   AdminEntrarRoute: typeof AdminEntrarRoute
   CuidadoresRoute: typeof CuidadoresRoute
   EntrarRoute: typeof EntrarRoute
+  FamiliaEntrarRoute: typeof FamiliaEntrarRoute
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
   SegurancaRoute: typeof SegurancaRoute
   TermosRoute: typeof TermosRoute
@@ -197,6 +210,13 @@ declare module '@tanstack/react-router' {
       path: '/entrar'
       fullPath: '/entrar'
       preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/familia-entrar': {
+      id: '/familia-entrar'
+      path: '/familia-entrar'
+      fullPath: '/familia-entrar'
+      preLoaderRoute: typeof FamiliaEntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/para-profissionais': {
@@ -248,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEntrarRoute: AdminEntrarRoute,
   CuidadoresRoute: CuidadoresRoute,
   EntrarRoute: EntrarRoute,
+  FamiliaEntrarRoute: FamiliaEntrarRoute,
   ParaProfissionaisRoute: ParaProfissionaisRoute,
   SegurancaRoute: SegurancaRoute,
   TermosRoute: TermosRoute,
