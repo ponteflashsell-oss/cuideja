@@ -39,13 +39,17 @@ export function Header() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/entrar">Sou cuidadora · Entrar</Link>
+            <Link to="/entrar">Sou cuidadora</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/familia-entrar">Sou família</Link>
           </Button>
 
           <Button asChild size="sm">
             <Link to="/cuidadores">Buscar agora</Link>
           </Button>
         </div>
+
 
         <Button
           variant="outline"
