@@ -63,7 +63,13 @@ export function EnvioDocumento({ onEnviado }: { onEnviado?: (nomeArquivo: string
     if (!arquivo?.caminho) return;
     try {
       const { url } = await abrirArquivo({ data: { caminho: arquivo.caminho } });
-      window.open(url, "_blank", "noopener");
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch {
       toast.error("Não foi possível abrir o arquivo agora.");
     }
