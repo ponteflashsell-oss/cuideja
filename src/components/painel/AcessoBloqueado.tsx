@@ -1,21 +1,29 @@
 import { CheckCircle2, Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const etapas = [
+const etapasPadrao = [
   "Complete a vitrine: nome, bairros, mini-biografia, especialidades e tarifas.",
   "Envie os documentos: curso/diploma, certidão de antecedentes e selfie com documento.",
   "Aguarde a análise da equipe (checagem de CPF, antecedentes e biometria).",
 ];
 
+const descricaoPadrao =
+  "Para proteger as famílias, a prestação de serviços é liberada somente após a verificação do seu perfil. Assim que a análise for aprovada, esta seção abre automaticamente.";
+
 export function AcessoBloqueado({
   secao,
   cadastroCompleto,
   onIrPerfil,
+  passos,
+  descricao,
 }: {
   secao: string;
   cadastroCompleto: boolean;
   onIrPerfil: () => void;
+  passos?: string[];
+  descricao?: string;
 }) {
+  const etapas = passos ?? etapasPadrao;
   return (
     <section className="surface-card p-8 text-center">
       <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-muted">
@@ -23,8 +31,7 @@ export function AcessoBloqueado({
       </span>
       <h2 className="mt-4 text-2xl">{secao} ainda está bloqueada</h2>
       <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
-        Para proteger as famílias, a prestação de serviços é liberada somente após a verificação do
-        seu perfil. Assim que a análise for aprovada, esta seção abre automaticamente.
+        {descricao ?? descricaoPadrao}
       </p>
 
       <ul className="mx-auto mt-6 grid max-w-lg gap-3 text-left">
