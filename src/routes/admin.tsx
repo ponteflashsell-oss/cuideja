@@ -453,19 +453,27 @@ function FilaVerificacoes({
                     Documento oficial ainda não enviado pela cuidadora.
                   </p>
                 ) : imagens.documentoPdf ? (
-                  <div className="space-y-2">
-                    <iframe
-                      src={imagens.documento}
-                      title="Documento oficial em PDF"
-                      className="h-64 w-full rounded-lg border border-border"
-                    />
+                  <div className="space-y-2 rounded-lg border border-border p-3">
+                    <p className="text-xs text-muted-foreground">
+                      Documento enviado em PDF. Abra em uma nova aba para conferir os dados.
+                    </p>
+                    <Button
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() =>
+                        window.open(imagens.documento, "_blank", "noopener,noreferrer")
+                      }
+                    >
+                      <Eye className="size-4" /> Abrir PDF em nova aba
+                    </Button>
                     <a
                       href={imagens.documento}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-primary underline"
+                      download={imagens.documentoNome || "documento.pdf"}
+                      className="block text-xs text-primary underline"
                     >
-                      Abrir PDF em nova aba
+                      Baixar arquivo
                     </a>
                   </div>
                 ) : (
