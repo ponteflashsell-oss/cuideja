@@ -73,6 +73,10 @@ export function Header() {
             <Link to="/entrar" onClick={() => setOpen(false)}>
               Sou cuidadora · Entrar
             </Link>
+            <Link to="/familia-entrar" onClick={() => setOpen(false)}>
+              Sou família · Entrar
+            </Link>
+
             <Button asChild size="sm" className="mt-2">
               <Link to="/cuidadores" onClick={() => setOpen(false)}>
                 Buscar agora
