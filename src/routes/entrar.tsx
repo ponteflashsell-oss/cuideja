@@ -184,7 +184,14 @@ function EntrarPage() {
             Continuar com Google
           </Button>
 
-          <p className="mt-5 flex items-start gap-2 text-xs text-muted-foreground">
+          <p className="mt-5 text-xs text-muted-foreground">
+            Busca uma cuidadora?{" "}
+            <Link to="/familia-entrar" className="underline">
+              Entrar na área da família
+            </Link>
+          </p>
+
+          <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-primary" />
             Seus dados são usados apenas para intermediar serviços, conforme a LGPD e nossos{" "}
             <Link to="/termos" className="underline">

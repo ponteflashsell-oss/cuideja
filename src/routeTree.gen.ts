@@ -20,6 +20,7 @@ import { Route as ParaProfissionaisRouteImport } from './routes/para-profissiona
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedPainelCuidadoraRouteImport } from './routes/_authenticated/painel-cuidadora'
+import { Route as AuthenticatedPainelFamiliaRouteImport } from './routes/_authenticated/painel-familia'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,12 @@ const AuthenticatedPainelCuidadoraRoute =
     path: '/painel-cuidadora',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPainelFamiliaRoute =
+  AuthenticatedPainelFamiliaRouteImport.update({
+    id: '/painel-familia',
+    path: '/painel-familia',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
+  '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
+  '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/seguranca': typeof SegurancaRoute
   '/termos': typeof TermosRoute
   '/_authenticated/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
+  '/_authenticated/painel-familia': typeof AuthenticatedPainelFamiliaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/seguranca'
     | '/termos'
     | '/painel-cuidadora'
+    | '/painel-familia'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/seguranca'
     | '/termos'
     | '/painel-cuidadora'
+    | '/painel-familia'
   id:
     | '__root__'
     | '/'
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | '/seguranca'
     | '/termos'
     | '/_authenticated/painel-cuidadora'
+    | '/_authenticated/painel-familia'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,15 +260,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelCuidadoraRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/painel-familia': {
+      id: '/_authenticated/painel-familia'
+      path: '/painel-familia'
+      fullPath: '/painel-familia'
+      preLoaderRoute: typeof AuthenticatedPainelFamiliaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedPainelCuidadoraRoute: typeof AuthenticatedPainelCuidadoraRoute
+  AuthenticatedPainelFamiliaRoute: typeof AuthenticatedPainelFamiliaRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPainelCuidadoraRoute: AuthenticatedPainelCuidadoraRoute,
+  AuthenticatedPainelFamiliaRoute: AuthenticatedPainelFamiliaRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

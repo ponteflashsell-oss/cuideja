@@ -3,9 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/entrar" });
+    if (error || !data.user) {
+      const paraFamilia = location.pathname.startsWith("/painel-familia");
+      throw redirect({ to: paraFamilia ? "/familia-entrar" : "/entrar" });
+    }
     return { user: data.user };
   },
   component: () => <Outlet />,

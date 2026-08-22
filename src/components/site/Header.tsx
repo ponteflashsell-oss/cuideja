@@ -39,13 +39,17 @@ export function Header() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/entrar">Sou cuidadora · Entrar</Link>
+            <Link to="/entrar">Sou cuidadora</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/familia-entrar">Sou família</Link>
           </Button>
 
           <Button asChild size="sm">
             <Link to="/cuidadores">Buscar agora</Link>
           </Button>
         </div>
+
 
         <Button
           variant="outline"
@@ -69,6 +73,10 @@ export function Header() {
             <Link to="/entrar" onClick={() => setOpen(false)}>
               Sou cuidadora · Entrar
             </Link>
+            <Link to="/familia-entrar" onClick={() => setOpen(false)}>
+              Sou família · Entrar
+            </Link>
+
             <Button asChild size="sm" className="mt-2">
               <Link to="/cuidadores" onClick={() => setOpen(false)}>
                 Buscar agora
