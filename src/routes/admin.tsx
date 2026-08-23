@@ -7,6 +7,7 @@ import {
   Clock,
   Eye,
   HeartHandshake,
+  IdCard,
   ShieldAlert,
   ShieldCheck,
   Users,
@@ -345,6 +346,7 @@ function FilaVerificacoes({
   const decidir = useServerFn(decidirVerificacao);
   const buscarImagens = useServerFn(imagensVerificacao);
   const [aberta, setAberta] = useState<any | null>(null);
+  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
   const [imagens, setImagens] = useState<{
     selfie: string;
     documento: string;
@@ -532,6 +534,12 @@ function FilaVerificacoes({
           )}
         </DialogContent>
       </Dialog>
+
+      <DossieCadastro
+        userId={dossie?.id ?? null}
+        nome={dossie?.nome ?? ""}
+        onClose={() => setDossie(null)}
+      />
     </div>
   );
 }
