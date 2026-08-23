@@ -229,6 +229,7 @@ function ListaCadastros({
   mostrarVerificacao?: boolean;
 }) {
   const [busca, setBusca] = useState("");
+  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
   const queryClient = useQueryClient();
   const alternar = useServerFn(definirVerificado);
 
