@@ -261,9 +261,16 @@ function ListaCadastros({
         {filtrados.map((c) => (
           <Card key={c.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
-              <div className="min-w-[200px]">
+              <button
+                type="button"
+                className="min-w-[200px] flex-1 text-left"
+                onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                aria-label={`Abrir dossiê completo de ${c.nome || "cadastro"}`}
+              >
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{c.nome || "Sem nome informado"}</p>
+                  <p className="font-medium underline-offset-4 hover:underline">
+                    {c.nome || "Sem nome informado"}
+                  </p>
                   {c.verificado ? (
                     <Badge className="gap-1">
                       <BadgeCheck className="size-3" /> Verificado
@@ -285,15 +292,28 @@ function ListaCadastros({
                       : "Nenhuma verificação enviada"}
                   </p>
                 )}
+                <p className="mt-1 text-xs text-primary">
+                  Clique para inspecionar fotos, documentos e dados completos
+                </p>
+              </button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                >
+                  <Eye className="size-4" /> Ver dossiê
+                </Button>
+                <Button
+                  variant={c.verificado ? "outline" : "default"}
+                  size="sm"
+                  disabled={mutacao.isPending}
+                  onClick={() => mutacao.mutate({ userId: c.id, verificado: !c.verificado })}
+                >
+                  {c.verificado ? "Revogar selo" : "Liberar acesso"}
+                </Button>
               </div>
-              <Button
-                variant={c.verificado ? "outline" : "default"}
-                size="sm"
-                disabled={mutacao.isPending}
-                onClick={() => mutacao.mutate({ userId: c.id, verificado: !c.verificado })}
-              >
-                {c.verificado ? "Revogar selo" : "Liberar acesso"}
-              </Button>
             </CardContent>
           </Card>
         ))}
@@ -301,6 +321,12 @@ function ListaCadastros({
           <p className="text-sm text-muted-foreground">Nenhum resultado para essa busca.</p>
         )}
       </div>
+
+      <DossieCadastro
+        userId={dossie?.id ?? null}
+        nome={dossie?.nome ?? ""}
+        onClose={() => setDossie(null)}
+      />
     </div>
   );
 }
