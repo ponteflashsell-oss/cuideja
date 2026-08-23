@@ -413,6 +413,19 @@ function FilaVerificacoes({
                 <Eye className="size-4" /> Ver selfie e documento
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() =>
+                  setDossie({
+                    id: v.user_id,
+                    nome: v.nome_documento || emailDe(v.user_id) || "Cadastro",
+                  })
+                }
+              >
+                <IdCard className="size-4" /> Ver dossiê completo
+              </Button>
+              <Button
                 size="sm"
                 className="gap-2"
                 disabled={mutacao.isPending}
