@@ -286,3 +286,100 @@ export const listarAuditoria = createServerFn({ method: "GET" })
     if (error) throw new Error("Não foi possível carregar a auditoria.");
     return data ?? [];
   });
+
+/** Dossiê completo de um cadastro (cuidadora ou família) para inspeção de rotina. */
+export const dossieCadastro = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: perfil }, { data: verificacoes }, { data: documentos }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", data.userId).maybeSingle(),
+      supabaseAdmin
+        .from("verificacoes")
+        .select("*")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("documentos")
+        .select("id, tipo, nome_arquivo, caminho, mime, tamanho, origem, created_at")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    let email = "";
+    try {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+      email = u?.user?.email ?? "";
+    } catch (erro) {
+      console.error("[admin] getUserById", erro);
+    }
+
+    const assinar = async (caminho: string) => {
+      if (!caminho) return "";
+      const { data: url } = await supabaseAdmin.storage
+        .from("verificacoes")
+        .createSignedUrl(caminho, 600);
+      return url?.signedUrl ?? "";
+    };
+
+    const arquivos: {
+      chave: string;
+      titulo: string;
+      caminho: string;
+      url: string;
+      pdf: boolean;
+      origem: string;
+      criado_em: string;
+    }[] = [];
+
+    for (const v of verificacoes ?? []) {
+      if (v.selfie_path) {
+        arquivos.push({
+          chave: `v-selfie-${v.id}`,
+          titulo: "Rosto com o documento (captura ao vivo)",
+          caminho: v.selfie_path,
+          url: await assinar(v.selfie_path),
+          pdf: false,
+          origem: "câmera ao vivo",
+          criado_em: v.created_at,
+        });
+      }
+      if (v.documento_path && v.documento_path !== v.selfie_path) {
+        arquivos.push({
+          chave: `v-doc-${v.id}`,
+          titulo: "Documento capturado na verificação",
+          caminho: v.documento_path,
+          url: await assinar(v.documento_path),
+          pdf: /\.pdf$/i.test(v.documento_path),
+          origem: "câmera ao vivo",
+          criado_em: v.created_at,
+        });
+      }
+    }
+    for (const d of documentos ?? []) {
+      arquivos.push({
+        chave: `d-${d.id}`,
+        titulo: `${d.tipo === "documento_oficial" ? "Documento oficial com foto" : d.tipo}${
+          d.nome_arquivo ? ` · ${d.nome_arquivo}` : ""
+        }`,
+        caminho: d.caminho,
+        url: await assinar(d.caminho),
+        pdf: d.mime === "application/pdf" || /\.pdf$/i.test(d.caminho),
+        origem: d.origem === "camera" ? "câmera ao vivo" : "arquivo enviado",
+        criado_em: d.created_at,
+      });
+    }
+
+    await supabaseAdmin.from("admin_auditoria").insert({
+      admin_id: context.userId,
+      user_id: data.userId,
+      acao: "abriu_dossie",
+      caminho: `perfil/${data.userId}`,
+      detalhe: "inspeção de rotina do cadastro completo",
+    });
+
+    return { perfil, email, verificacoes: verificacoes ?? [], documentos: documentos ?? [], arquivos };
+  });

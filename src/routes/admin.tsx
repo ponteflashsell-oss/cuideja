@@ -7,6 +7,7 @@ import {
   Clock,
   Eye,
   HeartHandshake,
+  IdCard,
   ShieldAlert,
   ShieldCheck,
   Users,
@@ -15,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
+import { DossieCadastro } from "@/components/painel/DossieCadastro";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -229,6 +231,7 @@ function ListaCadastros({
   mostrarVerificacao?: boolean;
 }) {
   const [busca, setBusca] = useState("");
+  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
   const queryClient = useQueryClient();
   const alternar = useServerFn(definirVerificado);
 
@@ -260,9 +263,16 @@ function ListaCadastros({
         {filtrados.map((c) => (
           <Card key={c.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-4 p-4">
-              <div className="min-w-[200px]">
+              <button
+                type="button"
+                className="min-w-[200px] flex-1 text-left"
+                onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                aria-label={`Abrir dossiê completo de ${c.nome || "cadastro"}`}
+              >
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{c.nome || "Sem nome informado"}</p>
+                  <p className="font-medium underline-offset-4 hover:underline">
+                    {c.nome || "Sem nome informado"}
+                  </p>
                   {c.verificado ? (
                     <Badge className="gap-1">
                       <BadgeCheck className="size-3" /> Verificado
@@ -284,15 +294,28 @@ function ListaCadastros({
                       : "Nenhuma verificação enviada"}
                   </p>
                 )}
+                <p className="mt-1 text-xs text-primary">
+                  Clique para inspecionar fotos, documentos e dados completos
+                </p>
+              </button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                >
+                  <Eye className="size-4" /> Ver dossiê
+                </Button>
+                <Button
+                  variant={c.verificado ? "outline" : "default"}
+                  size="sm"
+                  disabled={mutacao.isPending}
+                  onClick={() => mutacao.mutate({ userId: c.id, verificado: !c.verificado })}
+                >
+                  {c.verificado ? "Revogar selo" : "Liberar acesso"}
+                </Button>
               </div>
-              <Button
-                variant={c.verificado ? "outline" : "default"}
-                size="sm"
-                disabled={mutacao.isPending}
-                onClick={() => mutacao.mutate({ userId: c.id, verificado: !c.verificado })}
-              >
-                {c.verificado ? "Revogar selo" : "Liberar acesso"}
-              </Button>
             </CardContent>
           </Card>
         ))}
@@ -300,6 +323,12 @@ function ListaCadastros({
           <p className="text-sm text-muted-foreground">Nenhum resultado para essa busca.</p>
         )}
       </div>
+
+      <DossieCadastro
+        userId={dossie?.id ?? null}
+        nome={dossie?.nome ?? ""}
+        onClose={() => setDossie(null)}
+      />
     </div>
   );
 }
@@ -317,6 +346,7 @@ function FilaVerificacoes({
   const decidir = useServerFn(decidirVerificacao);
   const buscarImagens = useServerFn(imagensVerificacao);
   const [aberta, setAberta] = useState<any | null>(null);
+  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
   const [imagens, setImagens] = useState<{
     selfie: string;
     documento: string;
@@ -383,6 +413,19 @@ function FilaVerificacoes({
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="gap-2" onClick={() => abrir(v)}>
                 <Eye className="size-4" /> Ver selfie e documento
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() =>
+                  setDossie({
+                    id: v.user_id,
+                    nome: v.nome_documento || emailDe(v.user_id) || "Cadastro",
+                  })
+                }
+              >
+                <IdCard className="size-4" /> Ver dossiê completo
               </Button>
               <Button
                 size="sm"
@@ -491,6 +534,12 @@ function FilaVerificacoes({
           )}
         </DialogContent>
       </Dialog>
+
+      <DossieCadastro
+        userId={dossie?.id ?? null}
+        nome={dossie?.nome ?? ""}
+        onClose={() => setDossie(null)}
+      />
     </div>
   );
 }
