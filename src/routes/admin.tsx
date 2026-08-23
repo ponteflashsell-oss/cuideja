@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
+import { DossieCadastro } from "@/components/painel/DossieCadastro";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
