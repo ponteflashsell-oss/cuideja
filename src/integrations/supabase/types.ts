@@ -44,6 +44,114 @@ export type Database = {
         }
         Relationships: []
       }
+      contratos: {
+        Row: {
+          created_at: string
+          criado_por: string
+          cuidadora_aceite_em: string | null
+          cuidadora_aceite_nome: string
+          cuidadora_cidade: string
+          cuidadora_cpf: string
+          cuidadora_id: string
+          cuidadora_nome: string
+          cuidadora_verificada: boolean
+          data_fim: string | null
+          data_inicio: string
+          descricao_cuidado: string
+          endereco: string
+          familia_aceite_em: string | null
+          familia_aceite_nome: string
+          familia_bairro: string
+          familia_cidade: string
+          familia_cpf: string
+          familia_id: string
+          familia_nome: string
+          familia_verificada: boolean
+          hora_fim: string
+          hora_inicio: string
+          id: string
+          motivo_recusa: string
+          observacoes: string
+          recusado_por: string | null
+          regime: string
+          status: string
+          taxa_percentual: number
+          termo_texto: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          criado_por: string
+          cuidadora_aceite_em?: string | null
+          cuidadora_aceite_nome?: string
+          cuidadora_cidade?: string
+          cuidadora_cpf?: string
+          cuidadora_id: string
+          cuidadora_nome?: string
+          cuidadora_verificada?: boolean
+          data_fim?: string | null
+          data_inicio: string
+          descricao_cuidado?: string
+          endereco?: string
+          familia_aceite_em?: string | null
+          familia_aceite_nome?: string
+          familia_bairro?: string
+          familia_cidade?: string
+          familia_cpf?: string
+          familia_id: string
+          familia_nome?: string
+          familia_verificada?: boolean
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          motivo_recusa?: string
+          observacoes?: string
+          recusado_por?: string | null
+          regime?: string
+          status?: string
+          taxa_percentual?: number
+          termo_texto?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string
+          cuidadora_aceite_em?: string | null
+          cuidadora_aceite_nome?: string
+          cuidadora_cidade?: string
+          cuidadora_cpf?: string
+          cuidadora_id?: string
+          cuidadora_nome?: string
+          cuidadora_verificada?: boolean
+          data_fim?: string | null
+          data_inicio?: string
+          descricao_cuidado?: string
+          endereco?: string
+          familia_aceite_em?: string | null
+          familia_aceite_nome?: string
+          familia_bairro?: string
+          familia_cidade?: string
+          familia_cpf?: string
+          familia_id?: string
+          familia_nome?: string
+          familia_verificada?: boolean
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          motivo_recusa?: string
+          observacoes?: string
+          recusado_por?: string | null
+          regime?: string
+          status?: string
+          taxa_percentual?: number
+          termo_texto?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       documentos: {
         Row: {
           caminho: string
