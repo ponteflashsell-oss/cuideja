@@ -94,6 +94,12 @@ type Cadastro = {
 const dataBr = (iso: string) =>
   new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
+const CREDENCIAIS_DEMO = {
+  familia: "demo.familia@cuideja.app",
+  cuidadora: "demo.cuidadora@cuideja.app",
+  senha: "CuidaJa#Demo2026",
+};
+
 function AdminPage() {
   const checarAdmin = useServerFn(souAdmin);
   const buscarCadastros = useServerFn(listarCadastros);
@@ -184,20 +190,19 @@ function AdminPage() {
                 </p>
               </div>
               <Button size="sm" onClick={provisionarDemo} disabled={criandoDemo}>
-                {criandoDemo ? "Criando..." : "Criar perfis de simulação"}
+                {criandoDemo ? "Renovando..." : "Criar ou renovar acessos"}
               </Button>
             </CardContent>
-            {credenciaisDemo && (
-              <CardContent className="border-t border-border pt-4 text-sm">
-                <p className="font-medium">Credenciais geradas (senha válida para os dois acessos):</p>
-                <p className="mt-2">Família: <strong>{credenciaisDemo.familia.email}</strong></p>
-                <p>Cuidadora: <strong>{credenciaisDemo.cuidadora.email}</strong></p>
-                <p>Senha: <strong>{credenciaisDemo.familia.senha}</strong></p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Senha válida por 24 horas, até {new Date(credenciaisDemo.familia.senhaExpiraEm).toLocaleString("pt-BR")}. Ao criar novamente, uma nova senha será gerada.
-                </p>
-              </CardContent>
-            )}
+            <CardContent className="border-t border-border pt-4 text-sm">
+              <p className="font-medium">Acessos de demonstração</p>
+              <p className="mt-2">Família: <strong>{CREDENCIAIS_DEMO.familia}</strong></p>
+              <p>Cuidadora: <strong>{CREDENCIAIS_DEMO.cuidadora}</strong></p>
+              <p>Senha: <strong>{CREDENCIAIS_DEMO.senha}</strong></p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                A senha vale por 24 horas após criar ou renovar os acessos.
+                {credenciaisDemo && <> Expira em {new Date(credenciaisDemo.familia.senhaExpiraEm).toLocaleString("pt-BR")}.</>}
+              </p>
+            </CardContent>
           </Card>
         </header>
 

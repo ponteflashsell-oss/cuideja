@@ -236,7 +236,7 @@ export const criarPerfisSimulacao = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await exigirAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const senha = `Teste#${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    const senha = "CuidaJa#Demo2026";
     const senhaExpiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     const contas = [
       {
