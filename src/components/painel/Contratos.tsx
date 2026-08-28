@@ -40,7 +40,8 @@ const regimeLabel: Record<string, string> = {
 
 const statusLabel: Record<string, string> = {
   aguardando: "Aguardando consentimento",
-  ativo: "Ativo — as duas partes consentiram",
+  aguardando_pagamento: "Aguardando pagamento da família",
+  ativo: "Ativo — pagamento confirmado",
   recusado: "Recusado",
   cancelado: "Cancelado",
 };
@@ -77,6 +78,9 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
     dataFim: "",
     horaInicio: "07:00",
     horaFim: "19:00",
+    assistido: "",
+    familiaTelefone: "",
+    cuidadoraTelefone: "",
     valor: 320,
     observacoes: "",
   });
@@ -122,6 +126,9 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
           dataFim: form.dataFim,
           horaInicio: form.horaInicio,
           horaFim: form.horaFim,
+          assistido: form.assistido,
+          familiaTelefone: form.familiaTelefone,
+          cuidadoraTelefone: form.cuidadoraTelefone,
           valor: form.valor,
           observacoes: form.observacoes,
         },
@@ -142,7 +149,9 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
       const r = await responder({ data: { id: c.id, acao, motivo: "" } });
       toast.success(
         r.status === "ativo"
-          ? "Consentimento registrado. O termo está válido para as duas partes."
+          ? "Pagamento confirmado. O termo está ativo."
+          : r.status === "aguardando_pagamento"
+            ? "Os dois consentimentos foram registrados. A família deve concluir o pagamento pela VeoPag."
           : r.status === "recusado"
             ? "Termo recusado."
             : "Consentimento registrado. Aguardando a outra parte.",
@@ -163,6 +172,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
     form.cuidadoraId &&
     form.descricao.trim().length >= 10 &&
     form.endereco.trim().length >= 5 &&
+    form.assistido.trim().length >= 2 &&
     form.dataInicio;
 
   return (
@@ -236,6 +246,39 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                 value={form.endereco}
                 onChange={(e) => setForm((f) => ({ ...f, endereco: e.target.value }))}
                 placeholder="Rua, número, bairro e cidade"
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="c-assistido">Nome do assistido(a)</Label>
+              <Input
+                id="c-assistido"
+                maxLength={120}
+                value={form.assistido}
+                onChange={(e) => setForm((f) => ({ ...f, assistido: e.target.value }))}
+                placeholder="Nome da pessoa que receberá o cuidado"
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="c-telefone-familia">Telefone da família</Label>
+              <Input
+                id="c-telefone-familia"
+                maxLength={30}
+                value={form.familiaTelefone}
+                onChange={(e) => setForm((f) => ({ ...f, familiaTelefone: e.target.value }))}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+
+            <div className="grid gap-1.5 md:col-span-2">
+              <Label htmlFor="c-telefone-cuidadora">Telefone da cuidadora</Label>
+              <Input
+                id="c-telefone-cuidadora"
+                maxLength={30}
+                value={form.cuidadoraTelefone}
+                onChange={(e) => setForm((f) => ({ ...f, cuidadoraTelefone: e.target.value }))}
+                placeholder="(11) 99999-9999"
               />
             </div>
 
@@ -360,7 +403,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                       {papel === "familia" ? c.cuidadora_nome : c.familia_nome}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {regimeLabel[c.regime] ?? c.regime} · {dataBr(c.data_inicio)}
+                      Reserva #{c.reserva_id} · {regimeLabel[c.regime] ?? c.regime} · {dataBr(c.data_inicio)}
                       {c.data_fim ? ` até ${dataBr(c.data_fim)}` : ""} ·{" "}
                       {c.hora_inicio && c.hora_fim ? `${c.hora_inicio}–${c.hora_fim} · ` : ""}
                       {dinheiro(c.valor)}
@@ -374,6 +417,9 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
 
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
                   {c.descricao_cuidado}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Assistido(a): {c.assistido_nome || "não informado"} · Emitido em {dataBr(c.emitido_em)}
                 </p>
 
                 <div className="mt-3 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
@@ -411,6 +457,11 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                         Recusar
                       </Button>
                     </>
+                  )}
+                  {c.status === "aguardando_pagamento" && papel === "familia" && (
+                    <p className="w-full text-xs text-muted-foreground">
+                      A cobrança será concluída pela VeoPag. O atendimento só será liberado após a confirmação do pagamento.
+                    </p>
                   )}
                 </div>
               </li>

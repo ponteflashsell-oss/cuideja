@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { abrirDocumentoNuvem, listarAuditoria, listarDocumentosNuvem } from "@/lib/admin.functions";
 
 type Arquivo = {
@@ -54,6 +55,15 @@ export function ArquivoDocumentos() {
   const lista = (arquivos.data ?? []).filter(
     (a) => !termo || a.nome.toLowerCase().includes(termo) || a.conta.includes(termo),
   );
+  const grupos = (conta: Arquivo["conta"]) => {
+    const porUsuario = new Map<string, { nome: string; arquivos: Arquivo[] }>();
+    for (const arquivo of lista.filter((item) => item.conta === conta)) {
+      const grupo = porUsuario.get(arquivo.user_id) ?? { nome: arquivo.nome, arquivos: [] };
+      grupo.arquivos.push(arquivo);
+      porUsuario.set(arquivo.user_id, grupo);
+    }
+    return [...porUsuario.entries()];
+  };
 
   const visualizar = async (a: Arquivo) => {
     try {
@@ -88,31 +98,67 @@ export function ArquivoDocumentos() {
           />
           {arquivos.isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando arquivos…</p>
-          ) : lista.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum arquivo guardado ainda.</p>
           ) : (
-            lista.map((a) => (
-              <div
-                key={a.chave}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"
-              >
-                <div>
-                  <p className="text-sm font-medium">
-                    {a.nome}{" "}
-                    <Badge variant="secondary" className="ml-1 align-middle text-[10px]">
-                      {a.conta === "familia" ? "Família" : "Cuidadora"}
-                    </Badge>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {rotulos[a.tipo] ?? a.tipo} · {a.origem === "camera" ? "câmera ao vivo" : "arquivo enviado"} ·{" "}
-                    {dataHora(a.criado_em)}
-                  </p>
-                </div>
-                <Button size="sm" variant="outline" className="gap-2" onClick={() => visualizar(a)}>
-                  <Eye className="size-4" /> Visualizar
-                </Button>
-              </div>
-            ))
+            <Tabs defaultValue="familia" className="w-full">
+              <TabsList className="grid h-auto w-full grid-cols-2">
+                <TabsTrigger value="familia">Família ({grupos("familia").length})</TabsTrigger>
+                <TabsTrigger value="cuidadora">
+                  Cuidadora ({grupos("cuidadora").length})
+                </TabsTrigger>
+              </TabsList>
+
+              {(["familia", "cuidadora"] as const).map((conta) => {
+                const gruposDaConta = grupos(conta);
+                return (
+                  <TabsContent key={conta} value={conta} className="grid gap-4">
+                    {gruposDaConta.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Nenhum arquivo de {conta === "familia" ? "família" : "cuidadora"} encontrado.
+                      </p>
+                    ) : (
+                      gruposDaConta.map(([userId, grupo]) => (
+                        <section key={userId} className="rounded-lg border border-border p-3">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-medium">{grupo.nome}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {grupo.arquivos.length} arquivo(s) deste cadastro
+                              </p>
+                            </div>
+                            <Badge variant="secondary">
+                              {conta === "familia" ? "Família" : "Cuidadora"}
+                            </Badge>
+                          </div>
+                          <div className="grid gap-2">
+                            {grupo.arquivos.map((a) => (
+                              <div
+                                key={a.chave}
+                                className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-muted/40 p-3"
+                              >
+                                <div>
+                                  <p className="text-sm font-medium">{rotulos[a.tipo] ?? a.tipo}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {a.origem === "camera" ? "câmera ao vivo" : "arquivo enviado"} · {dataHora(a.criado_em)}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2"
+                                  onClick={() => visualizar(a)}
+                                >
+                                  <Eye className="size-4" /> Visualizar
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      ))
+                    )}
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
           )}
         </CardContent>
       </Card>

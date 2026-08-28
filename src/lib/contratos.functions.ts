@@ -48,6 +48,9 @@ export const criarContrato = createServerFn({ method: "POST" })
         dataFim: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/).default(""),
         horaInicio: z.string().max(5).default(""),
         horaFim: z.string().max(5).default(""),
+        assistido: z.string().trim().min(2).max(120),
+        familiaTelefone: z.string().trim().max(30).default(""),
+        cuidadoraTelefone: z.string().trim().max(30).default(""),
         valor: z.number().min(0).max(100000),
         observacoes: z.string().trim().max(1000).default(""),
       })
@@ -91,37 +94,42 @@ export const criarContrato = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false });
     const cpfDe = (id: string) => verificacoes?.find((v) => v.user_id === id)?.cpf ?? "";
 
+    const reservaId = `RES-${crypto.randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
+    const emitidoEm = new Date().toISOString();
     const dados = {
+      reservaId,
+      emitidoEm,
       familia: {
         nome: familia.nome,
         cpf: cpfDe(familia.id),
         cidade: familia.cidade,
         bairro: familia.bairros?.[0] ?? "",
         verificada: familia.verificado,
+        telefone: data.familiaTelefone,
       },
       cuidadora: {
         nome: cuidadora.nome,
         cpf: cpfDe(cuidadora.id),
         cidade: cuidadora.cidade,
         verificada: cuidadora.verificado,
+        telefone: data.cuidadoraTelefone,
       },
       servico: {
-        descricao: data.descricao,
         endereco: data.endereco,
-        regime: data.regime,
         dataInicio: data.dataInicio,
         dataFim: data.dataFim,
         horaInicio: data.horaInicio,
         horaFim: data.horaFim,
+        assistido: data.assistido,
         valor: data.valor,
-        taxaPercentual: 10,
-        observacoes: data.observacoes,
       },
     };
 
     const { data: criado, error: erroInsert } = await context.supabase
       .from("contratos")
       .insert({
+        reserva_id: reservaId,
+        emitido_em: emitidoEm,
         familia_id: familia.id,
         cuidadora_id: cuidadora.id,
         criado_por: context.userId,
@@ -134,7 +142,10 @@ export const criarContrato = createServerFn({ method: "POST" })
         cuidadora_cpf: dados.cuidadora.cpf,
         cuidadora_cidade: dados.cuidadora.cidade,
         cuidadora_verificada: dados.cuidadora.verificada,
+        familia_telefone: data.familiaTelefone,
+        cuidadora_telefone: data.cuidadoraTelefone,
         descricao_cuidado: data.descricao,
+        assistido_nome: data.assistido,
         endereco: data.endereco,
         regime: data.regime,
         data_inicio: data.dataInicio,
@@ -199,7 +210,7 @@ export const responderContrato = createServerFn({ method: "POST" })
     const nome = ehFamilia ? contrato.familia_nome : contrato.cuidadora_nome;
     const familiaAceite = ehFamilia ? agora : contrato.familia_aceite_em;
     const cuidadoraAceite = ehCuidadora ? agora : contrato.cuidadora_aceite_em;
-    const status = familiaAceite && cuidadoraAceite ? "ativo" : "aguardando";
+    const status = familiaAceite && cuidadoraAceite ? "aguardando_pagamento" : "aguardando";
 
     const { error: erroAceite } = await context.supabase
       .from("contratos")

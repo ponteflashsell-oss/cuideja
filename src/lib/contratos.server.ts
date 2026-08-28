@@ -1,28 +1,18 @@
 /** Montagem do termo de prestação de serviços entre família e cuidadora. */
 
-export const regimes = {
-  hora: "Por hora",
-  diaria: "Diária",
-  plantao12: "Plantão de 12 horas",
-  plantao24: "Plantão de 24 horas",
-} as const;
-
-export type Regime = keyof typeof regimes;
-
 export type DadosTermo = {
-  familia: { nome: string; cpf: string; cidade: string; bairro: string; verificada: boolean };
-  cuidadora: { nome: string; cpf: string; cidade: string; verificada: boolean };
+  reservaId: string;
+  emitidoEm: string;
+  familia: { nome: string; cpf: string; telefone: string };
+  cuidadora: { nome: string; cpf: string; telefone: string };
   servico: {
-    descricao: string;
     endereco: string;
-    regime: Regime;
     dataInicio: string;
     dataFim: string;
     horaInicio: string;
     horaFim: string;
+    assistido: string;
     valor: number;
-    taxaPercentual: number;
-    observacoes: string;
   };
 };
 
@@ -39,59 +29,69 @@ const ou = (v: string, alternativa = "não informado") => (v.trim() ? v.trim() :
 
 export function montarTermo(d: DadosTermo): string {
   const { familia, cuidadora, servico } = d;
-  const taxa = (servico.valor * servico.taxaPercentual) / 100;
-  const liquido = servico.valor - taxa;
+  const emitido = new Date(d.emitidoEm);
+  const dataEmissao = emitido.toLocaleDateString("pt-BR");
+  const horaEmissao = emitido.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return `CONTRATO DE PRESTACAO DE SERVICOS DE CUIDADO AUTONOMO
 
-  return `TERMO DE PRESTAÇÃO DE SERVIÇOS DE CUIDADO — CUIDAJÁ
+================================================================================
+                 ORDEM DE SERVICO / RESUMO DA CONTRATACAO
+================================================================================
+Data de Emissao do Contrato: ${dataEmissao} as ${horaEmissao}
+Codigo da Reserva / ID: #${d.reservaId}
 
-1. PARTES
+1. DADOS DO CONTRATANTE (CLIENTE/FAMILIA)
+  Nome Completo: ${ou(familia.nome)}
+  CPF: ${ou(familia.cpf, "pendente de conferencia")} | Telefone: ${ou(familia.telefone)}
 
-CONTRATANTE (família / responsável)
-Nome: ${ou(familia.nome)}
-CPF: ${ou(familia.cpf, "pendente de conferência")}
-Cidade: ${ou(familia.cidade)}
-Bairro do atendimento: ${ou(familia.bairro)}
-Identidade conferida pela plataforma: ${familia.verificada ? "sim" : "em conferência"}
+2. DADOS DA CONTRATADA (CUIDADORA)
+  Nome Completo: ${ou(cuidadora.nome)}
+  CPF: ${ou(cuidadora.cpf, "pendente de conferencia")} | Telefone: ${ou(cuidadora.telefone)}
 
-CONTRATADA (profissional autônoma de cuidado)
-Nome: ${ou(cuidadora.nome)}
-CPF: ${ou(cuidadora.cpf, "pendente de conferência")}
-Cidade de atuação: ${ou(cuidadora.cidade)}
-Identidade conferida pela plataforma: ${cuidadora.verificada ? "sim" : "em conferência"}
+3. LOCAL E PERIODO DE ATENDIMENTO
+  Endereco da Prestacao: ${ou(servico.endereco)}
+  Data de Inicio: ${dataBr(servico.dataInicio)} | Horario de Entrada (Chegada): ${ou(servico.horaInicio)}
+  Data de Termino: ${dataBr(servico.dataFim)} | Horario de Saida (Termino): ${ou(servico.horaFim)}
+  Assistido(a): ${ou(servico.assistido)}
 
-2. OBJETO
-Prestação de serviços de cuidado, de forma autônoma e sem vínculo empregatício, conforme o plano combinado entre as partes:
-${ou(servico.descricao, "plano de cuidados a combinar")}
+4. VALORES E CONDICOES FINANCEIRAS
+  Valor Bruto da Diaria/Servico: ${dinheiro(servico.valor)}
+  Forma de Pagamento: Processado via Plataforma
+================================================================================
 
-Local do atendimento: ${ou(servico.endereco)}
+CLAUSULA 1 - DO OBJETO
+1.1. O presente contrato tem por objeto a prestacao de servicos autonomos de acompanhamento, suporte e cuidados a pessoa indicada no cabecalho deste instrumento, estritamente no local, datas, horario de chegada e horario de saida especificados na Ordem de Servico.
 
-3. PRAZO, REGIME E HORÁRIO
-Regime combinado: ${regimes[servico.regime]}
-Início: ${dataBr(servico.dataInicio)}${servico.dataFim ? ` · Término previsto: ${dataBr(servico.dataFim)}` : " · Sem data final definida (atendimento eventual)"}
-Horário: ${ou(servico.horaInicio, "a combinar")} às ${ou(servico.horaFim, "a combinar")}
-O atendimento é eventual ou por período determinado, sem jornada fixa imposta, exclusividade ou subordinação.
+CLAUSULA 2 - DA AUTONOMIA E AUSENCIA DE VINCULO
+2.1. A CONTRATADA declara ser profissional autonoma, atuando por conta propria, sem relacao de exclusividade, subordinacao juridica, habitualidade compulsoria ou vinculo empregaticio com o CONTRATANTE.
+2.2. A CONTRATADA possui liberdade para gerenciar sua agenda, aceitar ou recusar atendimentos e prestar servicos a outros tomadores ou plataformas.
+2.3. A CuidaJa atua exclusivamente como intermediadora tecnologica, nao sendo parte integrante deste contrato nem empregadora de qualquer das partes.
 
-4. VALOR E PAGAMENTO
-Valor combinado por ${regimes[servico.regime].toLowerCase()}: ${dinheiro(servico.valor)}
-Taxa de intermediação da plataforma: ${servico.taxaPercentual}% (${dinheiro(taxa)})
-Valor líquido estimado à profissional: ${dinheiro(liquido)}
-O pagamento é acordado diretamente entre as partes, na forma e periodicidade combinadas antes do início do atendimento.
+CLAUSULA 3 - DAS OBRIGACOES DA CONTRATADA
+3.1. Apresentar-se no local no horario de entrada e prestar os servicos com zelo, pontualidade, respeito e etica ate o horario de saida.
+3.2. Seguir as orientacoes fornecidas pelo CONTRATANTE sobre a rotina do assistido, incluindo medicacao oral prescrita, alimentacao e higiene.
+3.3. Comunicar imediatamente qualquer intercorrencia de saude, acidente ou emergencia.
+3.4. Manter sigilo sobre informacoes pessoais, medicas e rotinas familiares.
 
-5. AUTONOMIA E AUSÊNCIA DE VÍNCULO
-A CuidaJá atua exclusivamente como intermediadora tecnológica. Não há relação de emprego, subordinação, pessoalidade obrigatória, habitualidade imposta ou exclusividade entre as partes, nem entre qualquer das partes e a plataforma. A profissional define livremente sua agenda e pode atuar em outras plataformas.
+CLAUSULA 4 - DAS OBRIGACOES DO CONTRATANTE
+4.1. Garantir o acesso da CONTRATADA ao local no horario de entrada e libera-la no horario de saida.
+4.2. Fornecer informacoes precisas sobre o estado de saude, limitacoes, necessidades e medicacao do assistido.
+4.3. Garantir ambiente de trabalho seguro e respeito a integridade fisica e moral da CONTRATADA.
+4.4. Efetuar o pagamento do valor total exclusivamente pelos metodos da plataforma.
 
-6. OBRIGAÇÕES DAS PARTES
-A CONTRATADA compromete-se a cumprir o plano de cuidados combinado, comunicar imediatamente qualquer intercorrência e manter sigilo sobre a rotina e os dados da família.
-A CONTRATANTE compromete-se a fornecer condições adequadas ao atendimento, informar o histórico de saúde relevante, não exigir tarefas fora do plano combinado e efetuar o pagamento no prazo acordado.
+CLAUSULA 5 - DO PRECO E FORMA DE PAGAMENTO
+5.1. O CONTRATANTE pagara o valor total indicado na Ordem de Servico.
+5.2. O pagamento sera processado via plataforma no momento da reserva ou conforme a modalidade escolhida.
+5.3. E vedado realizar pagamentos por fora da plataforma para servicos intermediados por ela.
 
-7. DADOS PESSOAIS (LGPD)
-As partes autorizam o tratamento dos dados pessoais indicados neste termo para a finalidade exclusiva de identificação, registro do consentimento e segurança do atendimento, conforme a Lei 13.709/2018.
+CLAUSULA 6 - DO CANCELAMENTO, REAGENDAMENTO E PENALIDADES
+6.1. Cancelamentos ou alteracoes devem ser feitos na plataforma com antecedencia minima de 24 horas.
+6.2. Cancelamento com menos de 24 horas ou no-show implicara retencao ou cobranca de 50% do valor da diaria, repassada a CONTRATADA.
+6.3. Cancelamento no momento da chegada ou com menos de 2 horas do inicio, sem forca maior, implicara retencao integral de 100% do valor da diaria.
+6.4. Condutas que causem prejuizos sujeitarao o responsavel as medidas judiciais cabiveis, nos termos dos artigos 186, 389 e 927 do Codigo Civil.
 
-8. RESCISÃO
-Qualquer das partes pode encerrar o atendimento comunicando a outra com antecedência mínima de 24 horas, salvo caso de urgência ou descumprimento grave, quando o encerramento é imediato.
+CLAUSULA 7 - DO FORO
+7.1. Fica eleito o Foro da Comarca de domicilio do CONTRATANTE.
 
-9. CONSENTIMENTO
-Este termo passa a valer quando as duas partes registrarem o aceite eletrônico na plataforma, com data, hora e identificação do titular da conta. O registro do aceite fica arquivado na CuidaJá.
-
-${ou(servico.observacoes, "") ? `10. OBSERVAÇÕES COMBINADAS\n${servico.observacoes.trim()}\n` : ""}`;
+Este contrato fica vinculado a reserva #${d.reservaId} e passa a valer apos o aceite eletronico das duas partes, com registro de data, hora e titular da conta.`;
 }
