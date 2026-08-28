@@ -38,18 +38,16 @@ const schema = z.object({
   nome: z.string().trim().max(80).optional(),
 });
 
-/** Garante que a conta usada nesta porta de entrada fique marcada como família. */
-async function marcarComoFamilia() {
+/** Define o painel correto sem alterar o papel de uma conta existente. */
+async function destinoDaSessao() {
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return;
-  const { data } = await supabase
+  if (!auth.user) return "/familia-entrar" as const;
+  const { data: perfil } = await supabase
     .from("profiles")
     .select("tipo")
     .eq("id", auth.user.id)
     .maybeSingle();
-  if (data && data.tipo !== "familia") {
-    await supabase.from("profiles").update({ tipo: "familia" }).eq("id", auth.user.id);
-  }
+  return perfil?.tipo === "cuidadora" ? ("/painel-cuidadora" as const) : ("/painel-familia" as const);
 }
 
 function FamiliaEntrarPage() {
@@ -62,8 +60,7 @@ function FamiliaEntrarPage() {
 
   useEffect(() => {
     const seguir = async () => {
-      await marcarComoFamilia();
-      navigate({ to: "/painel-familia", replace: true });
+      navigate({ to: await destinoDaSessao(), replace: true });
     };
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) void seguir();
@@ -117,8 +114,7 @@ function FamiliaEntrarPage() {
       return;
     }
     if (result.redirected) return;
-    await marcarComoFamilia();
-    navigate({ to: "/painel-familia", replace: true });
+    navigate({ to: await destinoDaSessao(), replace: true });
   };
 
   return (

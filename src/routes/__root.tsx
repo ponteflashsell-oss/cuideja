@@ -8,10 +8,12 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { redirect } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -74,6 +76,30 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const rotasDeAcesso = [
+      "/painel-cuidadora",
+      "/painel-familia",
+      "/admin",
+      "/admin-entrar",
+      "/entrar",
+      "/familia-entrar",
+    ];
+    if (rotasDeAcesso.some((rota) => location.pathname.startsWith(rota))) return;
+
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
+
+    const { data: perfil } = await supabase
+      .from("profiles")
+      .select("tipo")
+      .eq("id", auth.user.id)
+      .maybeSingle();
+    if (perfil?.tipo === "cuidadora") {
+      throw redirect({ to: "/painel-cuidadora", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },

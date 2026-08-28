@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { HeartHandshake, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,10 +34,6 @@ export function PainelHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link to="/">Ver site</Link>
-          </Button>
-
           <Button variant="outline" size="sm" className="gap-2" onClick={sair}>
             <LogOut className="size-4" /> Sair
           </Button>
