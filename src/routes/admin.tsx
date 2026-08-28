@@ -23,6 +23,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,6 +43,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   decidirVerificacao,
   definirVerificado,
+  excluirPerfil,
   imagensVerificacao,
   listarCadastros,
   listarVerificacoes,
@@ -232,13 +243,25 @@ function ListaCadastros({
 }) {
   const [busca, setBusca] = useState("");
   const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
+  const [excluir, setExcluir] = useState<Cadastro | null>(null);
   const queryClient = useQueryClient();
   const alternar = useServerFn(definirVerificado);
+  const apagar = useServerFn(excluirPerfil);
 
   const mutacao = useMutation({
     mutationFn: (v: { userId: string; verificado: boolean }) => alternar({ data: v }),
     onSuccess: () => {
       toast.success("Cadastro atualizado.");
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const exclusao = useMutation({
+    mutationFn: (userId: string) => apagar({ data: { userId } }),
+    onSuccess: () => {
+      toast.success("Perfil excluído.");
+      setExcluir(null);
       queryClient.invalidateQueries({ queryKey: ["admin"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -310,10 +333,18 @@ function ListaCadastros({
                 <Button
                   variant={c.verificado ? "outline" : "default"}
                   size="sm"
-                  disabled={mutacao.isPending}
+                  disabled={mutacao.isPending || exclusao.isPending}
                   onClick={() => mutacao.mutate({ userId: c.id, verificado: !c.verificado })}
                 >
                   {c.verificado ? "Revogar selo" : "Liberar acesso"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={mutacao.isPending || exclusao.isPending}
+                  onClick={() => setExcluir(c)}
+                >
+                  Excluir perfil
                 </Button>
               </div>
             </CardContent>
@@ -329,6 +360,31 @@ function ListaCadastros({
         nome={dossie?.nome ?? ""}
         onClose={() => setDossie(null)}
       />
+
+      <AlertDialog open={Boolean(excluir)} onOpenChange={(aberto) => !aberto && setExcluir(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este perfil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação excluirá permanentemente {excluir?.nome || "este cadastro"}, os dados
+              vinculados e todos os documentos privados enviados. Não será possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={exclusao.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={exclusao.isPending || !excluir}
+              onClick={(evento) => {
+                evento.preventDefault();
+                if (excluir) exclusao.mutate(excluir.id);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {exclusao.isPending ? "Excluindo..." : "Sim, excluir definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

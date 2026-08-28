@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Eye, FolderLock, ScrollText } from "lucide-react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { FolderLock, ScrollText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { abrirDocumentoNuvem, listarAuditoria, listarDocumentosNuvem } from "@/lib/admin.functions";
+import { DossieCadastro } from "@/components/painel/DossieCadastro";
+import { listarAuditoria, listarDocumentosNuvem } from "@/lib/admin.functions";
 
 type Arquivo = {
   chave: string;
@@ -19,12 +17,6 @@ type Arquivo = {
   caminho: string;
   origem: string;
   criado_em: string;
-};
-
-const rotulos: Record<string, string> = {
-  selfie: "Selfie ao vivo",
-  documento_identidade: "Documento com foto",
-  documento_oficial: "Documento oficial",
 };
 
 const dataHora = (iso: string) =>
@@ -39,8 +31,8 @@ const dataHora = (iso: string) =>
 export function ArquivoDocumentos() {
   const buscarArquivos = useServerFn(listarDocumentosNuvem);
   const buscarAuditoria = useServerFn(listarAuditoria);
-  const abrir = useServerFn(abrirDocumentoNuvem);
   const [busca, setBusca] = useState("");
+  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
 
   const arquivos = useQuery({
     queryKey: ["admin", "documentos"],
@@ -63,18 +55,6 @@ export function ArquivoDocumentos() {
       porUsuario.set(arquivo.user_id, grupo);
     }
     return [...porUsuario.entries()];
-  };
-
-  const visualizar = async (a: Arquivo) => {
-    try {
-      const r = (await abrir({ data: { caminho: a.caminho, userId: a.user_id } })) as {
-        url: string;
-      };
-      window.open(r.url, "_blank", "noopener,noreferrer");
-      auditoria.refetch();
-    } catch {
-      toast.error("Não foi possível abrir o arquivo.");
-    }
   };
 
   return (
@@ -117,42 +97,17 @@ export function ArquivoDocumentos() {
                       </p>
                     ) : (
                       gruposDaConta.map(([userId, grupo]) => (
-                        <section key={userId} className="rounded-lg border border-border p-3">
-                          <div className="mb-3 flex items-center justify-between gap-2">
-                            <div>
-                              <p className="text-sm font-medium">{grupo.nome}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {grupo.arquivos.length} arquivo(s) deste cadastro
-                              </p>
-                            </div>
-                            <Badge variant="secondary">
-                              {conta === "familia" ? "Família" : "Cuidadora"}
-                            </Badge>
-                          </div>
-                          <div className="grid gap-2">
-                            {grupo.arquivos.map((a) => (
-                              <div
-                                key={a.chave}
-                                className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-muted/40 p-3"
-                              >
-                                <div>
-                                  <p className="text-sm font-medium">{rotulos[a.tipo] ?? a.tipo}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {a.origem === "camera" ? "câmera ao vivo" : "arquivo enviado"} · {dataHora(a.criado_em)}
-                                  </p>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-2"
-                                  onClick={() => visualizar(a)}
-                                >
-                                  <Eye className="size-4" /> Visualizar
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
+                        <button
+                          key={userId}
+                          type="button"
+                          className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => setDossie({ id: userId, nome: grupo.nome })}
+                          aria-label={`Abrir dossiê completo de ${grupo.nome || "cadastro"}`}
+                        >
+                          <p className="text-sm font-medium underline-offset-4 hover:underline">
+                            {grupo.nome || "Nome não informado"}
+                          </p>
+                        </button>
                       ))
                     )}
                   </TabsContent>
@@ -162,6 +117,12 @@ export function ArquivoDocumentos() {
           )}
         </CardContent>
       </Card>
+
+      <DossieCadastro
+        userId={dossie?.id ?? null}
+        nome={dossie?.nome ?? ""}
+        onClose={() => setDossie(null)}
+      />
 
       <Card>
         <CardHeader className="pb-3">

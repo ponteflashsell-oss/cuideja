@@ -179,6 +179,51 @@ export const definirVerificado = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Exclui um cadastro e remove seus arquivos privados antes da conta de autenticação. */
+export const excluirPerfil = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await exigirAdmin(context);
+    if (data.userId === context.userId) {
+      throw new Error("O administrador não pode excluir a própria conta.");
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: documentos }, { data: verificacoes }] = await Promise.all([
+      supabaseAdmin.from("documentos").select("caminho").eq("user_id", data.userId),
+      supabaseAdmin
+        .from("verificacoes")
+        .select("selfie_path, documento_path")
+        .eq("user_id", data.userId),
+    ]);
+
+    const caminhos = new Set<string>();
+    for (const documento of documentos ?? []) if (documento.caminho) caminhos.add(documento.caminho);
+    for (const verificacao of verificacoes ?? []) {
+      if (verificacao.selfie_path) caminhos.add(verificacao.selfie_path);
+      if (verificacao.documento_path) caminhos.add(verificacao.documento_path);
+    }
+    if (caminhos.size) {
+      const { error } = await supabaseAdmin.storage
+        .from("verificacoes")
+        .remove([...caminhos]);
+      if (error) throw new Error("Não foi possível remover os arquivos privados do perfil.");
+    }
+
+    await supabaseAdmin.from("admin_auditoria").insert({
+      admin_id: context.userId,
+      user_id: data.userId,
+      acao: "excluiu_perfil",
+      caminho: `perfil/${data.userId}`,
+      detalhe: "perfil, dados vinculados e arquivos privados removidos",
+    });
+
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) throw new Error("Não foi possível excluir o perfil.");
+    return { ok: true };
+  });
+
 /** Arquivo jurídico: todos os documentos e fotos enviados por cuidadoras e famílias. */
 export const listarDocumentosNuvem = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
