@@ -92,7 +92,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
       if (dados.revisaoManual) {
         toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
       } else {
-        toast.success("Documento lido e enviado para aprovação final.");
+        toast.success("Documento enviado para aprovação final.");
       }
     } catch (erro) {
       toast.error(erro instanceof Error ? erro.message : "Não conseguimos analisar agora.");
@@ -105,7 +105,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
     <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
       <div className="flex items-center justify-between gap-2">
         <h4 className="flex items-center gap-2 text-sm font-medium">
-          <ScanFace className="size-4 text-primary" /> Checagem automática de identidade
+          <ScanFace className="size-4 text-primary" /> Conferência manual de identidade
         </h4>
         {resultado ? (
           <Badge variant={reprovado ? "destructive" : "secondary"}>
@@ -120,9 +120,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         ) : null}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Uma única foto do seu rosto com o documento ao lado: o sistema lê os dados do RG/CNH, valida
-        o CPF e compara o rosto com a foto do documento. A imagem fica guardada em segurança: o que a
-        leitura automática não confirmar é conferido manualmente pela nossa equipe.
+        Envie uma foto do seu rosto com o documento ao lado. A equipe confere manualmente os dados,
+        a autenticidade do documento e a correspondência da foto.
       </p>
 
       {resultado && !reprovado ? (
@@ -156,7 +155,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
 
       {analisando ? (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Lendo documento e comparando com a selfie…
+          <Loader2 className="size-4 animate-spin" /> Enviando fotos para conferência manual…
         </p>
       ) : null}
 

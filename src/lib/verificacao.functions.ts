@@ -11,13 +11,7 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ selfie: imagem, documento: imagem }).parse(input))
   .handler(async ({ data, context }) => {
-    const {
-      lerDocumentoComIA,
-      validarCpf,
-      formatarCpf,
-      consultarAntecedentes,
-      dataUrlParaArquivo,
-    } = await import("./verificacao.server");
+    const { dataUrlParaArquivo } = await import("./verificacao.server");
 
     // Envio único: só libera novo envio quando a última verificação foi reprovada.
     const { data: ultima } = await context.supabase
@@ -31,10 +25,6 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
       throw new Error("Você já enviou sua foto de verificação. Aguarde a conferência da equipe.");
     }
 
-    const apiKey = process.env["LOVABLE_API_KEY"];
-
-    // 1) Guarda as imagens sempre — mesmo se a leitura automática falhar,
-    //    a equipe consegue conferir manualmente.
     const agora = Date.now();
     const enviarImagem = async (nome: string, dataUrl: string) => {
       const arquivo = dataUrlParaArquivo(dataUrl);
@@ -53,75 +43,25 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
       enviarImagem("documento", data.documento),
     ]);
 
-    // 2) Leitura automática — falha aqui não descarta o envio.
-    let leitura = {
-      nome: "",
-      cpf: "",
-      data_nascimento: "",
-      tipo_documento: "outro",
-      documento_legivel: false,
-      face_confere: false,
-      confianca_face: 0,
-      observacoes: "",
-    };
-    let falhaLeitura = "";
-    if (!apiKey) {
-      falhaLeitura = "Leitura automática não configurada.";
-    } else {
-      try {
-        leitura = await lerDocumentoComIA(data.selfie, data.documento, apiKey);
-      } catch (erro) {
-        falhaLeitura = erro instanceof Error ? erro.message : "Falha na leitura automática.";
-        console.error("[verificacao] leitura", erro);
-      }
-    }
-
-    const cpfValido = validarCpf(leitura.cpf);
-    const antecedentes = cpfValido
-      ? await consultarAntecedentes(leitura.cpf, leitura.data_nascimento, leitura.nome, {
-          provedor: process.env["ANTECEDENTES_PROVEDOR"],
-          token: process.env["ANTECEDENTES_API_TOKEN"] ?? process.env["INFOSIMPLES_TOKEN"],
-          url: process.env["ANTECEDENTES_API_URL"],
-        })
-      : { status: "nao_consultado" as const, dados: null, fonte: "revisao_humana" };
-
-    let score = 0;
-    if (leitura.documento_legivel) score += 25;
-    if (cpfValido) score += 25;
-    if (leitura.face_confere) score += 30;
-    score += Math.round(Math.min(Math.max(leitura.confianca_face, 0), 1) * 10);
-    if (antecedentes.status === "limpo") score += 10;
-
-    // Nada é reprovado automaticamente: o que a IA não confirmou vai para fila manual.
-    const revisaoManual =
-      Boolean(falhaLeitura) ||
-      !leitura.documento_legivel ||
-      !cpfValido ||
-      !leitura.face_confere ||
-      antecedentes.status !== "limpo";
     const status = "em_analise";
-
-    const observacoes = [falhaLeitura, leitura.observacoes]
-      .filter(Boolean)
-      .join(" · ")
-      .slice(0, 400);
+    const observacoes = "Aguardando conferência manual da equipe.";
 
     const { error } = await context.supabase.from("verificacoes").insert({
       user_id: context.userId,
       status,
-      nome_documento: leitura.nome,
-      cpf: formatarCpf(leitura.cpf),
-      data_nascimento: leitura.data_nascimento,
-      tipo_documento: leitura.tipo_documento,
-      cpf_valido: cpfValido,
-      face_confere: leitura.face_confere,
-      score,
+      nome_documento: "",
+      cpf: "",
+      data_nascimento: "",
+      tipo_documento: "outro",
+      cpf_valido: false,
+      face_confere: false,
+      score: 0,
       observacoes,
-      antecedentes_status: antecedentes.status,
-      antecedentes_dados: antecedentes.dados as never,
+      antecedentes_status: "nao_consultado",
+      antecedentes_dados: null,
       selfie_path: selfiePath,
       documento_path: documentoPath,
-      revisao_manual: revisaoManual,
+      revisao_manual: true,
     });
     if (error) {
       console.error("[verificacao] insert", error);
@@ -130,16 +70,16 @@ export const analisarVerificacao = createServerFn({ method: "POST" })
 
     return {
       status,
-      score,
-      nome: leitura.nome,
-      cpf: formatarCpf(leitura.cpf),
-      tipoDocumento: leitura.tipo_documento,
-      cpfValido,
-      faceConfere: leitura.face_confere,
-      documentoLegivel: leitura.documento_legivel,
-      antecedentes: antecedentes.status,
+      score: 0,
+      nome: "",
+      cpf: "",
+      tipoDocumento: "outro",
+      cpfValido: false,
+      faceConfere: false,
+      documentoLegivel: false,
+      antecedentes: "nao_consultado",
       observacoes,
-      revisaoManual,
+      revisaoManual: true,
     };
   });
 
