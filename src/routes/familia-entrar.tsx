@@ -43,7 +43,11 @@ const schema = z.object({
 async function destinoDaSessao() {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return "/familia-entrar" as const;
-  await renovarSessaoDemo({ data: undefined });
+  try {
+    await renovarSessaoDemo({ data: undefined });
+  } catch (erro) {
+    console.error("[demo] não foi possível renovar a sessão", erro);
+  }
   const [{ data: perfil }, { data: papelAdmin }] = await Promise.all([
     supabase.from("profiles").select("tipo").eq("id", auth.user.id).maybeSingle(),
     supabase.from("user_roles").select("user_id").eq("user_id", auth.user.id).eq("role", "admin").maybeSingle(),
@@ -62,11 +66,16 @@ function FamiliaEntrarPage() {
 
   useEffect(() => {
     const seguir = async () => {
-      navigate({ to: await destinoDaSessao(), replace: true });
+      try {
+        navigate({ to: await destinoDaSessao(), replace: true });
+      } catch (erro) {
+        console.error("[login] não foi possível redirecionar", erro);
+        toast.error("Não foi possível abrir o painel. Tente atualizar a página.");
+      }
     };
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) void seguir();
-    });
+    }).catch((erro) => console.error("[login] sessão", erro));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void seguir();
     });

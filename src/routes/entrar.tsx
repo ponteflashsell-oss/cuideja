@@ -48,14 +48,18 @@ function EntrarPage() {
   const [carregando, setCarregando] = useState(false);
 
   const acessarPainel = async () => {
-    await renovarSessaoDemo({ data: undefined });
+    try {
+      await renovarSessaoDemo({ data: undefined });
+    } catch (erro) {
+      console.error("[demo] não foi possível renovar a sessão", erro);
+    }
     navigate({ to: "/painel-cuidadora", replace: true });
   };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) void acessarPainel();
-    });
+    }).catch((erro) => console.error("[login] sessão", erro));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
         void acessarPainel();
