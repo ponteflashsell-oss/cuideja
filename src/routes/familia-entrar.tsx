@@ -42,6 +42,12 @@ const schema = z.object({
 async function destinoDaSessao() {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return "/familia-entrar" as const;
+  const expiraEm = auth.user.user_metadata?.demo_password_expires_at;
+  if (typeof expiraEm === "string" && new Date(expiraEm).getTime() <= Date.now()) {
+    await supabase.auth.signOut();
+    toast.error("A senha de simulação expirou. Gere novos acessos no painel admin.");
+    return "/familia-entrar" as const;
+  }
   const [{ data: perfil }, { data: papelAdmin }] = await Promise.all([
     supabase.from("profiles").select("tipo").eq("id", auth.user.id).maybeSingle(),
     supabase.from("user_roles").select("user_id").eq("user_id", auth.user.id).eq("role", "admin").maybeSingle(),

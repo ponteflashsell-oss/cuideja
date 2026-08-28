@@ -46,13 +46,24 @@ function EntrarPage() {
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
 
+  const acessarPainel = async () => {
+    const { data } = await supabase.auth.getUser();
+    const expiraEm = data.user?.user_metadata?.demo_password_expires_at;
+    if (typeof expiraEm === "string" && new Date(expiraEm).getTime() <= Date.now()) {
+      await supabase.auth.signOut();
+      toast.error("A senha de simulação expirou. Gere novos acessos no painel admin.");
+      return;
+    }
+    navigate({ to: "/painel-cuidadora", replace: true });
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/painel-cuidadora", replace: true });
+      if (data.session) void acessarPainel();
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-        navigate({ to: "/painel-cuidadora", replace: true });
+        void acessarPainel();
       }
     });
     return () => sub.subscription.unsubscribe();
@@ -101,7 +112,7 @@ function EntrarPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/painel-cuidadora", replace: true });
+    await acessarPainel();
   };
 
   return (

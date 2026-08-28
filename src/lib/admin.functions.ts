@@ -230,6 +230,164 @@ export const excluirPerfil = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Cria ou atualiza duas contas completas para testar o fluxo ponta a ponta. */
+export const criarPerfisSimulacao = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await exigirAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const senha = `Teste#${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    const senhaExpiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const contas = [
+      {
+        email: "demo.familia@cuideja.app",
+        tipo: "familia" as const,
+        nome: "Mariana Alencar",
+        cidade: "São Paulo",
+        bairros: ["Perdizes", "Pinheiros"],
+        bio: "Família em busca de apoio para os cuidados da mãe durante a semana.",
+        especialidades: ["Mobilidade reduzida", "Alzheimer e demências"],
+      },
+      {
+        email: "demo.cuidadora@cuideja.app",
+        tipo: "cuidadora" as const,
+        nome: "Ana Paula Ribeiro",
+        cidade: "São Paulo",
+        bairros: ["Perdizes", "Pinheiros", "Vila Madalena"],
+        bio: "Técnica em enfermagem com experiência em memória, medicação e mobilidade assistida.",
+        especialidades: ["Alzheimer", "Mobilidade reduzida", "Primeiros socorros"],
+      },
+    ];
+    const ids: string[] = [];
+    const { data: usuarios } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
+
+    for (const conta of contas) {
+      let usuario = usuarios?.users.find((item) => item.email === conta.email);
+      if (!usuario) {
+        const criado = await supabaseAdmin.auth.admin.createUser({
+          email: conta.email,
+          password: senha,
+          email_confirm: true,
+          user_metadata: {
+            nome: conta.nome,
+            tipo: conta.tipo,
+            demo_password_expires_at: senhaExpiraEm,
+          },
+        });
+        if (criado.error || !criado.data.user) throw criado.error ?? new Error("Não foi possível criar a conta de simulação.");
+        usuario = criado.data.user;
+      } else {
+        const atualizado = await supabaseAdmin.auth.admin.updateUserById(usuario.id, {
+          password: senha,
+          user_metadata: {
+            ...usuario.user_metadata,
+            nome: conta.nome,
+            tipo: conta.tipo,
+            demo_password_expires_at: senhaExpiraEm,
+          },
+        });
+        if (atualizado.error) throw atualizado.error;
+      }
+      ids.push(usuario.id);
+      const { error } = await supabaseAdmin.from("profiles").upsert({
+        id: usuario.id,
+        tipo: conta.tipo,
+        nome: conta.nome,
+        cidade: conta.cidade,
+        bairros: conta.bairros,
+        bio: conta.bio,
+        especialidades: conta.especialidades,
+        tarifa_hora: conta.tipo === "cuidadora" ? 38 : 0,
+        tarifa_diaria: conta.tipo === "cuidadora" ? 240 : 0,
+        tarifa_plantao12: conta.tipo === "cuidadora" ? 320 : 0,
+        tarifa_plantao24: conta.tipo === "cuidadora" ? 540 : 0,
+        verificado: true,
+      });
+      if (error) throw error;
+      const dadosVerificacao = {
+          user_id: usuario.id,
+          status: "aprovado",
+          nome_documento: conta.nome,
+          cpf: conta.tipo === "familia" ? "123.456.789-00" : "987.654.321-00",
+          data_nascimento: "1988-05-12",
+          tipo_documento: "RG",
+          cpf_valido: true,
+          face_confere: true,
+          score: 98,
+          observacoes: "Perfil de simulação aprovado automaticamente.",
+          antecedentes_status: "aprovado",
+        };
+      const { data: verificacaoExistente } = await supabaseAdmin
+        .from("verificacoes")
+        .select("id")
+        .eq("user_id", usuario.id)
+        .limit(1)
+        .maybeSingle();
+      const { error: erroVerificacao } = verificacaoExistente
+        ? await supabaseAdmin.from("verificacoes").update(dadosVerificacao).eq("id", verificacaoExistente.id)
+        : await supabaseAdmin.from("verificacoes").insert(dadosVerificacao);
+      if (erroVerificacao) throw erroVerificacao;
+    }
+
+    const familiaId = ids[0]!;
+    const cuidadoraId = ids[1]!;
+    const { data: existente } = await supabaseAdmin
+      .from("contratos")
+      .select("id, reserva_id")
+      .eq("familia_id", familiaId)
+      .eq("cuidadora_id", cuidadoraId)
+      .eq("status", "ativo")
+      .limit(1)
+      .maybeSingle();
+    if (!existente) {
+      const agora = new Date().toISOString();
+      const inicio = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const reservaId = `RES-DEMO-${crypto.randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase()}`;
+      const { error } = await supabaseAdmin.from("contratos").insert({
+        reserva_id: reservaId,
+        emitido_em: agora,
+        familia_id: familiaId,
+        cuidadora_id: cuidadoraId,
+        criado_por: familiaId,
+        familia_nome: contas[0]!.nome,
+        familia_cpf: "123.456.789-00",
+        familia_cidade: "São Paulo",
+        familia_bairro: "Perdizes",
+        familia_verificada: true,
+        familia_telefone: "(11) 98888-1122",
+        cuidadora_nome: contas[1]!.nome,
+        cuidadora_cpf: "987.654.321-00",
+        cuidadora_cidade: "São Paulo",
+        cuidadora_verificada: true,
+        cuidadora_telefone: "(11) 97777-3344",
+        descricao_cuidado: "Acompanhamento da assistida, auxílio com mobilidade, medicação conforme ficha e companhia.",
+        endereco: "Rua Cardoso de Almeida, 1120 — Perdizes, São Paulo",
+        regime: "plantao12",
+        data_inicio: inicio,
+        hora_inicio: "07:00",
+        hora_fim: "19:00",
+        valor: 320,
+        taxa_percentual: 10,
+        observacoes: "Refeição da cuidadora combinada. Diário de bordo pelo aplicativo.",
+        termo_texto: "TERMO DE SIMULAÇÃO — reserva criada para testar o fluxo completo do CuidaJá.",
+        status: "ativo",
+        familia_aceite_em: agora,
+        familia_aceite_nome: contas[0]!.nome,
+        cuidadora_aceite_em: agora,
+        cuidadora_aceite_nome: contas[1]!.nome,
+        pagamento_status: "confirmado",
+        pago_em: agora,
+        pagamento_id: "demo-pagamento",
+      });
+      if (error) throw error;
+    }
+
+    return {
+      familia: { email: contas[0]!.email, senha, senhaExpiraEm },
+      cuidadora: { email: contas[1]!.email, senha, senhaExpiraEm },
+    };
+  });
+
 /** Arquivo jurídico: todos os documentos e fotos enviados por cuidadoras e famílias. */
 export const listarDocumentosNuvem = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

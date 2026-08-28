@@ -44,6 +44,7 @@ import {
   decidirVerificacao,
   definirVerificado,
   excluirPerfil,
+  criarPerfisSimulacao,
   imagensVerificacao,
   listarCadastros,
   listarVerificacoes,
@@ -97,6 +98,9 @@ function AdminPage() {
   const checarAdmin = useServerFn(souAdmin);
   const buscarCadastros = useServerFn(listarCadastros);
   const buscarVerificacoes = useServerFn(listarVerificacoes);
+  const criarSimulacao = useServerFn(criarPerfisSimulacao);
+  const [credenciaisDemo, setCredenciaisDemo] = useState<Awaited<ReturnType<typeof criarPerfisSimulacao>> | null>(null);
+  const [criandoDemo, setCriandoDemo] = useState(false);
 
   const acesso = useQuery({ queryKey: ["admin", "acesso"], queryFn: () => checarAdmin() });
   const habilitado = acesso.data?.admin === true;
@@ -145,6 +149,18 @@ function AdminPage() {
     (v: any) => v.status === "em_analise" || v.revisao_manual,
   );
 
+  const provisionarDemo = async () => {
+    setCriandoDemo(true);
+    try {
+      setCredenciaisDemo(await criarSimulacao({ data: undefined }));
+      toast.success("Ambiente de simulação pronto.");
+    } catch (erro) {
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível criar a simulação.");
+    } finally {
+      setCriandoDemo(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AdminHeader />
@@ -158,6 +174,31 @@ function AdminPage() {
             Cuidadoras e famílias são gerenciadas separadamente. Verificações aguardando conferência
             manual aparecem primeiro.
           </p>
+          <Card className="mt-4 border-primary/30">
+            <CardContent className="flex flex-wrap items-center gap-3 p-4">
+              <HeartHandshake className="size-5 text-primary" />
+              <div className="min-w-56 flex-1">
+                <p className="text-sm font-semibold">Simulação ponta a ponta</p>
+                <p className="text-xs text-muted-foreground">
+                  Cria família, cuidadora, verificações aprovadas e uma reserva ativa.
+                </p>
+              </div>
+              <Button size="sm" onClick={provisionarDemo} disabled={criandoDemo}>
+                {criandoDemo ? "Criando..." : "Criar perfis de simulação"}
+              </Button>
+            </CardContent>
+            {credenciaisDemo && (
+              <CardContent className="border-t border-border pt-4 text-sm">
+                <p className="font-medium">Credenciais geradas (senha válida para os dois acessos):</p>
+                <p className="mt-2">Família: <strong>{credenciaisDemo.familia.email}</strong></p>
+                <p>Cuidadora: <strong>{credenciaisDemo.cuidadora.email}</strong></p>
+                <p>Senha: <strong>{credenciaisDemo.familia.senha}</strong></p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Senha válida por 24 horas, até {new Date(credenciaisDemo.familia.senhaExpiraEm).toLocaleString("pt-BR")}. Ao criar novamente, uma nova senha será gerada.
+                </p>
+              </CardContent>
+            )}
+          </Card>
         </header>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
