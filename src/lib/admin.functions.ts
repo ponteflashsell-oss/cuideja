@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { DEMO_EMAIL_CUIDADORA, DEMO_EMAIL_FAMILIA, DEMO_SENHA } from "@/lib/demo";
 
 async function exigirAdmin(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase.rpc("has_role", {
@@ -236,11 +237,11 @@ export const criarPerfisSimulacao = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await exigirAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const senha = "CuidaJa#Demo2026";
+    const senha = DEMO_SENHA;
     const senhaExpiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     const contas = [
       {
-        email: "demo.familia@cuideja.app",
+        email: DEMO_EMAIL_FAMILIA,
         tipo: "familia" as const,
         nome: "Mariana Alencar",
         cidade: "São Paulo",
@@ -249,7 +250,7 @@ export const criarPerfisSimulacao = createServerFn({ method: "POST" })
         especialidades: ["Mobilidade reduzida", "Alzheimer e demências"],
       },
       {
-        email: "demo.cuidadora@cuideja.app",
+        email: DEMO_EMAIL_CUIDADORA,
         tipo: "cuidadora" as const,
         nome: "Ana Paula Ribeiro",
         cidade: "São Paulo",

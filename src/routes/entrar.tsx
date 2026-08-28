@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { renovarSessaoDemo } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/entrar")({
   ssr: false,
@@ -47,13 +48,7 @@ function EntrarPage() {
   const [carregando, setCarregando] = useState(false);
 
   const acessarPainel = async () => {
-    const { data } = await supabase.auth.getUser();
-    const expiraEm = data.user?.user_metadata?.demo_password_expires_at;
-    if (typeof expiraEm === "string" && new Date(expiraEm).getTime() <= Date.now()) {
-      await supabase.auth.signOut();
-      toast.error("A senha de simulação expirou. Gere novos acessos no painel admin.");
-      return;
-    }
+    await renovarSessaoDemo({ data: undefined });
     navigate({ to: "/painel-cuidadora", replace: true });
   };
 

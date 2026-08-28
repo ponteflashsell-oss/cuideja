@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { negociacoes, type Negociacao } from "@/data/painel-cuidadora";
+import { supabase } from "@/integrations/supabase/client";
+import { ehContaDemo } from "@/lib/demo";
 
 const abas = [
   { key: "analise", label: "Em análise" },
@@ -17,7 +19,22 @@ const abas = [
 export function Negociacoes() {
   const [ativo, setAtivo] = useState<Negociacao>(negociacoes[2]!);
   const [proposta, setProposta] = useState({ data: "2026-08-24", inicio: "07:00", fim: "19:00", valor: 320 });
+  const [permitida, setPermitida] = useState<boolean | null>(null);
   const termosValidos = Boolean(proposta.data && proposta.inicio && proposta.fim && proposta.valor > 0);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setPermitida(ehContaDemo(data.user?.email, "cuidadora")));
+  }, []);
+
+  if (permitida === null) return <p className="text-sm text-muted-foreground">Carregando negociação...</p>;
+  if (!permitida) {
+    return (
+      <section className="surface-card p-6">
+        <h2 className="text-lg font-semibold">Negociações de simulação</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Este fluxo está disponível apenas para a conta demo da cuidadora.</p>
+      </section>
+    );
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">

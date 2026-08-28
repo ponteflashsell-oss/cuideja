@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { conversasFamilia } from "@/data/painel-familia";
+import { supabase } from "@/integrations/supabase/client";
+import { ehContaDemo } from "@/lib/demo";
 
 const rotulo = {
   convite: "Convite enviado",
@@ -16,9 +18,24 @@ const rotulo = {
 export function ConversasFamilia() {
   const [ativa, setAtiva] = useState(conversasFamilia[0]?.id ?? "");
   const [mensagem, setMensagem] = useState("");
+  const [permitida, setPermitida] = useState<boolean | null>(null);
   const [termos, setTermos] = useState({ data: "2026-08-31", inicio: "07:00", fim: "19:00", valor: 320 });
   const conversa = conversasFamilia.find((c) => c.id === ativa);
   const valorValido = termos.valor > 0;
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setPermitida(ehContaDemo(data.user?.email, "familia")));
+  }, []);
+
+  if (permitida === null) return <p className="text-sm text-muted-foreground">Carregando conversa...</p>;
+  if (!permitida) {
+    return (
+      <section className="surface-card p-6">
+        <h2 className="text-lg font-semibold">Conversas de simulação</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Este fluxo de conversa e negociação está disponível apenas para a conta demo da família.</p>
+      </section>
+    );
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
