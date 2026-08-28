@@ -34,5 +34,16 @@ USING (EXISTS (SELECT 1 FROM public.conversas c WHERE c.id = conversa_id AND (c.
 CREATE POLICY "Participantes enviam mensagens" ON public.mensagens FOR INSERT TO authenticated
 WITH CHECK (remetente_id = auth.uid() AND EXISTS (SELECT 1 FROM public.conversas c WHERE c.id = conversa_id AND (c.familia_id = auth.uid() OR c.cuidadora_id = auth.uid())));
 
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 CREATE TRIGGER update_conversas_updated_at
 BEFORE UPDATE ON public.conversas FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

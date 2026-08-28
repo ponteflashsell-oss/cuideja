@@ -51,7 +51,14 @@ export function Negociacoes() {
       const criada = await enviarMensagem({ data: { mensagem: mensagem.trim() } });
       setMensagens((atual) => [...atual, criada]);
       setMensagem("");
-    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem."); }
+    } catch (erro) {
+      const mensagemErro = erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem.";
+      toast.error(
+        mensagemErro.includes("CHAT_DEMO_MIGRATION_NECESSARIA") || mensagemErro.includes("mensagens_conversa")
+          ? "O chat demo ainda não foi ativado no banco. Aplique a migração do chat e tente novamente."
+          : mensagemErro,
+      );
+    }
     finally { setEnviando(false); }
   };
 
@@ -184,8 +191,7 @@ export function Negociacoes() {
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <Button
               className="gap-2"
-              disabled={!termosValidos}
-              disabled={aceitando}
+              disabled={!termosValidos || aceitando}
               onClick={aceitarAgora}
             >
               <CheckCircle2 className="size-4" /> Aceitar agora

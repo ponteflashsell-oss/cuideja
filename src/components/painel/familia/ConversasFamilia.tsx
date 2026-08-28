@@ -52,7 +52,14 @@ export function ConversasFamilia() {
       const criada = await enviar({ data: { mensagem: mensagem.trim() } });
       setMensagens((atual) => [...atual, criada]);
       setMensagem("");
-    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem."); }
+    } catch (erro) {
+      const mensagemErro = erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem.";
+      toast.error(
+        mensagemErro.includes("CHAT_DEMO_MIGRATION_NECESSARIA") || mensagemErro.includes("mensagens_conversa")
+          ? "O chat demo ainda não foi ativado no banco. Aplique a migração do chat e tente novamente."
+          : mensagemErro,
+      );
+    }
     finally { setEnviando(false); }
   };
 

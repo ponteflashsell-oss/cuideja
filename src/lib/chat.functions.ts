@@ -28,7 +28,12 @@ export const listarMensagensDemo = createServerFn({ method: "POST" })
       .eq("familia_id", participantes.familiaId)
       .eq("cuidadora_id", participantes.cuidadoraId)
       .order("created_at");
-    if (error) throw error;
+    if (error) {
+      if (error.code === "42P01" || error.message.includes("mensagens_conversa")) {
+        throw new Error("CHAT_DEMO_MIGRATION_NECESSARIA");
+      }
+      throw error;
+    }
     return { ...participantes, mensagens: data ?? [] };
   });
 
@@ -46,6 +51,11 @@ export const enviarMensagemDemo = createServerFn({ method: "POST" })
       .insert({ ...participantes, remetente_id: context.userId, mensagem: data.mensagem })
       .select("id, remetente_id, mensagem, created_at")
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === "42P01" || error.message.includes("mensagens_conversa")) {
+        throw new Error("CHAT_DEMO_MIGRATION_NECESSARIA");
+      }
+      throw error;
+    }
     return criado;
   });
