@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { negociacoes, type Negociacao } from "@/data/painel-cuidadora";
 import { supabase } from "@/integrations/supabase/client";
 import { ehContaDemo } from "@/lib/demo";
+import { ChatReal } from "@/components/painel/ChatReal";
+import { enviarMensagemDemo, listarMensagensDemo } from "@/lib/chat.functions";
+import { finalizarContratoDemo } from "@/lib/demo.functions";
 
 const abas = [
   { key: "analise", label: "Em análise" },
@@ -20,21 +23,49 @@ export function Negociacoes() {
   const [ativo, setAtivo] = useState<Negociacao>(negociacoes[2]!);
   const [proposta, setProposta] = useState({ data: "2026-08-24", inicio: "07:00", fim: "19:00", valor: 320 });
   const [permitida, setPermitida] = useState<boolean | null>(null);
+  const [mensagens, setMensagens] = useState<{ id: string; remetente_id: string; mensagem: string }[]>([]);
+  const [userId, setUserId] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [aceitando, setAceitando] = useState(false);
+  const listarMensagens = useServerFn(listarMensagensDemo);
+  const enviarMensagem = useServerFn(enviarMensagemDemo);
+  const finalizar = useServerFn(finalizarContratoDemo);
   const termosValidos = Boolean(proposta.data && proposta.inicio && proposta.fim && proposta.valor > 0);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setPermitida(ehContaDemo(data.user?.email, "cuidadora")));
-  }, []);
+    supabase.auth.getUser().then(async ({ data }) => {
+      const demo = ehContaDemo(data.user?.email, "cuidadora");
+      setPermitida(demo);
+      if (data.user && demo) {
+        setUserId(data.user.id);
+        try { setMensagens((await listarMensagens({ data: undefined })).mensagens); } catch (erro) { console.error(erro); }
+      }
+    });
+  }, [listarMensagens]);
+
+  const enviar = async () => {
+    if (!mensagem.trim() || enviando) return;
+    setEnviando(true);
+    try {
+      const criada = await enviarMensagem({ data: { mensagem: mensagem.trim() } });
+      setMensagens((atual) => [...atual, criada]);
+      setMensagem("");
+    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem."); }
+    finally { setEnviando(false); }
+  };
+
+  const aceitarAgora = async () => {
+    setAceitando(true);
+    try {
+      await finalizar({ data: { valor: proposta.valor, dataInicio: proposta.data, horaInicio: proposta.inicio, horaFim: proposta.fim } });
+      toast.success("Contrato aceito e reserva finalizada.");
+    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível aceitar o contrato."); }
+    finally { setAceitando(false); }
+  };
 
   if (permitida === null) return <p className="text-sm text-muted-foreground">Carregando negociação...</p>;
-  if (!permitida) {
-    return (
-      <section className="surface-card p-6">
-        <h2 className="text-lg font-semibold">Negociações de simulação</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Este fluxo está disponível apenas para a conta demo da cuidadora.</p>
-      </section>
-    );
-  }
+  if (!permitida) return <ChatReal papel="cuidadora" />;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
@@ -88,10 +119,11 @@ export function Negociacoes() {
         </div>
 
         <div className="mt-4 grid gap-3 text-sm">
-          <p className="max-w-[85%] rounded-lg bg-muted px-3 py-2">{ativo.ultimaMensagem}</p>
-          <p className="ml-auto max-w-[85%] rounded-lg bg-primary px-3 py-2 text-primary-foreground">
-            Consigo sim. Vou enviar a proposta formal com data, horário e valor.
-          </p>
+          {mensagens.length === 0 ? <p className="max-w-[85%] rounded-lg bg-muted px-3 py-2">{ativo.ultimaMensagem}</p> : mensagens.map((item) => (
+            <p key={item.id} className={`max-w-[85%] rounded-lg px-3 py-2 ${item.remetente_id === userId ? "ml-auto bg-primary text-primary-foreground" : "bg-muted"}`}>
+              {item.mensagem}
+            </p>
+          ))}
         </div>
 
         <div className="mt-6 rounded-xl border border-border p-4">
@@ -153,7 +185,8 @@ export function Negociacoes() {
             <Button
               className="gap-2"
               disabled={!termosValidos}
-              onClick={() => toast.success(`Aceite enviado a ${ativo.familia}. O contrato será gerado após a confirmação da família.`)}
+              disabled={aceitando}
+              onClick={aceitarAgora}
             >
               <CheckCircle2 className="size-4" /> Aceitar agora
             </Button>
@@ -169,8 +202,8 @@ export function Negociacoes() {
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Input placeholder="Escreva uma mensagem" maxLength={500} />
-          <Button variant="outline" onClick={() => toast.success("Mensagem enviada.")}>
+          <Input placeholder="Escreva uma mensagem" maxLength={500} value={mensagem} onChange={(e) => setMensagem(e.target.value)} />
+          <Button variant="outline" disabled={enviando} onClick={enviar}>
             Enviar
           </Button>
         </div>

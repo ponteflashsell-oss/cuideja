@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,9 @@ import { cn } from "@/lib/utils";
 import { conversasFamilia } from "@/data/painel-familia";
 import { supabase } from "@/integrations/supabase/client";
 import { ehContaDemo } from "@/lib/demo";
+import { ChatReal } from "@/components/painel/ChatReal";
+import { finalizarContratoDemo } from "@/lib/demo.functions";
+import { enviarMensagemDemo, listarMensagensDemo } from "@/lib/chat.functions";
 
 const rotulo = {
   convite: "Convite enviado",
@@ -19,23 +23,50 @@ export function ConversasFamilia() {
   const [ativa, setAtiva] = useState(conversasFamilia[0]?.id ?? "");
   const [mensagem, setMensagem] = useState("");
   const [permitida, setPermitida] = useState<boolean | null>(null);
+  const [mensagens, setMensagens] = useState<{ id: string; remetente_id: string; mensagem: string }[]>([]);
+  const [userId, setUserId] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [contratando, setContratando] = useState(false);
+  const listar = useServerFn(listarMensagensDemo);
+  const enviar = useServerFn(enviarMensagemDemo);
+  const contratar = useServerFn(finalizarContratoDemo);
   const [termos, setTermos] = useState({ data: "2026-08-31", inicio: "07:00", fim: "19:00", valor: 320 });
   const conversa = conversasFamilia.find((c) => c.id === ativa);
   const valorValido = termos.valor > 0;
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setPermitida(ehContaDemo(data.user?.email, "familia")));
-  }, []);
+    supabase.auth.getUser().then(async ({ data }) => {
+      const demo = ehContaDemo(data.user?.email, "familia");
+      setPermitida(demo);
+      if (data.user && demo) {
+        setUserId(data.user.id);
+        try { setMensagens((await listar({ data: undefined })).mensagens); } catch (erro) { console.error(erro); }
+      }
+    });
+  }, [listar]);
+
+  const enviarMensagem = async () => {
+    if (!mensagem.trim() || enviando) return;
+    setEnviando(true);
+    try {
+      const criada = await enviar({ data: { mensagem: mensagem.trim() } });
+      setMensagens((atual) => [...atual, criada]);
+      setMensagem("");
+    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem."); }
+    finally { setEnviando(false); }
+  };
+
+  const contratarAgora = async () => {
+    setContratando(true);
+    try {
+      await contratar({ data: { valor: termos.valor, dataInicio: termos.data, horaInicio: termos.inicio, horaFim: termos.fim } });
+      toast.success("Contrato finalizado e reserva criada.");
+    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível finalizar o contrato."); }
+    finally { setContratando(false); }
+  };
 
   if (permitida === null) return <p className="text-sm text-muted-foreground">Carregando conversa...</p>;
-  if (!permitida) {
-    return (
-      <section className="surface-card p-6">
-        <h2 className="text-lg font-semibold">Conversas de simulação</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Este fluxo de conversa e negociação está disponível apenas para a conta demo da família.</p>
-      </section>
-    );
-  }
+  if (!permitida) return <ChatReal papel="familia" />;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
@@ -71,7 +102,11 @@ export function ConversasFamilia() {
             <h3 className="text-xl">{conversa.cuidadora}</h3>
             <p className="text-sm text-muted-foreground">{conversa.assunto}</p>
             <div className="mt-4 rounded-lg bg-muted px-4 py-3 text-sm">
-              {conversa.ultimaMensagem}
+              {mensagens.length === 0 ? conversa.ultimaMensagem : mensagens.map((item) => (
+                <p key={item.id} className={`mb-2 rounded-md px-3 py-2 ${item.remetente_id === userId ? "ml-8 bg-primary text-primary-foreground" : "mr-8 bg-background"}`}>
+                  {item.mensagem}
+                </p>
+              ))}
               <span className="mt-1 block text-xs text-muted-foreground">{conversa.quando}</span>
             </div>
 
@@ -134,7 +169,7 @@ export function ConversasFamilia() {
                   <Button
                     size="sm"
                     disabled={!termos.data || !valorValido}
-                    onClick={() => toast.success("Contratação enviada. A cuidadora precisa confirmar os termos.")}
+                    onClick={contratarAgora}
                   >
                     <CheckCircle2 className="size-4" /> Contratar agora
                   </Button>
@@ -158,11 +193,8 @@ export function ConversasFamilia() {
               />
               <Button
                 className="justify-self-start gap-2"
-                onClick={() => {
-                  if (!mensagem.trim()) return;
-                  setMensagem("");
-                  toast.success("Mensagem enviada.");
-                }}
+                disabled={enviando}
+                onClick={enviarMensagem}
               >
                 <Send className="size-4" /> Enviar
               </Button>

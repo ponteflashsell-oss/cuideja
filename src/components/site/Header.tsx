@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { HeartHandshake, Menu } from "lucide-react";
+import { HeartHandshake, LogIn, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ export function Header() {
           <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <HeartHandshake className="size-5" />
           </span>
-          <span className="font-display text-lg font-semibold tracking-tight">CuidaJá</span>
+          <span className="font-display text-lg font-semibold tracking-tight">CuideJá</span>
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
@@ -51,15 +51,21 @@ export function Header() {
         </div>
 
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="lg:hidden"
-          aria-label="Abrir menu"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <Menu className="size-4" />
-        </Button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <Button asChild variant="ghost" size="icon" aria-label="Entrar">
+            <Link to="/familia-entrar">
+              <LogIn className="size-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Abrir menu"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <Menu className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {open && (
