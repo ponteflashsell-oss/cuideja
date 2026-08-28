@@ -25,13 +25,18 @@ export const listarCadastros = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await exigirAdmin(context);
 
-    const { data: perfis, error } = await context.supabase
-      .from("profiles")
-      .select(
-        "id, tipo, nome, cidade, bairros, bio, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado, created_at",
-      )
-      .order("created_at", { ascending: false });
+    const [{ data: perfis, error }, { data: papeis }] = await Promise.all([
+      context.supabase
+        .from("profiles")
+        .select(
+          "id, tipo, nome, cidade, bairros, bio, especialidades, tarifa_hora, tarifa_diaria, tarifa_plantao12, tarifa_plantao24, verificado, created_at",
+        )
+        .order("created_at", { ascending: false }),
+      context.supabase.from("user_roles").select("user_id, role").eq("role", "admin"),
+    ]);
     if (error) throw new Error("Não foi possível carregar os cadastros.");
+
+    const admins = new Set((papeis ?? []).map((papel: { user_id: string }) => papel.user_id));
 
     const { data: verificacoes } = await context.supabase
       .from("verificacoes")
@@ -53,6 +58,7 @@ export const listarCadastros = createServerFn({ method: "GET" })
     return (perfis ?? []).map((p) => ({
       ...p,
       email: emails.get(p.id) ?? "",
+      admin: admins.has(p.id),
       verificacao: ultima.get(p.id) ?? null,
     }));
   });
@@ -247,6 +253,12 @@ export const listarDocumentosNuvem = createServerFn({ method: "GET" })
     const perfil = new Map<string, { nome: string; tipo: string }>();
     for (const p of perfis ?? []) perfil.set(p.id, { nome: p.nome, tipo: p.tipo });
 
+    const { data: papeis } = await context.supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    const admins = new Set((papeis ?? []).map((papel: { user_id: string }) => papel.user_id));
+
     type Arquivo = {
       chave: string;
       user_id: string;
@@ -268,6 +280,7 @@ export const listarDocumentosNuvem = createServerFn({ method: "GET" })
       chave: string,
     ) => {
       if (!caminho) return;
+      if (admins.has(user_id)) return;
       const p = perfil.get(user_id);
       itens.push({
         chave,

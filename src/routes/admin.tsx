@@ -79,6 +79,7 @@ export const Route = createFileRoute("/admin")({
 type Cadastro = {
   id: string;
   tipo: string;
+  admin: boolean;
   nome: string;
   cidade: string;
   email: string;
@@ -137,8 +138,9 @@ function AdminPage() {
   }
 
   const lista = cadastros.data ?? [];
-  const cuidadoras = lista.filter((c) => c.tipo !== "familia");
-  const familias = lista.filter((c) => c.tipo === "familia");
+  const cadastrosDeClientes = lista.filter((c) => !c.admin);
+  const cuidadoras = cadastrosDeClientes.filter((c) => c.tipo === "cuidadora");
+  const familias = cadastrosDeClientes.filter((c) => c.tipo === "familia");
   const pendentes = (verificacoes.data ?? []).filter(
     (v: any) => v.status === "em_analise" || v.revisao_manual,
   );
