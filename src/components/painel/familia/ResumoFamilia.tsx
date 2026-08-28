@@ -2,7 +2,7 @@ import { CheckCircle2, ClipboardList, MessageSquare, Search, ShieldCheck } from 
 import { Button } from "@/components/ui/button";
 import type { FamiliaStatus } from "@/hooks/useFamiliaStatus";
 
-export type SecaoFamilia = "inicio" | "perfil" | "buscar" | "pedidos" | "conversas";
+export type SecaoFamilia = "inicio" | "perfil" | "buscar" | "pedidos" | "conversas" | "reservas";
 
 export function ResumoFamilia({
   status,

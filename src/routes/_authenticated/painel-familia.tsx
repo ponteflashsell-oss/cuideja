@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ClipboardList,
+  CalendarCheck,
   LayoutDashboard,
   Lock,
   MessageSquare,
@@ -20,6 +21,7 @@ import { ConversasFamilia } from "@/components/painel/familia/ConversasFamilia";
 import { ResumoFamilia, type SecaoFamilia } from "@/components/painel/familia/ResumoFamilia";
 import { AcessoBloqueado } from "@/components/painel/AcessoBloqueado";
 import { useFamiliaStatus } from "@/hooks/useFamiliaStatus";
+import { Contratos } from "@/components/painel/Contratos";
 
 export const Route = createFileRoute("/_authenticated/painel-familia")({
   head: () => ({
@@ -53,6 +55,12 @@ const secoes = [
     label: "Conversas",
     ajuda: "Convites e propostas",
     icone: MessageSquare,
+  },
+  {
+    value: "reservas",
+    label: "Minhas reservas",
+    ajuda: "Atendimentos confirmados e checklist",
+    icone: CalendarCheck,
   },
 ] as const;
 
@@ -106,7 +114,7 @@ function PainelFamiliaPage() {
         )}
 
         <Tabs value={secao} onValueChange={(v) => irPara(v as SecaoFamilia)} className="mt-8">
-          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 p-1 md:grid-cols-5">
+          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 p-1 md:grid-cols-6">
             {secoes.map((s) => {
               const trancada = bloqueada(s.value);
               return (
@@ -147,6 +155,8 @@ function PainelFamiliaPage() {
                   <BuscaCuidadoras />
                 ) : valor === "pedidos" ? (
                   <PedidosFamilia />
+                ) : valor === "reservas" ? (
+                  <Contratos papel="familia" />
                 ) : (
                   <ConversasFamilia />
                 )}

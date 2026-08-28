@@ -4,6 +4,9 @@ import { FileText, HandshakeIcon, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BoasVindasReserva } from "@/components/painel/BoasVindasReserva";
+import { PreparacaoPlantao } from "@/components/painel/PreparacaoPlantao";
+import { listarAlertasPlantao, marcarAlertaPlantaoLido } from "@/lib/alertas.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,6 +63,8 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
   const carregarCuidadoras = useServerFn(listarCuidadorasContrato);
   const gerar = useServerFn(criarContrato);
   const responder = useServerFn(responderContrato);
+  const buscarAlertas = useServerFn(listarAlertasPlantao);
+  const marcarAlerta = useServerFn(marcarAlertaPlantaoLido);
 
   const [contratos, setContratos] = useState<Contrato[]>([]);
   const [userId, setUserId] = useState("");
@@ -68,6 +73,9 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
   const [salvando, setSalvando] = useState(false);
   const [respondendo, setRespondendo] = useState("");
   const [aberto, setAberto] = useState<Contrato | null>(null);
+  const [notificacoesAtivas, setNotificacoesAtivas] = useState(
+    typeof Notification !== "undefined" && Notification.permission === "granted",
+  );
 
   const [form, setForm] = useState({
     cuidadoraId: "",
@@ -100,6 +108,48 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
   useEffect(() => {
     void atualizar();
   }, [atualizar]);
+
+  useEffect(() => {
+    if (papel !== "familia" || !contratos.length) return;
+    let ativo = true;
+    const conferirAlertas = async () => {
+      try {
+        const alertas = await buscarAlertas({
+          data: { contratoIds: contratos.filter((c) => c.status === "ativo").map((c) => c.id) },
+        });
+        if (!ativo) return;
+        for (const alerta of alertas as { id: string; mensagem: string }[]) {
+          toast.error("Alerta da cuidadora", { description: alerta.mensagem, duration: 12000 });
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            new Notification("Alerta da cuidadora", { body: alerta.mensagem, tag: alerta.id });
+          }
+          await marcarAlerta({ data: { alertaId: alerta.id } });
+        }
+      } catch (erro) {
+        console.error("[plantao] alertas", erro);
+      }
+    };
+    void conferirAlertas();
+    const timer = window.setInterval(() => void conferirAlertas(), 15000);
+    return () => {
+      ativo = false;
+      window.clearInterval(timer);
+    };
+  }, [buscarAlertas, contratos, marcarAlerta, papel]);
+
+  const ativarNotificacoes = async () => {
+    if (typeof Notification === "undefined") {
+      toast.error("Este navegador não oferece notificações web.");
+      return;
+    }
+    const permissao = await Notification.requestPermission();
+    setNotificacoesAtivas(permissao === "granted");
+    toast[permissao === "granted" ? "success" : "info"](
+      permissao === "granted"
+        ? "Notificações ativas. Você receberá alertas da cuidadora enquanto esta área estiver aberta."
+        : "Ative as notificações do site nas configurações do navegador para receber alertas.",
+    );
+  };
 
   useEffect(() => {
     if (papel !== "familia") return;
@@ -373,6 +423,16 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
         </section>
       )}
 
+      {papel === "familia" && !notificacoesAtivas && (
+        <section className="surface-card flex flex-wrap items-center gap-3 border border-primary/30 p-4 text-sm">
+          <ShieldCheck className="size-5 shrink-0 text-primary" />
+          <p className="flex-1">
+            Ative as notificações deste site para receber atualizações e alarmes da cuidadora durante o plantão.
+          </p>
+          <Button size="sm" onClick={ativarNotificacoes}>Ativar notificações</Button>
+        </section>
+      )}
+
       <section className="surface-card p-6">
         <h2 className="flex items-center gap-2 text-2xl">
           <FileText className="size-5 text-primary" /> Termos e consentimentos
@@ -438,6 +498,8 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setAberto(c)}>
                     <FileText className="size-4" /> Ler termo completo
                   </Button>
+                  {c.status === "ativo" && papel === "familia" && <BoasVindasReserva reserva={c} />}
+                  {c.status === "ativo" && papel === "cuidadora" && <PreparacaoPlantao reserva={c} />}
                   {c.status === "aguardando" && !meuAceite(c) && (
                     <>
                       <Button

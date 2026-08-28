@@ -27,7 +27,14 @@ import type { PerfilStatus } from "@/hooks/usePerfilStatus";
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
-export type SecaoPainel = "inicio" | "perfil" | "mural" | "negociacoes" | "agenda" | "carteira";
+export type SecaoPainel =
+  | "inicio"
+  | "perfil"
+  | "mural"
+  | "negociacoes"
+  | "agenda"
+  | "carteira"
+  | "reservas";
 
 export function ResumoInicio({
   onIr,

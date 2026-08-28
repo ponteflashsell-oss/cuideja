@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const abas = [
 export function Negociacoes() {
   const [ativo, setAtivo] = useState<Negociacao>(negociacoes[2]!);
   const [proposta, setProposta] = useState({ data: "2026-08-24", inicio: "07:00", fim: "19:00", valor: 320 });
+  const termosValidos = Boolean(proposta.data && proposta.inicio && proposta.fim && proposta.valor > 0);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
@@ -77,7 +78,15 @@ export function Negociacoes() {
         </div>
 
         <div className="mt-6 rounded-xl border border-border p-4">
-          <h3 className="text-base">Proposta formal</h3>
+          <div className="flex items-start gap-3">
+            <CalendarClock className="mt-0.5 size-5 text-primary" />
+            <div>
+              <h3 className="text-base">Alinhe os termos do plantão</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Confirme data, horário e valor com a família. Quando estiver tudo certo, aceite para reservar o compromisso.
+              </p>
+            </div>
+          </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="p-data">Data</Label>
@@ -118,16 +127,28 @@ export function Negociacoes() {
               />
             </div>
           </div>
-          <Button
-            className="mt-4 w-full gap-2"
-            onClick={() =>
-              toast.success(
-                `Proposta enviada a ${ativo.familia}. Ao aceitar, o serviço entra na sua agenda.`,
-              )
-            }
-          >
-            <Send className="size-4" /> Enviar proposta formal
-          </Button>
+          <div className="mt-4 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+            <Banknote className="size-4 text-primary" />
+            <span>{proposta.inicio} às {proposta.fim}</span>
+            <strong className="ml-auto">R$ {proposta.valor.toFixed(2).replace(".", ",")}</strong>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Button
+              className="gap-2"
+              disabled={!termosValidos}
+              onClick={() => toast.success(`Aceite enviado a ${ativo.familia}. O contrato será gerado após a confirmação da família.`)}
+            >
+              <CheckCircle2 className="size-4" /> Aceitar agora
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              disabled={!termosValidos}
+              onClick={() => toast.success(`Proposta enviada a ${ativo.familia}.`)}
+            >
+              <Send className="size-4" /> Enviar proposta
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4 flex gap-2">

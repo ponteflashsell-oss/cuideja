@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   BellRing,
+  CalendarCheck,
   CalendarDays,
   LayoutDashboard,
   Lock,
@@ -24,6 +25,7 @@ import { CarteiraAvaliacoes } from "@/components/painel/CarteiraAvaliacoes";
 import { AcessoBloqueado } from "@/components/painel/AcessoBloqueado";
 import { ResumoInicio, type SecaoPainel } from "@/components/painel/ResumoInicio";
 import { usePerfilStatus } from "@/hooks/usePerfilStatus";
+import { Contratos } from "@/components/painel/Contratos";
 
 
 
@@ -55,10 +57,11 @@ const secoes = [
   { value: "mural", label: "Vagas", ajuda: "Trabalhos perto de você", icone: Search },
   { value: "negociacoes", label: "Conversas", ajuda: "Convites e propostas", icone: MessageSquare },
   { value: "agenda", label: "Agenda", ajuda: "Disponibilidade e plantões", icone: CalendarDays },
+  { value: "reservas", label: "Meus plantões", ajuda: "Reservas confirmadas e preparação", icone: CalendarCheck },
   { value: "carteira", label: "Carteira", ajuda: "Ganhos e avaliações", icone: Wallet },
 ] as const;
 
-const bloqueaveis: SecaoPainel[] = ["mural", "negociacoes", "agenda", "carteira"];
+const bloqueaveis: SecaoPainel[] = ["mural", "negociacoes", "agenda", "reservas", "carteira"];
 
 function PainelCuidadoraPage() {
   const [secao, setSecao] = useState<SecaoPainel>("inicio");
@@ -153,6 +156,8 @@ function PainelCuidadoraPage() {
                   <Negociacoes />
                 ) : valor === "agenda" ? (
                   <Agenda />
+                ) : valor === "reservas" ? (
+                  <Contratos papel="cuidadora" />
                 ) : (
                   <CarteiraAvaliacoes />
                 )}

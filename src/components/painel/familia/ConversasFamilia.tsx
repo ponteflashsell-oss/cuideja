@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,9 @@ const rotulo = {
 export function ConversasFamilia() {
   const [ativa, setAtiva] = useState(conversasFamilia[0]?.id ?? "");
   const [mensagem, setMensagem] = useState("");
+  const [termos, setTermos] = useState({ data: "2026-08-31", inicio: "07:00", fim: "19:00", valor: 320 });
   const conversa = conversasFamilia.find((c) => c.id === ativa);
+  const valorValido = termos.valor > 0;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
@@ -58,21 +60,73 @@ export function ConversasFamilia() {
 
             {conversa.status === "proposta" && (
               <div className="mt-4 rounded-lg border border-primary/40 p-4">
-                <p className="text-sm font-medium">Proposta formal</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Plantão de 12h, R$ 320 por dia, início na próxima segunda. Ao aceitar, o
-                  compromisso entra na sua agenda e a minuta de prestação de serviços é gerada.
-                </p>
+                <div className="flex items-start gap-3">
+                  <CalendarClock className="mt-0.5 size-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Confira e combine os termos</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Ajuste data, horário e valor antes de contratar. A agenda e o contrato só são criados após a confirmação.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="grid gap-1 text-xs font-medium">
+                    Data
+                    <input
+                      type="date"
+                      value={termos.data}
+                      onChange={(e) => setTermos((t) => ({ ...t, data: e.target.value }))}
+                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-xs font-medium">
+                    Valor do plantão (R$)
+                    <input
+                      type="number"
+                      min={1}
+                      value={termos.valor}
+                      onChange={(e) => setTermos((t) => ({ ...t, valor: Number(e.target.value) || 0 }))}
+                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-xs font-medium">
+                    Início
+                    <input
+                      type="time"
+                      value={termos.inicio}
+                      onChange={(e) => setTermos((t) => ({ ...t, inicio: e.target.value }))}
+                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-xs font-medium">
+                    Término
+                    <input
+                      type="time"
+                      value={termos.fim}
+                      onChange={(e) => setTermos((t) => ({ ...t, fim: e.target.value }))}
+                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
+                    />
+                  </label>
+                </div>
+                <div className="mt-4 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+                  <Banknote className="size-4 text-primary" />
+                  <span>{termos.inicio} às {termos.fim}</span>
+                  <strong className="ml-auto">R$ {termos.valor.toFixed(2).replace(".", ",")}</strong>
+                </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => toast.success("Proposta aceita e agendada.")}>
-                    Aceitar proposta
+                  <Button
+                    size="sm"
+                    disabled={!termos.data || !valorValido}
+                    onClick={() => toast.success("Contratação enviada. A cuidadora precisa confirmar os termos.")}
+                  >
+                    <CheckCircle2 className="size-4" /> Contratar agora
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => toast.info("Pedido de ajuste enviado à cuidadora.")}
                   >
-                    Pedir ajuste
+                    Ajustar termos
                   </Button>
                 </div>
               </div>
