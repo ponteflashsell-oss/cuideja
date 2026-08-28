@@ -29,7 +29,7 @@ export const listarMensagensDemo = createServerFn({ method: "POST" })
       .eq("cuidadora_id", participantes.cuidadoraId)
       .order("created_at");
     if (error) {
-      if (error.code === "42P01" || error.message.includes("mensagens_conversa")) {
+      if (error.code === "42P01") {
         throw new Error("CHAT_DEMO_MIGRATION_NECESSARIA");
       }
       throw error;
@@ -52,7 +52,7 @@ export const enviarMensagemDemo = createServerFn({ method: "POST" })
       .select("id, remetente_id, mensagem, created_at")
       .single();
     if (error) {
-      if (error.code === "42P01" || error.message.includes("mensagens_conversa")) {
+      if (error.code === "42P01") {
         throw new Error("CHAT_DEMO_MIGRATION_NECESSARIA");
       }
       throw error;
