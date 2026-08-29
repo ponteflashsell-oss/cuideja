@@ -130,7 +130,7 @@ export const responderProposta = createServerFn({ method: "POST" })
       updated_at?: string;
     } = {
       status,
-      observacao: data.observacao || undefined,
+      ...(data.observacao ? { observacao: data.observacao } : {}),
       updated_at: new Date().toISOString(),
     };
 
