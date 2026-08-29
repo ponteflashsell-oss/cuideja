@@ -13,16 +13,16 @@ export const Route = createFileRoute("/admin-entrar")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Acesso administrativo restrito | CuidaJá" },
+      { title: "Acesso administrativo restrito | CuideJá" },
       {
         name: "description",
         content:
-          "Entrada exclusiva da equipe administrativa do CuidaJá para conferência de verificações, cadastros e documentos.",
+          "Entrada exclusiva da equipe administrativa do CuideJá para conferência de verificações, cadastros e documentos.",
       },
-      { property: "og:title", content: "Acesso administrativo | CuidaJá" },
+      { property: "og:title", content: "Acesso administrativo | CuideJá" },
       {
         property: "og:description",
-        content: "Console interno do CuidaJá, separado da área das cuidadoras e das famílias.",
+        content: "Console interno do CuideJá, separado da área das cuidadoras e das famílias.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -79,7 +79,7 @@ function AdminEntrarPage() {
           </span>
           <h1 className="mt-4 text-3xl">Acesso administrativo</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Área interna da equipe CuidaJá, separada do painel de cuidadoras e famílias.
+            Área interna da equipe CuideJá, separada do painel de cuidadoras e famílias.
           </p>
 
           <form onSubmit={enviar} className="mt-6 grid gap-4">
@@ -91,7 +91,7 @@ function AdminEntrarPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={255}
-                placeholder="equipe@cuidaja.com"
+                placeholder="equipe@cuideja.com"
                 autoComplete="email"
               />
             </div>

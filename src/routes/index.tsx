@@ -22,13 +22,13 @@ import heroImg from "@/assets/hero-cuidadora.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CuidaJá — Cuidadores verificados perto de você" },
+      { title: "CuideJá — Cuidadores verificados perto de você" },
       {
         name: "description",
         content:
           "Encontre cuidadores autônomos verificados em todo o Brasil. Antecedentes checados, avaliações reais e contratação direta com segurança jurídica.",
       },
-      { property: "og:title", content: "CuidaJá — Cuidadores verificados perto de você" },
+      { property: "og:title", content: "CuideJá — Cuidadores verificados perto de você" },
       {
         property: "og:description",
         content:
@@ -286,7 +286,7 @@ function Index() {
           <div className="surface-card border-dashed p-8">
             <h2 className="text-2xl">Intermediação, não intermediação de emprego</h2>
             <p className="mt-3 max-w-3xl text-muted-foreground">
-              O CuidaJá é uma plataforma tecnológica de conexão. Os cuidadores são profissionais
+              O CuideJá é uma plataforma tecnológica de conexão. Os cuidadores são profissionais
               autônomos, sem subordinação, exclusividade ou jornada imposta pela plataforma. A
               contratação é celebrada diretamente entre família e profissional, com base na minuta
               disponibilizada.

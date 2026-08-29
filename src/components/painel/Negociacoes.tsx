@@ -43,7 +43,7 @@ export function Negociacoes() {
         : `${novos.length} novas propostas recebidas.`;
       toast.success(texto);
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        new Notification("Nova proposta no CuidaJá", {
+        new Notification("Nova proposta no CuideJá", {
           body: novos.length === 1 ? texto : `${novos.length} propostas aguardam sua resposta.`,
           tag: "propostas-cuidadora",
         });

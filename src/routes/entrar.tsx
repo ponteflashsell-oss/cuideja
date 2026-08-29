@@ -15,13 +15,13 @@ export const Route = createFileRoute("/entrar")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar no painel da cuidadora | CuidaJá" },
+      { title: "Entrar no painel da cuidadora | CuideJá" },
       {
         name: "description",
         content:
-          "Área exclusiva das cuidadoras CuidaJá: entre com e-mail e senha ou Google para acessar perfil, vagas, agenda e ganhos.",
+          "Área exclusiva das cuidadoras CuideJá: entre com e-mail e senha ou Google para acessar perfil, vagas, agenda e ganhos.",
       },
-      { property: "og:title", content: "Entrar no painel da cuidadora | CuidaJá" },
+      { property: "og:title", content: "Entrar no painel da cuidadora | CuideJá" },
       {
         property: "og:description",
         content: "Acesse sua conta para gerenciar perfil, candidaturas, agenda e pagamentos.",
@@ -121,7 +121,7 @@ function EntrarPage() {
           <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <HeartHandshake className="size-5" />
           </span>
-          <span className="font-display text-lg font-semibold tracking-tight">CuidaJá</span>
+          <span className="font-display text-lg font-semibold tracking-tight">CuideJá</span>
         </Link>
         <Button asChild variant="ghost" size="sm">
           <Link to="/">Voltar ao site</Link>

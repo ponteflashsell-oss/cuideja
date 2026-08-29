@@ -10,7 +10,7 @@ export function Footer() {
             <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <HeartHandshake className="size-4" />
             </span>
-            <span className="font-display text-lg font-semibold">CuidaJá</span>
+            <span className="font-display text-lg font-semibold">CuideJá</span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             Plataforma nacional de intermediação tecnológica entre famílias e cuidadores autônomos.
@@ -47,7 +47,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border px-5 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} CuidaJá Tecnologia. Intermediação de serviços — sem vínculo
+        © {new Date().getFullYear()} CuideJá Tecnologia. Intermediação de serviços — sem vínculo
         empregatício.
       </div>
     </footer>

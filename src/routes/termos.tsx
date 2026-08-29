@@ -6,13 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/termos")({
   head: () => ({
     meta: [
-      { title: "Termos de uso e minuta de prestação de serviços | CuidaJá" },
+      { title: "Termos de uso e minuta de prestação de serviços | CuideJá" },
       {
         name: "description",
         content:
           "Termos para famílias e profissionais autônomos e minuta padrão de prestação de serviços de cuidado, sem vínculo empregatício com a plataforma.",
       },
-      { property: "og:title", content: "Termos de uso e minuta | CuidaJá" },
+      { property: "og:title", content: "Termos de uso e minuta | CuideJá" },
       {
         property: "og:description",
         content: "Documentação base da intermediação: famílias, profissionais e minuta padrão.",

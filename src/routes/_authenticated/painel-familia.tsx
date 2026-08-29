@@ -26,13 +26,13 @@ import { Contratos } from "@/components/painel/Contratos";
 export const Route = createFileRoute("/_authenticated/painel-familia")({
   head: () => ({
     meta: [
-      { title: "Painel da família: buscar cuidadora e pedidos | CuidaJá" },
+      { title: "Painel da família: buscar cuidadora e pedidos | CuideJá" },
       {
         name: "description",
         content:
-          "Área da família CuidaJá: cadastre quem precisa de cuidado, verifique sua conta, busque cuidadoras verificadas, publique pedidos e combine plantões.",
+          "Área da família CuideJá: cadastre quem precisa de cuidado, verifique sua conta, busque cuidadoras verificadas, publique pedidos e combine plantões.",
       },
-      { property: "og:title", content: "Painel da família | CuidaJá" },
+      { property: "og:title", content: "Painel da família | CuideJá" },
       {
         property: "og:description",
         content:

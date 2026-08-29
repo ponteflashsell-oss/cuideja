@@ -32,13 +32,13 @@ import { Contratos } from "@/components/painel/Contratos";
 export const Route = createFileRoute("/_authenticated/painel-cuidadora")({
   head: () => ({
     meta: [
-      { title: "Painel da cuidadora: perfil, vagas e agenda | CuidaJá" },
+      { title: "Painel da cuidadora: perfil, vagas e agenda | CuideJá" },
       {
         name: "description",
         content:
           "Painel da cuidadora autônoma: vitrine profissional, mural de vagas, negociações com famílias, agenda de plantões e carteira de ganhos.",
       },
-      { property: "og:title", content: "Painel da cuidadora | CuidaJá" },
+      { property: "og:title", content: "Painel da cuidadora | CuideJá" },
       {
         property: "og:description",
         content:
