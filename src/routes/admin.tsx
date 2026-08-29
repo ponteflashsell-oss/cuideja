@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
 import { DossieCadastro } from "@/components/painel/DossieCadastro";
+import { GatewayDados } from "@/components/painel/GatewayDados";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -218,11 +220,17 @@ function AdminPage() {
             <TabsTrigger value="cuidadoras">Cuidadoras</TabsTrigger>
             <TabsTrigger value="familias">Famílias</TabsTrigger>
             <TabsTrigger value="documentos">Documentos</TabsTrigger>
+            <TabsTrigger value="gateway">Gateway de dados</TabsTrigger>
           </TabsList>
 
           <TabsContent value="documentos" className="mt-5">
             <ArquivoDocumentos />
           </TabsContent>
+
+          <TabsContent value="gateway" className="mt-5">
+            <GatewayDados />
+          </TabsContent>
+
 
           <TabsContent value="verificacoes" className="mt-5">
             <FilaVerificacoes
