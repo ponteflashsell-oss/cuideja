@@ -21,6 +21,7 @@ import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedPainelCuidadoraRouteImport } from './routes/_authenticated/painel-cuidadora'
 import { Route as AuthenticatedPainelFamiliaRouteImport } from './routes/_authenticated/painel-familia'
+import { Route as ApiPublicBootstrapAdminRouteImport } from './routes/api/public/bootstrap-admin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +84,11 @@ const AuthenticatedPainelFamiliaRoute =
     path: '/painel-familia',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicBootstrapAdminRoute = ApiPublicBootstrapAdminRouteImport.update({
+  id: '/api/public/bootstrap-admin',
+  path: '/api/public/bootstrap-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
+  '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
+  '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/_authenticated/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/_authenticated/painel-familia': typeof AuthenticatedPainelFamiliaRoute
+  '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/painel-cuidadora'
     | '/painel-familia'
+    | '/api/public/bootstrap-admin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/painel-cuidadora'
     | '/painel-familia'
+    | '/api/public/bootstrap-admin'
   id:
     | '__root__'
     | '/'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/_authenticated/painel-cuidadora'
     | '/_authenticated/painel-familia'
+    | '/api/public/bootstrap-admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   ParaProfissionaisRoute: typeof ParaProfissionaisRoute
   SegurancaRoute: typeof SegurancaRoute
   TermosRoute: typeof TermosRoute
+  ApiPublicBootstrapAdminRoute: typeof ApiPublicBootstrapAdminRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelFamiliaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/bootstrap-admin': {
+      id: '/api/public/bootstrap-admin'
+      path: '/api/public/bootstrap-admin'
+      fullPath: '/api/public/bootstrap-admin'
+      preLoaderRoute: typeof ApiPublicBootstrapAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -294,6 +314,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParaProfissionaisRoute: ParaProfissionaisRoute,
   SegurancaRoute: SegurancaRoute,
   TermosRoute: TermosRoute,
+  ApiPublicBootstrapAdminRoute: ApiPublicBootstrapAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
