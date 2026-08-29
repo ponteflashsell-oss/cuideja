@@ -60,7 +60,7 @@ export function ResumoFamilia({
           [
             ["buscar", "Buscar cuidadoras", "Perfis verificados perto de você", Search],
             ["pedidos", "Meus pedidos", "Publique a necessidade de cuidado", ClipboardList],
-            ["conversas", "Conversas", "Convites e propostas formais", MessageSquare],
+            ["conversas", "Propostas", "Convites e propostas formais", MessageSquare],
           ] as const
         ).map(([valor, titulo, texto, Icone]) => (
           <button

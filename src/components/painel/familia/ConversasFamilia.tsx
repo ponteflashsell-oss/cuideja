@@ -1,214 +1,219 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send } from "lucide-react";
+import { Banknote, CalendarClock, CheckCircle2, ClipboardList, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { conversasFamilia } from "@/data/painel-familia";
-import { supabase } from "@/integrations/supabase/client";
-import { ehContaDemo } from "@/lib/demo";
-import { ChatReal } from "@/components/painel/ChatReal";
-import { finalizarContratoDemo } from "@/lib/demo.functions";
-import { enviarMensagemDemo, listarMensagensDemo } from "@/lib/chat.functions";
+import { listarCuidadorasContrato } from "@/lib/contratos.functions";
+import { criarProposta, listarPropostasFamilia, responderProposta } from "@/lib/propostas.functions";
 
-const rotulo = {
-  convite: "Convite enviado",
-  conversa: "Em conversa",
-  proposta: "Proposta recebida",
+const rotuloStatus = {
+  pendente_cuidadora: "Pendente da cuidadora",
+  pendente_familia: "Aguardando sua decisão",
+  contraproposta: "Contraproposta",
+  aceita: "Aceita",
+  recusada: "Recusada",
+  expirada: "Expirada",
 } as const;
 
+const hoje = new Date().toISOString().slice(0, 10);
+
 export function ConversasFamilia() {
-  const [ativa, setAtiva] = useState(conversasFamilia[0]?.id ?? "");
-  const [mensagem, setMensagem] = useState("");
-  const [permitida, setPermitida] = useState<boolean | null>(null);
-  const [mensagens, setMensagens] = useState<{ id: string; remetente_id: string; mensagem: string }[]>([]);
-  const [userId, setUserId] = useState("");
+  const [cuidadoras, setCuidadoras] = useState<any[]>([]);
+  const [propostas, setPropostas] = useState<any[]>([]);
+  const [ativa, setAtiva] = useState<any | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [contratando, setContratando] = useState(false);
-  const listar = useServerFn(listarMensagensDemo);
-  const enviar = useServerFn(enviarMensagemDemo);
-  const contratar = useServerFn(finalizarContratoDemo);
-  const [termos, setTermos] = useState({ data: "2026-08-31", inicio: "07:00", fim: "19:00", valor: 320 });
-  const conversa = conversasFamilia.find((c) => c.id === ativa);
-  const valorValido = termos.valor > 0;
+  const [aceitando, setAceitando] = useState(false);
+  const [recusando, setRecusando] = useState(false);
+  const buscarCuidadoras = useServerFn(listarCuidadorasContrato);
+  const listar = useServerFn(listarPropostasFamilia);
+  const criar = useServerFn(criarProposta);
+  const responder = useServerFn(responderProposta);
+  const [form, setForm] = useState({
+    cuidadoraId: "",
+    dataServico: hoje,
+    horaInicio: "08:00",
+    horaFim: "18:00",
+    valorProposto: 180,
+    observacao: "",
+  });
+
+  const carregarDados = async () => {
+    const [listaCuidadoras, listaPropostas] = await Promise.all([
+      buscarCuidadoras({ data: undefined }),
+      listar({ data: undefined }),
+    ]);
+    setCuidadoras(listaCuidadoras ?? []);
+    setPropostas(listaPropostas ?? []);
+    setAtiva((atual) => {
+      const proximo = (listaPropostas ?? []).find((item: any) => item.id === atual?.id) ?? (listaPropostas ?? [])[0] ?? null;
+      return proximo;
+    });
+    if (!form.cuidadoraId && (listaCuidadoras ?? []).length) {
+      setForm((atual) => ({ ...atual, cuidadoraId: listaCuidadoras[0].id }));
+    }
+  };
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      const demo = ehContaDemo(data.user?.email, "familia");
-      setPermitida(demo);
-      if (data.user && demo) {
-        setUserId(data.user.id);
-        try { setMensagens((await listar({ data: undefined })).mensagens); } catch (erro) { console.error(erro); }
-      }
+    void carregarDados().catch((erro) => {
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível carregar as propostas.");
     });
-  }, [listar]);
+  }, [buscarCuidadoras, listar]);
 
-  const enviarMensagem = async () => {
-    if (!mensagem.trim() || enviando) return;
+  const enviarProposta = async () => {
+    if (!form.cuidadoraId || !form.dataServico || form.valorProposto <= 0) {
+      toast.error("Selecione uma cuidadora e informe um valor válido.");
+      return;
+    }
     setEnviando(true);
     try {
-      const criada = await enviar({ data: { mensagem: mensagem.trim() } });
-      setMensagens((atual) => [...atual, criada]);
-      setMensagem("");
+      await criar({
+        data: {
+          cuidadoraId: form.cuidadoraId,
+          dataServico: form.dataServico,
+          horaInicio: form.horaInicio,
+          horaFim: form.horaFim,
+          valorProposto: Number(form.valorProposto),
+          observacao: form.observacao,
+        },
+      });
+      toast.success("Proposta enviada para a cuidadora.");
+      setForm((atual) => ({ ...atual, dataServico: hoje, horaInicio: "08:00", horaFim: "18:00", valorProposto: 180, observacao: "" }));
+      await carregarDados();
     } catch (erro) {
-      const mensagemErro = erro instanceof Error ? erro.message : "Não foi possível enviar a mensagem.";
-      toast.error(
-        mensagemErro.includes("CHAT_DEMO_MIGRATION_NECESSARIA") || mensagemErro.includes("mensagens_conversa")
-          ? "O chat demo ainda não foi ativado no banco. Aplique a migração do chat e tente novamente."
-          : mensagemErro,
-      );
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a proposta.");
+    } finally {
+      setEnviando(false);
     }
-    finally { setEnviando(false); }
   };
 
-  const contratarAgora = async () => {
-    setContratando(true);
+  const atualizarStatus = async (acao: "aceitar" | "recusar") => {
+    if (!ativa) return;
+    const operacao = acao === "aceitar" ? setAceitando : setRecusando;
+    operacao(true);
     try {
-      await contratar({ data: { valor: termos.valor, dataInicio: termos.data, horaInicio: termos.inicio, horaFim: termos.fim } });
-      toast.success("Contrato finalizado e reserva criada.");
-    } catch (erro) { toast.error(erro instanceof Error ? erro.message : "Não foi possível finalizar o contrato."); }
-    finally { setContratando(false); }
+      await responder({ data: { id: ativa.id, acao } });
+      toast.success(acao === "aceitar" ? "Proposta aceita." : "Proposta recusada.");
+      await carregarDados();
+    } catch (erro) {
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível atualizar a proposta.");
+    } finally {
+      operacao(false);
+    }
   };
-
-  if (permitida === null) return <p className="text-sm text-muted-foreground">Carregando conversa...</p>;
-  if (!permitida) return <ChatReal papel="familia" />;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+    <div className="grid gap-6 lg:grid-cols-[0.9fr_1.4fr]">
       <section className="surface-card p-4">
         <h2 className="flex items-center gap-2 px-2 py-1 text-lg">
-          <MessageSquare className="size-4 text-primary" /> Conversas
+          <MessageSquare className="size-4 text-primary" /> Propostas
         </h2>
-        <ul className="mt-2 grid gap-2">
-          {conversasFamilia.map((c) => (
-            <li key={c.id}>
+        <div className="mt-3 grid gap-2">
+          {propostas.length === 0 ? (
+            <p className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">Nenhuma proposta enviada ainda.</p>
+          ) : (
+            propostas.map((proposta) => (
               <button
+                key={proposta.id}
                 type="button"
-                onClick={() => setAtiva(c.id)}
-                className={cn(
-                  "w-full rounded-lg px-3 py-2.5 text-left transition-colors",
-                  ativa === c.id ? "bg-primary/10" : "bg-muted hover:bg-muted/70",
-                )}
+                onClick={() => setAtiva(proposta)}
+                className={`rounded-lg border p-3 text-left transition-colors ${ativa?.id === proposta.id ? "border-primary bg-primary/5" : "border-border bg-muted/40 hover:bg-muted"}`}
               >
-                <p className="text-sm font-medium">{c.cuidadora}</p>
-                <p className="truncate text-xs text-muted-foreground">{c.ultimaMensagem}</p>
-                <Badge variant="outline" className="mt-2">
-                  {rotulo[c.status]}
-                </Badge>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">{proposta.cuidadora?.nome ?? "Cuidadora"}</p>
+                  <Badge variant="outline">{rotuloStatus[proposta.status as keyof typeof rotuloStatus] ?? proposta.status}</Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{proposta.data_servico} · {proposta.hora_inicio} às {proposta.hora_fim}</p>
+                <p className="mt-2 text-sm font-medium text-primary">R$ {Number(proposta.valor_proposto).toFixed(2).replace(".", ",")}</p>
               </button>
-            </li>
-          ))}
-        </ul>
+            ))
+          )}
+        </div>
       </section>
 
-      <section className="surface-card p-6">
-        {conversa ? (
-          <>
-            <h3 className="text-xl">{conversa.cuidadora}</h3>
-            <p className="text-sm text-muted-foreground">{conversa.assunto}</p>
-            <div className="mt-4 rounded-lg bg-muted px-4 py-3 text-sm">
-              {mensagens.length === 0 ? conversa.ultimaMensagem : mensagens.map((item) => (
-                <p key={item.id} className={`mb-2 rounded-md px-3 py-2 ${item.remetente_id === userId ? "ml-8 bg-primary text-primary-foreground" : "mr-8 bg-background"}`}>
-                  {item.mensagem}
-                </p>
+      <section className="surface-card p-5">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <ClipboardList className="size-4 text-primary" />
+          <h3 className="text-lg">Nova proposta</h3>
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="cuidadora">Cuidadora</Label>
+            <select
+              id="cuidadora"
+              value={form.cuidadoraId}
+              onChange={(e) => setForm((atual) => ({ ...atual, cuidadoraId: e.target.value }))}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {cuidadoras.map((cuidadora) => (
+                <option key={cuidadora.id} value={cuidadora.id}>{cuidadora.nome}</option>
               ))}
-              <span className="mt-1 block text-xs text-muted-foreground">{conversa.quando}</span>
+            </select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="data">Data</Label>
+              <Input id="data" type="date" value={form.dataServico} onChange={(e) => setForm((atual) => ({ ...atual, dataServico: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="valor">Valor oferecido (R$)</Label>
+              <Input id="valor" type="number" min={1} value={form.valorProposto} onChange={(e) => setForm((atual) => ({ ...atual, valorProposto: Number(e.target.value) || 0 }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="inicio">Início</Label>
+              <Input id="inicio" type="time" value={form.horaInicio} onChange={(e) => setForm((atual) => ({ ...atual, horaInicio: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="fim">Término</Label>
+              <Input id="fim" type="time" value={form.horaFim} onChange={(e) => setForm((atual) => ({ ...atual, horaFim: e.target.value }))} />
+            </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="observacao">Observação curta</Label>
+            <Textarea id="observacao" rows={3} value={form.observacao} maxLength={140} onChange={(e) => setForm((atual) => ({ ...atual, observacao: e.target.value }))} placeholder="Ex.: idoso de 82 anos, lúcido e com mobilidade reduzida." />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm">
+            <span className="flex items-center gap-2"><Banknote className="size-4 text-primary" /> Resumo</span>
+            <strong>{form.horaInicio} às {form.horaFim} · R$ {Number(form.valorProposto || 0).toFixed(2).replace(".", ",")}</strong>
+          </div>
+
+          <Button size="lg" onClick={enviarProposta} disabled={enviando}>
+            <Send className="size-4" /> {enviando ? "Enviando..." : "Enviar proposta"}
+          </Button>
+        </div>
+
+        {ativa && (
+          <div className="mt-6 rounded-lg border border-border p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-base font-medium">Detalhes da proposta</h4>
+              <Badge variant="secondary">{rotuloStatus[ativa.status as keyof typeof rotuloStatus] ?? ativa.status}</Badge>
+            </div>
+            <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
+              <p><strong className="text-foreground">Cuidadora:</strong> {ativa.cuidadora?.nome ?? "Cuidadora"}</p>
+              <p><strong className="text-foreground">Data:</strong> {ativa.data_servico}</p>
+              <p><strong className="text-foreground">Horário:</strong> {ativa.hora_inicio} às {ativa.hora_fim}</p>
+              <p><strong className="text-foreground">Valor:</strong> R$ {Number(ativa.valor_proposto).toFixed(2).replace(".", ",")}</p>
+              <p><strong className="text-foreground">Observação:</strong> {ativa.observacao || "Sem observações."}</p>
             </div>
 
-            {conversa.status === "proposta" && (
-              <div className="mt-4 rounded-lg border border-primary/40 p-4">
-                <div className="flex items-start gap-3">
-                  <CalendarClock className="mt-0.5 size-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Confira e combine os termos</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Ajuste data, horário e valor antes de contratar. A agenda e o contrato só são criados após a confirmação.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <label className="grid gap-1 text-xs font-medium">
-                    Data
-                    <input
-                      type="date"
-                      value={termos.data}
-                      onChange={(e) => setTermos((t) => ({ ...t, data: e.target.value }))}
-                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
-                    />
-                  </label>
-                  <label className="grid gap-1 text-xs font-medium">
-                    Valor do plantão (R$)
-                    <input
-                      type="number"
-                      min={1}
-                      value={termos.valor}
-                      onChange={(e) => setTermos((t) => ({ ...t, valor: Number(e.target.value) || 0 }))}
-                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
-                    />
-                  </label>
-                  <label className="grid gap-1 text-xs font-medium">
-                    Início
-                    <input
-                      type="time"
-                      value={termos.inicio}
-                      onChange={(e) => setTermos((t) => ({ ...t, inicio: e.target.value }))}
-                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
-                    />
-                  </label>
-                  <label className="grid gap-1 text-xs font-medium">
-                    Término
-                    <input
-                      type="time"
-                      value={termos.fim}
-                      onChange={(e) => setTermos((t) => ({ ...t, fim: e.target.value }))}
-                      className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal"
-                    />
-                  </label>
-                </div>
-                <div className="mt-4 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
-                  <Banknote className="size-4 text-primary" />
-                  <span>{termos.inicio} às {termos.fim}</span>
-                  <strong className="ml-auto">R$ {termos.valor.toFixed(2).replace(".", ",")}</strong>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    disabled={!termos.data || !valorValido}
-                    onClick={contratarAgora}
-                  >
-                    <CheckCircle2 className="size-4" /> Contratar agora
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toast.info("Pedido de ajuste enviado à cuidadora.")}
-                  >
-                    Ajustar termos
-                  </Button>
-                </div>
+            {(ativa.status === "pendente_familia" || ativa.status === "contraproposta") && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
+                  <CheckCircle2 className="size-4" /> {aceitando ? "Aguardando..." : "Aceitar proposta"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => void atualizarStatus("recusar")} disabled={recusando}>
+                  <CalendarClock className="size-4" /> {recusando ? "Aguardando..." : "Recusar"}
+                </Button>
               </div>
             )}
-
-            <div className="mt-5 grid gap-2">
-              <Textarea
-                value={mensagem}
-                onChange={(e) => setMensagem(e.target.value.slice(0, 500))}
-                rows={3}
-                placeholder="Escreva para a cuidadora..."
-              />
-              <Button
-                className="justify-self-start gap-2"
-                disabled={enviando}
-                onClick={enviarMensagem}
-              >
-                <Send className="size-4" /> Enviar
-              </Button>
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">Nenhuma conversa iniciada.</p>
+          </div>
         )}
       </section>
     </div>

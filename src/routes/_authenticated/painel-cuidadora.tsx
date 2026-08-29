@@ -55,7 +55,7 @@ const secoes = [
   { value: "inicio", label: "Início", ajuda: "Resumo do dia", icone: LayoutDashboard },
   { value: "perfil", label: "Meu perfil", ajuda: "Sua vitrine e tarifas", icone: UserRound },
   { value: "mural", label: "Vagas", ajuda: "Trabalhos perto de você", icone: Search },
-  { value: "negociacoes", label: "Conversas", ajuda: "Convites e propostas", icone: MessageSquare },
+  { value: "negociacoes", label: "Propostas", ajuda: "Convites e propostas formais", icone: MessageSquare },
   { value: "agenda", label: "Agenda", ajuda: "Disponibilidade e plantões", icone: CalendarDays },
   { value: "reservas", label: "Meus plantões", ajuda: "Reservas confirmadas e preparação", icone: CalendarCheck },
   { value: "carteira", label: "Carteira", ajuda: "Ganhos e avaliações", icone: Wallet },

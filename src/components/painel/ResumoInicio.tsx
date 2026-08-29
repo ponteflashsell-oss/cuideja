@@ -289,7 +289,7 @@ function ResumoVerificacao({
         <div className="mt-4 grid gap-4 sm:grid-cols-4">
           {[
             { icone: Search, t: "Vagas", d: "Mural de trabalhos na sua região." },
-            { icone: MessageSquare, t: "Conversas", d: "Convites e propostas formais." },
+            { icone: MessageSquare, t: "Propostas", d: "Convites e propostas formais." },
             { icone: CalendarDays, t: "Agenda", d: "Disponibilidade e plantões." },
             { icone: Wallet, t: "Carteira", d: "Ganhos e avaliações." },
           ].map((c) => (

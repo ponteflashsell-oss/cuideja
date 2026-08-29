@@ -52,8 +52,8 @@ const secoes = [
   { value: "pedidos", label: "Pedidos", ajuda: "Publique a necessidade", icone: ClipboardList },
   {
     value: "conversas",
-    label: "Conversas",
-    ajuda: "Convites e propostas",
+    label: "Propostas",
+    ajuda: "Convites e propostas formais",
     icone: MessageSquare,
   },
   {
