@@ -15,13 +15,13 @@ import { especialidades } from "@/data/caregivers";
 export const Route = createFileRoute("/para-profissionais")({
   head: () => ({
     meta: [
-      { title: "Cadastro de cuidadores autônomos | CuidaJá" },
+      { title: "Cadastro de cuidadores autônomos | CuideJá" },
       {
         name: "description",
         content:
           "Cadastre-se como cuidador autônomo: você define agenda e preços, envia documentos uma vez e recebe o selo de perfil verificado.",
       },
-      { property: "og:title", content: "Cadastro de cuidadores autônomos | CuidaJá" },
+      { property: "og:title", content: "Cadastro de cuidadores autônomos | CuideJá" },
       {
         property: "og:description",
         content: "Liberdade de agenda e preços, com verificação que gera confiança nas famílias.",
@@ -86,7 +86,7 @@ function ProfissionaisPage() {
               Sua autonomia, com a confiança que as famílias procuram.
             </h1>
             <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-              No CuidaJá você é profissional autônomo: define agenda, preços, região e quais
+              No CuideJá você é profissional autônomo: define agenda, preços, região e quais
               atendimentos aceita. Nós cuidamos da vitrine, da triagem e dos documentos.
             </p>
             <div className="mt-10 grid gap-5 md:grid-cols-4">

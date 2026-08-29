@@ -19,13 +19,13 @@ export const Route = createFileRoute("/cuidadores")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Cuidadores verificados por cidade | CuidaJá" },
+      { title: "Cuidadores verificados por cidade | CuideJá" },
       {
         name: "description",
         content:
           "Compare cuidadores autônomos verificados: especialidade, diária, avaliações e selo de antecedentes checados.",
       },
-      { property: "og:title", content: "Cuidadores verificados por cidade | CuidaJá" },
+      { property: "og:title", content: "Cuidadores verificados por cidade | CuideJá" },
       {
         property: "og:description",
         content: "Perfis com verificação de CPF, antecedentes e biometria facial.",

@@ -65,7 +65,7 @@ CLAUSULA 1 - DO OBJETO
 CLAUSULA 2 - DA AUTONOMIA E AUSENCIA DE VINCULO
 2.1. A CONTRATADA declara ser profissional autonoma, atuando por conta propria, sem relacao de exclusividade, subordinacao juridica, habitualidade compulsoria ou vinculo empregaticio com o CONTRATANTE.
 2.2. A CONTRATADA possui liberdade para gerenciar sua agenda, aceitar ou recusar atendimentos e prestar servicos a outros tomadores ou plataformas.
-2.3. A CuidaJa atua exclusivamente como intermediadora tecnologica, nao sendo parte integrante deste contrato nem empregadora de qualquer das partes.
+2.3. A CuideJa atua exclusivamente como intermediadora tecnologica, nao sendo parte integrante deste contrato nem empregadora de qualquer das partes.
 
 CLAUSULA 3 - DAS OBRIGACOES DA CONTRATADA
 3.1. Apresentar-se no local no horario de entrada e prestar os servicos com zelo, pontualidade, respeito e etica ate o horario de saida.

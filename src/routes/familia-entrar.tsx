@@ -15,13 +15,13 @@ export const Route = createFileRoute("/familia-entrar")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar na área da família | CuidaJá" },
+      { title: "Entrar na área da família | CuideJá" },
       {
         name: "description",
         content:
-          "Área das famílias CuidaJá: entre com e-mail e senha ou Google para buscar cuidadoras verificadas, publicar pedidos e combinar plantões.",
+          "Área das famílias CuideJá: entre com e-mail e senha ou Google para buscar cuidadoras verificadas, publicar pedidos e combinar plantões.",
       },
-      { property: "og:title", content: "Entrar na área da família | CuidaJá" },
+      { property: "og:title", content: "Entrar na área da família | CuideJá" },
       {
         property: "og:description",
         content: "Acesse sua conta para encontrar cuidadoras verificadas e organizar os cuidados.",
@@ -135,7 +135,7 @@ function FamiliaEntrarPage() {
           <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <HeartHandshake className="size-5" />
           </span>
-          <span className="font-display text-lg font-semibold tracking-tight">CuidaJá</span>
+          <span className="font-display text-lg font-semibold tracking-tight">CuideJá</span>
         </Link>
         <Button asChild variant="ghost" size="sm">
           <Link to="/">Voltar ao site</Link>

@@ -210,7 +210,7 @@ export function PerfilFamilia() {
           <AnaliseIdentidade onEnviado={() => setBiometriaEnviada(true)} />
           <p className="mt-3 text-xs text-muted-foreground">
             Nada é reprovado automaticamente: cada envio fica salvo e passa por conferência manual da
-            equipe CuidaJá, conforme a LGPD.
+            equipe CuideJá, conforme a LGPD.
           </p>
         </section>
       </div>

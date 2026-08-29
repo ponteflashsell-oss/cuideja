@@ -7,13 +7,13 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/seguranca")({
   head: () => ({
     meta: [
-      { title: "Verificação de antecedentes e LGPD | CuidaJá" },
+      { title: "Verificação de antecedentes e LGPD | CuideJá" },
       {
         name: "description",
         content:
           "Como funciona a verificação automática de CPF, antecedentes criminais e identidade dos cuidadores, com consentimento LGPD.",
       },
-      { property: "og:title", content: "Verificação de antecedentes e LGPD | CuidaJá" },
+      { property: "og:title", content: "Verificação de antecedentes e LGPD | CuideJá" },
       {
         property: "og:description",
         content:

@@ -103,14 +103,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CuidaJá — Cuidadores verificados perto de você" },
+      { title: "CuideJá — Cuidadores verificados perto de você" },
       {
         name: "description",
         content:
           "Marketplace nacional que conecta famílias a cuidadores autônomos verificados, com triagem de antecedentes e contratação direta.",
       },
-      { name: "author", content: "CuidaJá" },
-      { property: "og:title", content: "CuidaJá — Cuidadores verificados perto de você" },
+      { name: "author", content: "CuideJá" },
+      { property: "og:title", content: "CuideJá — Cuidadores verificados perto de você" },
       {
         property: "og:description",
         content: "Conexão direta entre famílias e cuidadores autônomos verificados.",

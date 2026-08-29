@@ -59,13 +59,13 @@ export const Route = createFileRoute("/admin")({
   },
   head: () => ({
     meta: [
-      { title: "Admin: cadastros de cuidadoras e famílias | CuidaJá" },
+      { title: "Admin: cadastros de cuidadoras e famílias | CuideJá" },
       {
         name: "description",
         content:
-          "Painel administrativo do CuidaJá: conferência manual de verificações, aprovação de cuidadoras e gestão de cadastros de famílias.",
+          "Painel administrativo do CuideJá: conferência manual de verificações, aprovação de cuidadoras e gestão de cadastros de famílias.",
       },
-      { property: "og:title", content: "Painel administrativo | CuidaJá" },
+      { property: "og:title", content: "Painel administrativo | CuideJá" },
       {
         property: "og:description",
         content: "Aprove verificações, libere selos e acompanhe cadastros de cuidadoras e famílias.",
@@ -97,7 +97,7 @@ const dataBr = (iso: string) =>
 const CREDENCIAIS_DEMO = {
   familia: "demo.familia@cuideja.app",
   cuidadora: "demo.cuidadora@cuideja.app",
-  senha: "CuidaJa#Demo2026",
+  senha: "CuideJa#Demo2026",
 };
 
 function AdminPage() {
@@ -139,7 +139,7 @@ function AdminPage() {
           <ShieldAlert className="mx-auto size-10 text-muted-foreground" />
           <h1 className="mt-4 font-display text-2xl font-semibold">Área restrita</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Esta página é exclusiva da equipe administrativa do CuidaJá. Se você deveria ter acesso,
+            Esta página é exclusiva da equipe administrativa do CuideJá. Se você deveria ter acesso,
             peça para a sua conta receber o papel de administrador.
           </p>
         </div>
