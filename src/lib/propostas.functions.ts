@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { nomesDePerfis } from "./propostas.server";
 
 const uuid = z.string().uuid();
 const horaSchema = z.string().regex(/^\d{2}:\d{2}$/);
