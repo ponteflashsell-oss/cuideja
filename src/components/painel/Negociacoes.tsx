@@ -52,7 +52,7 @@ export function Negociacoes() {
 
     ultimoIdsRef.current = idsAtuais;
     setPropostas(lista ?? []);
-    setAtiva((atual) => {
+    setAtiva((atual: any) => {
       const proximo = (lista ?? []).find((item: any) => item.id === atual?.id) ?? (lista ?? [])[0] ?? null;
       return proximo;
     });

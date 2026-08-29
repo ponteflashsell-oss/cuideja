@@ -44,8 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      alertas_plantao: {
+        Row: {
+          contrato_id: string
+          created_at: string
+          criado_por: string
+          id: string
+          lido_em: string | null
+          mensagem: string
+        }
+        Insert: {
+          contrato_id: string
+          created_at?: string
+          criado_por: string
+          id?: string
+          lido_em?: string | null
+          mensagem: string
+        }
+        Update: {
+          contrato_id?: string
+          created_at?: string
+          criado_por?: string
+          id?: string
+          lido_em?: string | null
+          mensagem?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertas_plantao_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contratos: {
         Row: {
+          assistido_nome: string
+          checkout_url: string | null
           created_at: string
           criado_por: string
           cuidadora_aceite_em: string | null
@@ -54,10 +91,12 @@ export type Database = {
           cuidadora_cpf: string
           cuidadora_id: string
           cuidadora_nome: string
+          cuidadora_telefone: string
           cuidadora_verificada: boolean
           data_fim: string | null
           data_inicio: string
           descricao_cuidado: string
+          emitido_em: string
           endereco: string
           familia_aceite_em: string | null
           familia_aceite_nome: string
@@ -66,14 +105,19 @@ export type Database = {
           familia_cpf: string
           familia_id: string
           familia_nome: string
+          familia_telefone: string
           familia_verificada: boolean
           hora_fim: string
           hora_inicio: string
           id: string
           motivo_recusa: string
           observacoes: string
+          pagamento_id: string | null
+          pagamento_status: string
+          pago_em: string | null
           recusado_por: string | null
           regime: string
+          reserva_id: string
           status: string
           taxa_percentual: number
           termo_texto: string
@@ -81,6 +125,8 @@ export type Database = {
           valor: number
         }
         Insert: {
+          assistido_nome?: string
+          checkout_url?: string | null
           created_at?: string
           criado_por: string
           cuidadora_aceite_em?: string | null
@@ -89,10 +135,12 @@ export type Database = {
           cuidadora_cpf?: string
           cuidadora_id: string
           cuidadora_nome?: string
+          cuidadora_telefone?: string
           cuidadora_verificada?: boolean
           data_fim?: string | null
           data_inicio: string
           descricao_cuidado?: string
+          emitido_em?: string
           endereco?: string
           familia_aceite_em?: string | null
           familia_aceite_nome?: string
@@ -101,14 +149,19 @@ export type Database = {
           familia_cpf?: string
           familia_id: string
           familia_nome?: string
+          familia_telefone?: string
           familia_verificada?: boolean
           hora_fim?: string
           hora_inicio?: string
           id?: string
           motivo_recusa?: string
           observacoes?: string
+          pagamento_id?: string | null
+          pagamento_status?: string
+          pago_em?: string | null
           recusado_por?: string | null
           regime?: string
+          reserva_id?: string
           status?: string
           taxa_percentual?: number
           termo_texto?: string
@@ -116,6 +169,8 @@ export type Database = {
           valor?: number
         }
         Update: {
+          assistido_nome?: string
+          checkout_url?: string | null
           created_at?: string
           criado_por?: string
           cuidadora_aceite_em?: string | null
@@ -124,10 +179,12 @@ export type Database = {
           cuidadora_cpf?: string
           cuidadora_id?: string
           cuidadora_nome?: string
+          cuidadora_telefone?: string
           cuidadora_verificada?: boolean
           data_fim?: string | null
           data_inicio?: string
           descricao_cuidado?: string
+          emitido_em?: string
           endereco?: string
           familia_aceite_em?: string | null
           familia_aceite_nome?: string
@@ -136,19 +193,54 @@ export type Database = {
           familia_cpf?: string
           familia_id?: string
           familia_nome?: string
+          familia_telefone?: string
           familia_verificada?: boolean
           hora_fim?: string
           hora_inicio?: string
           id?: string
           motivo_recusa?: string
           observacoes?: string
+          pagamento_id?: string | null
+          pagamento_status?: string
+          pago_em?: string | null
           recusado_por?: string | null
           regime?: string
+          reserva_id?: string
           status?: string
           taxa_percentual?: number
           termo_texto?: string
           updated_at?: string
           valor?: number
+        }
+        Relationships: []
+      }
+      conversas: {
+        Row: {
+          assunto: string
+          created_at: string
+          cuidadora_id: string
+          familia_id: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assunto?: string
+          created_at?: string
+          cuidadora_id: string
+          familia_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assunto?: string
+          created_at?: string
+          cuidadora_id?: string
+          familia_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -188,6 +280,65 @@ export type Database = {
           tipo?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      mensagens: {
+        Row: {
+          conversa_id: string
+          created_at: string
+          id: string
+          mensagem: string
+          remetente_id: string
+        }
+        Insert: {
+          conversa_id: string
+          created_at?: string
+          id?: string
+          mensagem: string
+          remetente_id: string
+        }
+        Update: {
+          conversa_id?: string
+          created_at?: string
+          id?: string
+          mensagem?: string
+          remetente_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens_conversa: {
+        Row: {
+          created_at: string
+          cuidadora_id: string
+          familia_id: string
+          id: string
+          mensagem: string
+          remetente_id: string
+        }
+        Insert: {
+          created_at?: string
+          cuidadora_id: string
+          familia_id: string
+          id?: string
+          mensagem: string
+          remetente_id: string
+        }
+        Update: {
+          created_at?: string
+          cuidadora_id?: string
+          familia_id?: string
+          id?: string
+          mensagem?: string
+          remetente_id?: string
         }
         Relationships: []
       }
@@ -239,6 +390,51 @@ export type Database = {
           tipo?: string
           updated_at?: string
           verificado?: boolean
+        }
+        Relationships: []
+      }
+      propostas: {
+        Row: {
+          created_at: string
+          cuidadora_id: string
+          data_servico: string
+          expira_em: string
+          familia_id: string
+          hora_fim: string
+          hora_inicio: string
+          id: string
+          observacao: string
+          status: string
+          updated_at: string
+          valor_proposto: number
+        }
+        Insert: {
+          created_at?: string
+          cuidadora_id: string
+          data_servico: string
+          expira_em?: string
+          familia_id: string
+          hora_fim: string
+          hora_inicio: string
+          id?: string
+          observacao?: string
+          status?: string
+          updated_at?: string
+          valor_proposto: number
+        }
+        Update: {
+          created_at?: string
+          cuidadora_id?: string
+          data_servico?: string
+          expira_em?: string
+          familia_id?: string
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          observacao?: string
+          status?: string
+          updated_at?: string
+          valor_proposto?: number
         }
         Relationships: []
       }

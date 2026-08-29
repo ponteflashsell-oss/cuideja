@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { nomesDePerfis } from "./propostas.server";
 
 const uuid = z.string().uuid();
 const horaSchema = z.string().regex(/^\d{2}:\d{2}$/);
@@ -58,12 +59,17 @@ export const listarPropostasFamilia = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("propostas")
-      .select("*, cuidadora:profiles!propostas_cuidadora_id_fkey(nome)")
+      .select("*")
       .eq("familia_id", context.userId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    const lista = data ?? [];
+    const nomes = await nomesDePerfis(
+      context.supabase,
+      lista.map((p) => p.cuidadora_id),
+    );
+    return lista.map((p) => ({ ...p, cuidadora: { nome: nomes[p.cuidadora_id] ?? "" } }));
   });
 
 export const listarPropostasCuidadora = createServerFn({ method: "POST" })
@@ -71,12 +77,17 @@ export const listarPropostasCuidadora = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("propostas")
-      .select("*, familia:profiles!propostas_familia_id_fkey(nome)")
+      .select("*")
       .eq("cuidadora_id", context.userId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    const lista = data ?? [];
+    const nomes = await nomesDePerfis(
+      context.supabase,
+      lista.map((p) => p.familia_id),
+    );
+    return lista.map((p) => ({ ...p, familia: { nome: nomes[p.familia_id] ?? "" } }));
   });
 
 export const responderProposta = createServerFn({ method: "POST" })
@@ -109,9 +120,17 @@ export const responderProposta = createServerFn({ method: "POST" })
     }
 
     let status = proposta.status;
-    let update: Record<string, unknown> = {
+    const update: {
+      status?: string;
+      observacao?: string;
+      valor_proposto?: number;
+      hora_inicio?: string;
+      hora_fim?: string;
+      expira_em?: string;
+      updated_at?: string;
+    } = {
       status,
-      observacao: data.observacao || undefined,
+      ...(data.observacao ? { observacao: data.observacao } : {}),
       updated_at: new Date().toISOString(),
     };
 
