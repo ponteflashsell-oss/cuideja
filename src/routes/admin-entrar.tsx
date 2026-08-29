@@ -91,7 +91,7 @@ function AdminEntrarPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={255}
-                placeholder="equipe@cuidaja.com"
+                placeholder="equipe@cuideja.com"
                 autoComplete="email"
               />
             </div>
