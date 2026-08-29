@@ -109,7 +109,15 @@ export const responderProposta = createServerFn({ method: "POST" })
     }
 
     let status = proposta.status;
-    let update: Record<string, unknown> = {
+    const update: {
+      status?: string;
+      observacao?: string;
+      valor_proposto?: number;
+      hora_inicio?: string;
+      hora_fim?: string;
+      expira_em?: string;
+      updated_at?: string;
+    } = {
       status,
       observacao: data.observacao || undefined,
       updated_at: new Date().toISOString(),
