@@ -218,11 +218,17 @@ function AdminPage() {
             <TabsTrigger value="cuidadoras">Cuidadoras</TabsTrigger>
             <TabsTrigger value="familias">Famílias</TabsTrigger>
             <TabsTrigger value="documentos">Documentos</TabsTrigger>
+            <TabsTrigger value="gateway">Gateway de dados</TabsTrigger>
           </TabsList>
 
           <TabsContent value="documentos" className="mt-5">
             <ArquivoDocumentos />
           </TabsContent>
+
+          <TabsContent value="gateway" className="mt-5">
+            <GatewayDados />
+          </TabsContent>
+
 
           <TabsContent value="verificacoes" className="mt-5">
             <FilaVerificacoes
