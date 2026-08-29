@@ -49,12 +49,12 @@ export function ConversasFamilia() {
     ]);
     setCuidadoras(listaCuidadoras ?? []);
     setPropostas(listaPropostas ?? []);
-    setAtiva((atual) => {
+    setAtiva((atual: any) => {
       const proximo = (listaPropostas ?? []).find((item: any) => item.id === atual?.id) ?? (listaPropostas ?? [])[0] ?? null;
       return proximo;
     });
     if (!form.cuidadoraId && (listaCuidadoras ?? []).length) {
-      setForm((atual) => ({ ...atual, cuidadoraId: listaCuidadoras[0].id }));
+      setForm((atual) => ({ ...atual, cuidadoraId: listaCuidadoras?.[0]?.id ?? "" }));
     }
   };
 
