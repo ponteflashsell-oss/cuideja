@@ -82,7 +82,7 @@ export const renovarSessaoDemo = createServerFn({ method: "POST" })
       return { demo: false, renovada: false };
     }
 
-    const expiraEm = usuario.user.user_metadata?.demo_password_expires_at;
+    const expiraEm = usuario.user.user_metadata?.['demo_password_expires_at'];
     const expirou = typeof expiraEm === "string" && new Date(expiraEm).getTime() <= Date.now();
     if (!expirou) return { demo: true, renovada: false };
 
