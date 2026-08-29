@@ -58,12 +58,17 @@ export const listarPropostasFamilia = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("propostas")
-      .select("*, cuidadora:profiles!propostas_cuidadora_id_fkey(nome)")
+      .select("*")
       .eq("familia_id", context.userId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    const lista = data ?? [];
+    const nomes = await nomesDePerfis(
+      context.supabase,
+      lista.map((p) => p.cuidadora_id),
+    );
+    return lista.map((p) => ({ ...p, cuidadora: { nome: nomes[p.cuidadora_id] ?? "" } }));
   });
 
 export const listarPropostasCuidadora = createServerFn({ method: "POST" })
@@ -71,12 +76,17 @@ export const listarPropostasCuidadora = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("propostas")
-      .select("*, familia:profiles!propostas_familia_id_fkey(nome)")
+      .select("*")
       .eq("cuidadora_id", context.userId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data ?? [];
+    const lista = data ?? [];
+    const nomes = await nomesDePerfis(
+      context.supabase,
+      lista.map((p) => p.familia_id),
+    );
+    return lista.map((p) => ({ ...p, familia: { nome: nomes[p.familia_id] ?? "" } }));
   });
 
 export const responderProposta = createServerFn({ method: "POST" })
