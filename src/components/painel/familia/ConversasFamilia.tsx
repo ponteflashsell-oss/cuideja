@@ -59,8 +59,8 @@ export function ConversasFamilia() {
   };
 
   useEffect(() => {
-    void carregarDados().catch((erro) => {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível carregar as propostas.");
+    void carregarDados().catch(() => {
+      toast.error("Não foi possível carregar as propostas.");
     });
   }, [buscarCuidadoras, listar]);
 
@@ -84,8 +84,8 @@ export function ConversasFamilia() {
       toast.success("Proposta enviada para a cuidadora.");
       setForm((atual) => ({ ...atual, dataServico: hoje, horaInicio: "08:00", horaFim: "18:00", valorProposto: 180, observacao: "" }));
       await carregarDados();
-    } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a proposta.");
+    } catch {
+      toast.error("Não foi possível carregar as propostas.");
     } finally {
       setEnviando(false);
     }
@@ -114,8 +114,8 @@ export function ConversasFamilia() {
             : "Nova contraproposta enviada para a cuidadora.",
       );
       await carregarDados();
-    } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível atualizar a proposta.");
+    } catch {
+      toast.error("Não foi possível carregar as propostas.");
     } finally {
       operacao(false);
     }

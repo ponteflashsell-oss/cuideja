@@ -59,8 +59,8 @@ export function Negociacoes() {
   };
 
   useEffect(() => {
-    void carregar().catch((erro) => {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível carregar as propostas.");
+    void carregar().catch(() => {
+      toast.error("Não foi possível carregar as propostas.");
     });
     const timer = window.setInterval(() => void carregar(), 15000);
     return () => window.clearInterval(timer);
@@ -82,8 +82,8 @@ export function Negociacoes() {
       });
       toast.success(acao === "aceitar" ? "Proposta aceita." : acao === "recusar" ? "Proposta recusada." : "Contraproposta enviada.");
       await carregar();
-    } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível responder a proposta.");
+    } catch {
+      toast.error("Não foi possível carregar as propostas.");
     } finally {
       setEnviando(false);
     }
