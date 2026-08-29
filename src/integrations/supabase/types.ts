@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -48,7 +48,6 @@ export type Database = {
         Row: {
           created_at: string
           criado_por: string
-          emitido_em: string
           cuidadora_aceite_em: string | null
           cuidadora_aceite_nome: string
           cuidadora_cidade: string
@@ -56,7 +55,6 @@ export type Database = {
           cuidadora_id: string
           cuidadora_nome: string
           cuidadora_verificada: boolean
-          cuidadora_telefone: string
           data_fim: string | null
           data_inicio: string
           descricao_cuidado: string
@@ -72,14 +70,7 @@ export type Database = {
           hora_fim: string
           hora_inicio: string
           id: string
-          reserva_id: string
-          assistido_nome: string
-          familia_telefone: string
           motivo_recusa: string
-          pagamento_id: string | null
-          pagamento_status: string
-          pago_em: string | null
-          checkout_url: string | null
           observacoes: string
           recusado_por: string | null
           regime: string
@@ -92,7 +83,6 @@ export type Database = {
         Insert: {
           created_at?: string
           criado_por: string
-          emitido_em?: string
           cuidadora_aceite_em?: string | null
           cuidadora_aceite_nome?: string
           cuidadora_cidade?: string
@@ -100,7 +90,6 @@ export type Database = {
           cuidadora_id: string
           cuidadora_nome?: string
           cuidadora_verificada?: boolean
-          cuidadora_telefone?: string
           data_fim?: string | null
           data_inicio: string
           descricao_cuidado?: string
@@ -116,14 +105,7 @@ export type Database = {
           hora_fim?: string
           hora_inicio?: string
           id?: string
-          reserva_id?: string
-          assistido_nome?: string
-          familia_telefone?: string
           motivo_recusa?: string
-          pagamento_id?: string | null
-          pagamento_status?: string
-          pago_em?: string | null
-          checkout_url?: string | null
           observacoes?: string
           recusado_por?: string | null
           regime?: string
@@ -136,7 +118,6 @@ export type Database = {
         Update: {
           created_at?: string
           criado_por?: string
-          emitido_em?: string
           cuidadora_aceite_em?: string | null
           cuidadora_aceite_nome?: string
           cuidadora_cidade?: string
@@ -144,7 +125,6 @@ export type Database = {
           cuidadora_id?: string
           cuidadora_nome?: string
           cuidadora_verificada?: boolean
-          cuidadora_telefone?: string
           data_fim?: string | null
           data_inicio?: string
           descricao_cuidado?: string
@@ -160,14 +140,7 @@ export type Database = {
           hora_fim?: string
           hora_inicio?: string
           id?: string
-          reserva_id?: string
-          assistido_nome?: string
-          familia_telefone?: string
           motivo_recusa?: string
-          pagamento_id?: string | null
-          pagamento_status?: string
-          pago_em?: string | null
-          checkout_url?: string | null
           observacoes?: string
           recusado_por?: string | null
           regime?: string
