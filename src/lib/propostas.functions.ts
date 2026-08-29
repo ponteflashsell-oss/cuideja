@@ -118,7 +118,7 @@ export const responderProposta = createServerFn({ method: "POST" })
     if (data.acao === "recusar") {
       status = "recusada";
     } else if (data.acao === "aceitar") {
-      if (ehCuidadora && proposta.status === "pendente_cuidadora") {
+      if (ehCuidadora && (proposta.status === "pendente_cuidadora" || proposta.status === "contraproposta")) {
         status = "pendente_familia";
       } else if (ehFamilia && (proposta.status === "pendente_familia" || proposta.status === "contraproposta")) {
         status = "aceita";
@@ -126,7 +126,9 @@ export const responderProposta = createServerFn({ method: "POST" })
         throw new Error("Esta ação não está disponível para o status atual da proposta.");
       }
     } else if (data.acao === "contraproposta") {
-      if (!ehCuidadora) throw new Error("Apenas a cuidadora pode fazer contraproposta.");
+      if (!ehFamilia && !ehCuidadora) {
+        throw new Error("Você não pode responder esta proposta.");
+      }
       status = "contraproposta";
       if (data.valorProposto) update.valor_proposto = data.valorProposto;
       if (data.horaInicio) update.hora_inicio = data.horaInicio;

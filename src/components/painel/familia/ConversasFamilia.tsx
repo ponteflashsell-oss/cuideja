@@ -28,6 +28,7 @@ export function ConversasFamilia() {
   const [enviando, setEnviando] = useState(false);
   const [aceitando, setAceitando] = useState(false);
   const [recusando, setRecusando] = useState(false);
+  const [contraproposta, setContraproposta] = useState({ valor: 220, inicio: "09:00", fim: "19:00" });
   const buscarCuidadoras = useServerFn(listarCuidadorasContrato);
   const listar = useServerFn(listarPropostasFamilia);
   const criar = useServerFn(criarProposta);
@@ -90,13 +91,28 @@ export function ConversasFamilia() {
     }
   };
 
-  const atualizarStatus = async (acao: "aceitar" | "recusar") => {
+  const atualizarStatus = async (acao: "aceitar" | "recusar" | "contraproposta") => {
     if (!ativa) return;
-    const operacao = acao === "aceitar" ? setAceitando : setRecusando;
+    const operacao = acao === "aceitar" ? setAceitando : acao === "recusar" ? setRecusando : setAceitando;
     operacao(true);
     try {
-      await responder({ data: { id: ativa.id, acao } });
-      toast.success(acao === "aceitar" ? "Proposta aceita." : "Proposta recusada.");
+      await responder({
+        data: {
+          id: ativa.id,
+          acao,
+          valorProposto: acao === "contraproposta" ? Number(contraproposta.valor) : undefined,
+          horaInicio: acao === "contraproposta" ? contraproposta.inicio : undefined,
+          horaFim: acao === "contraproposta" ? contraproposta.fim : undefined,
+          observacao: acao === "contraproposta" ? "Nova contraproposta enviada pela família." : "",
+        },
+      });
+      toast.success(
+        acao === "aceitar"
+          ? "Proposta aceita."
+          : acao === "recusar"
+            ? "Proposta recusada."
+            : "Nova contraproposta enviada para a cuidadora.",
+      );
       await carregarDados();
     } catch (erro) {
       toast.error(erro instanceof Error ? erro.message : "Não foi possível atualizar a proposta.");
@@ -204,13 +220,32 @@ export function ConversasFamilia() {
             </div>
 
             {(ativa.status === "pendente_familia" || ativa.status === "contraproposta") && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
-                  <CheckCircle2 className="size-4" /> {aceitando ? "Aguardando..." : "Aceitar proposta"}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => void atualizarStatus("recusar")} disabled={recusando}>
-                  <CalendarClock className="size-4" /> {recusando ? "Aguardando..." : "Recusar"}
-                </Button>
+              <div className="mt-4 space-y-3 rounded-lg border border-dashed border-border p-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="valor-contraproposta-familia">Novo valor (R$)</Label>
+                    <Input id="valor-contraproposta-familia" type="number" min={1} value={contraproposta.valor} onChange={(e) => setContraproposta((atual) => ({ ...atual, valor: Number(e.target.value) || 0 }))} />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="inicio-contraproposta-familia">Início</Label>
+                    <Input id="inicio-contraproposta-familia" type="time" value={contraproposta.inicio} onChange={(e) => setContraproposta((atual) => ({ ...atual, inicio: e.target.value }))} />
+                  </div>
+                  <div className="grid gap-1.5 sm:col-span-2">
+                    <Label htmlFor="fim-contraproposta-familia">Término</Label>
+                    <Input id="fim-contraproposta-familia" type="time" value={contraproposta.fim} onChange={(e) => setContraproposta((atual) => ({ ...atual, fim: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
+                    <CheckCircle2 className="size-4" /> {aceitando ? "Aguardando..." : "Aceitar proposta"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => void atualizarStatus("recusar")} disabled={recusando}>
+                    <CalendarClock className="size-4" /> {recusando ? "Aguardando..." : "Recusar"}
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => void atualizarStatus("contraproposta")}>
+                    <Send className="size-4" /> Fazer contraproposta
+                  </Button>
+                </div>
               </div>
             )}
           </div>

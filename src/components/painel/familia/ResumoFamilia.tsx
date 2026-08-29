@@ -27,8 +27,8 @@ export function ResumoFamilia({
         <h2 className="text-2xl">Olá{nome ? `, ${nome.split(" ")[0]}` : ""}!</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {verificado
-            ? "Sua conta está verificada. Busque cuidadoras, publique pedidos e combine os plantões."
-            : "Complete os passos abaixo para liberar a busca de cuidadoras, os pedidos e as conversas."}
+            ? "Sua conta está verificada. Busque cuidadoras, publique pedidos e acompanhe propostas formais."
+            : "Complete os passos abaixo para liberar a busca de cuidadoras, os pedidos e as propostas."}
         </p>
 
         <ul className="mt-5 grid gap-3">

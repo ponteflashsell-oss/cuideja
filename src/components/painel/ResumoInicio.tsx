@@ -63,7 +63,7 @@ export function ResumoInicio({
       acao: "Ver vagas",
     },
     {
-      rotulo: "Conversas esperando você",
+      rotulo: "Propostas esperando sua resposta",
       valor: String(aguardando),
       detalhe: "responda para não perder a vaga",
       icone: MessageSquare,
@@ -270,7 +270,7 @@ function ResumoVerificacao({
               },
               {
                 t: "4. Acesso liberado",
-                d: "Vagas, conversas, agenda e carteira abrem automaticamente.",
+                d: "Vagas, propostas, agenda e carteira abrem automaticamente.",
               },
             ].map((p) => (
               <li key={p.t}>
@@ -313,7 +313,7 @@ function ComoFunciona() {
         {[
           { n: 1, t: "Vaga aparece", d: "Você recebe aviso das vagas na sua região." },
           { n: 2, t: "Você se candidata", d: "Envia sua tarifa em um clique." },
-          { n: 3, t: "Acerta no chat", d: "Combina valores e envia proposta formal." },
+          { n: 3, t: "Ajusta a proposta", d: "Negocia valor e condições antes da confirmação." },
           { n: 4, t: "Confirma na agenda", d: "O plantão entra na sua escala." },
         ].map((p) => (
           <div key={p.n} className="rounded-xl border border-border/60 p-4">

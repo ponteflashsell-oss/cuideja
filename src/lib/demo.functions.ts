@@ -99,7 +99,6 @@ export const renovarSessaoDemo = createServerFn({ method: "POST" })
       .map((item) => item.id);
     if (ids.length) {
       await (supabaseAdmin as any).from("alertas_plantao").delete().in("criado_por", ids);
-      await (supabaseAdmin as any).from("mensagens_conversa").delete().in("familia_id", ids).in("cuidadora_id", ids);
       await supabaseAdmin.from("contratos").delete().in("familia_id", ids).in("cuidadora_id", ids);
     }
     return { demo: true, renovada: true, novaExpiracao };

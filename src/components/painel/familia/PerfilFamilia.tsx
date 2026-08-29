@@ -176,8 +176,8 @@ export function PerfilFamilia() {
             <FileCheck2 className="size-4 text-primary" /> Verificação do responsável
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Antes de conversar com cuidadoras, confirmamos a identidade de quem contrata. É o mesmo
-            padrão exigido das profissionais.
+            Antes de enviar propostas e negociar com cuidadoras, confirmamos a identidade de quem
+            contrata. É o mesmo padrão exigido das profissionais.
           </p>
           <ul className="mt-4 grid gap-3">
             {documentosFamilia.map((doc) => {

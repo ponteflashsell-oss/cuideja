@@ -31,7 +31,7 @@ export function BuscaCuidadoras() {
       <section className="surface-card p-6">
         <h2 className="text-2xl">Buscar cuidadoras</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Filtre por cidade, especialidade e selo de verificação e envie um convite de conversa.
+          Filtre por cidade, especialidade e selo de verificação e envie uma proposta formal.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -110,9 +110,9 @@ export function BuscaCuidadoras() {
             <Button
               size="sm"
               className="mt-1 self-start"
-              onClick={() => toast.success(`Convite de conversa enviado para ${c.nome}.`)}
+              onClick={() => toast.success(`Proposta enviada para ${c.nome}.`)}
             >
-              Convidar para conversar
+              Enviar proposta
             </Button>
           </article>
         ))}

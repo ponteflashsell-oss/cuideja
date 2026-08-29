@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -24,11 +24,33 @@ export function Negociacoes() {
   const [horaInicio, setHoraInicio] = useState("09:00");
   const [horaFim, setHoraFim] = useState("19:00");
   const [enviando, setEnviando] = useState(false);
+  const ultimoIdsRef = useRef<string[]>([]);
   const listar = useServerFn(listarPropostasCuidadora);
   const responder = useServerFn(responderProposta);
 
   const carregar = async () => {
     const lista = await listar({ data: undefined });
+    const idsAtuais = (lista ?? []).map((item: any) => item.id);
+    const novos = (lista ?? []).filter((item: any) => {
+      const ehNova = !ultimoIdsRef.current.includes(item.id);
+      const relevante = ["pendente_cuidadora", "pendente_familia", "contraproposta"].includes(item.status);
+      return ehNova && relevante;
+    });
+
+    if (novos.length) {
+      const texto = novos.length === 1
+        ? `Nova proposta recebida de ${novos[0]?.familia?.nome ?? "uma família"}.`
+        : `${novos.length} novas propostas recebidas.`;
+      toast.success(texto);
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        new Notification("Nova proposta no CuidaJá", {
+          body: novos.length === 1 ? texto : `${novos.length} propostas aguardam sua resposta.`,
+          tag: "propostas-cuidadora",
+        });
+      }
+    }
+
+    ultimoIdsRef.current = idsAtuais;
     setPropostas(lista ?? []);
     setAtiva((atual) => {
       const proximo = (lista ?? []).find((item: any) => item.id === atual?.id) ?? (lista ?? [])[0] ?? null;
@@ -40,6 +62,8 @@ export function Negociacoes() {
     void carregar().catch((erro) => {
       toast.error(erro instanceof Error ? erro.message : "Não foi possível carregar as propostas.");
     });
+    const timer = window.setInterval(() => void carregar(), 15000);
+    return () => window.clearInterval(timer);
   }, [listar]);
 
   const responderPropostaAtual = async (acao: "aceitar" | "recusar" | "contraproposta") => {
