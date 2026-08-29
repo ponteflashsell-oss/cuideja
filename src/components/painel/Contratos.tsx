@@ -198,10 +198,8 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
     try {
       const r = await responder({ data: { id: c.id, acao, motivo: "" } });
       toast.success(
-        r.status === "ativo"
-          ? "Pagamento confirmado. O termo está ativo."
-          : r.status === "aguardando_pagamento"
-            ? "Os dois consentimentos foram registrados. A família deve concluir o pagamento pela VeoPag."
+        r.status === "aguardando_pagamento"
+          ? "Os dois consentimentos foram registrados. A família deve concluir o pagamento pela VeoPag."
           : r.status === "recusado"
             ? "Termo recusado."
             : "Consentimento registrado. Aguardando a outra parte.",
