@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const TOKEN = "bootstrap-cuideja-2026";
+const PROJECT_URL = "https://jwfaxfgothgrlixfyfad.supabase.co";
 
 export const Route = createFileRoute("/api/public/bootstrap-admin")({
   server: {
@@ -13,25 +14,29 @@ export const Route = createFileRoute("/api/public/bootstrap-admin")({
           email: string;
           password: string;
         };
-        const url = process.env["SUPABASE_URL"]!;
-        const key = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+        const key = process.env["MEU_SUPABASE_SERVICE_ROLE_KEY"];
+        if (!key) return new Response("missing key", { status: 500 });
         const h = {
           apikey: key,
           Authorization: `Bearer ${key}`,
           "Content-Type": "application/json",
         };
+        const out: Record<string, unknown> = {};
 
         const listRes = await fetch(
-          `${url}/auth/v1/admin/users?per_page=200`,
+          `${PROJECT_URL}/auth/v1/admin/users?per_page=200`,
           { headers: h },
         );
-        const list = (await listRes.json()) as { users?: Array<{ id: string; email?: string }> };
+        const list = (await listRes.json()) as {
+          users?: Array<{ id: string; email?: string }>;
+        };
+        out["listStatus"] = listRes.status;
         let user = (list.users ?? []).find(
           (u) => u.email?.toLowerCase() === email.toLowerCase(),
         );
 
         if (!user) {
-          const createRes = await fetch(`${url}/auth/v1/admin/users`, {
+          const createRes = await fetch(`${PROJECT_URL}/auth/v1/admin/users`, {
             method: "POST",
             headers: h,
             body: JSON.stringify({
@@ -41,31 +46,35 @@ export const Route = createFileRoute("/api/public/bootstrap-admin")({
               user_metadata: { nome: "Administrador", tipo: "admin" },
             }),
           });
+          const created = await createRes.text();
+          out["createStatus"] = createRes.status;
           if (!createRes.ok) {
-            return new Response(await createRes.text(), { status: 500 });
+            out["createBody"] = created;
+            return Response.json(out, { status: 500 });
           }
-          user = (await createRes.json()) as { id: string; email?: string };
+          user = JSON.parse(created) as { id: string; email?: string };
         } else {
-          await fetch(`${url}/auth/v1/admin/users/${user.id}`, {
-            method: "PUT",
-            headers: h,
-            body: JSON.stringify({ password, email_confirm: true }),
-          });
+          const upd = await fetch(
+            `${PROJECT_URL}/auth/v1/admin/users/${user.id}`,
+            {
+              method: "PUT",
+              headers: h,
+              body: JSON.stringify({ password, email_confirm: true }),
+            },
+          );
+          out["updateStatus"] = upd.status;
         }
+        out["userId"] = user.id;
 
-        const roleRes = await fetch(`${url}/rest/v1/user_roles`, {
+        const roleRes = await fetch(`${PROJECT_URL}/rest/v1/user_roles`, {
           method: "POST",
           headers: { ...h, Prefer: "resolution=merge-duplicates" },
           body: JSON.stringify({ user_id: user.id, role: "admin" }),
         });
-        const roleText = await roleRes.text();
+        out["roleStatus"] = roleRes.status;
+        out["roleBody"] = await roleRes.text();
 
-        return Response.json({
-          userId: user.id,
-          email,
-          roleStatus: roleRes.status,
-          roleText,
-        });
+        return Response.json(out);
       },
     },
   },
