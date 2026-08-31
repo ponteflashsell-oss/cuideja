@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { renovarSessaoDemo } from "@/lib/demo.functions";
+import { criarContaConfirmada } from "@/lib/cadastro.functions";
 
 export const Route = createFileRoute("/entrar")({
   ssr: false,
@@ -78,22 +79,36 @@ function EntrarPage() {
     setCarregando(true);
     try {
       if (modo === "criar") {
-        const { error } = await supabase.auth.signUp({
-          email: parsed.data.email,
-          password: parsed.data.senha,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { nome: parsed.data.nome ?? "" },
+        const resultado = await criarContaConfirmada({
+          data: {
+            email: parsed.data.email,
+            senha: parsed.data.senha,
+            nome: parsed.data.nome ?? "",
+            tipo: "cuidadora",
           },
         });
-        if (error) throw error;
+        const { error } = await supabase.auth.signInWithPassword({
+          email: parsed.data.email,
+          password: parsed.data.senha,
+        });
+        if (error) {
+          if (resultado.jaExistia) {
+            throw new Error("Já existe uma conta com este e-mail. Use a aba Entrar.");
+          }
+          throw error;
+        }
         toast.success("Conta criada! Bem-vinda ao seu painel.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.senha,
         });
-        if (error) throw error;
+        if (error) {
+          if (/confirm/i.test(error.message)) {
+            throw new Error("E-mail ainda não confirmado. Tente criar a conta novamente para liberar o acesso.");
+          }
+          throw error;
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível concluir.");
