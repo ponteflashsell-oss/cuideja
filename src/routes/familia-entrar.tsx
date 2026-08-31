@@ -132,15 +132,17 @@ function FamiliaEntrarPage() {
   };
 
   const entrarComGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/familia-entrar` },
     });
-    if (result.error) {
-      toast.error("Não foi possível entrar com Google.");
-      return;
+    if (error) {
+      toast.error(
+        /not enabled|unsupported/i.test(error.message)
+          ? "Login com Google ainda não está ativado no backend."
+          : "Não foi possível entrar com Google.",
+      );
     }
-    if (result.redirected) return;
-    navigate({ to: await destinoDaSessao(), replace: true });
   };
 
   return (
