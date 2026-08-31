@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { renovarSessaoDemo } from "@/lib/demo.functions";
 import { criarContaConfirmada } from "@/lib/cadastro.functions";
 
@@ -118,15 +117,17 @@ function EntrarPage() {
   };
 
   const entrarComGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/entrar` },
     });
-    if (result.error) {
-      toast.error("Não foi possível entrar com Google.");
-      return;
+    if (error) {
+      toast.error(
+        /not enabled|unsupported/i.test(error.message)
+          ? "Login com Google ainda não está ativado no backend."
+          : "Não foi possível entrar com Google.",
+      );
     }
-    if (result.redirected) return;
-    await acessarPainel();
   };
 
   return (
