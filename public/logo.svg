@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Logo personalizado">
+  <circle cx="256" cy="256" r="236" fill="#C95E3D"/>
+  <path d="M256 138C210 94 146 104 111 154c-42 60-22 146 73 200l72 52 72-52c95-54 115-140 73-200-35-50-99-60-143-16l-2 2-2-2c-6-6-14-10-22-10-8 0-16 4-22 10Z" fill="none" stroke="#FFF9F5" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M205 252c-22-39-71-48-96-11-15 22-14 48 3 68 18 21 52 31 81 44 26 12 50 21 67 37 18-16 42-25 68-37 29-13 63-23 81-44 17-20 18-46 3-68-25-37-74-28-96 11l-17 30-17-30Z" fill="none" stroke="#FFF9F5" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
