@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { AcessoCpf } from "@/components/auth/AcessoCpf";
 import { supabase } from "@/integrations/supabase/client";
 import { renovarSessaoDemo } from "@/lib/demo.functions";

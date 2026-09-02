@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import { AcessoCpf } from "@/components/auth/AcessoCpf";
 import { renovarSessaoDemo } from "@/lib/demo.functions";
 
