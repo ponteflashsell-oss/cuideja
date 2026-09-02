@@ -73,12 +73,9 @@ function FamiliaEntrarPage() {
       }
       aoAutenticar={seguir}
       rodape={
-        <>
-          É cuidadora?{" "}
-          <Link to="/entrar" className="underline">
-            Entrar na área profissional
-          </Link>
-        </>
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <Link to="/entrar">É cuidadora? Entrar na área profissional</Link>
+        </Button>
       }
     />
   );

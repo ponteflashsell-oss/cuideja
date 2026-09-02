@@ -44,12 +44,9 @@ function EntrarPage() {
       descricao="Espaço privado para gerenciar seu perfil, vagas, agenda e ganhos. Acesso apenas com CPF e senha."
       aoAutenticar={acessarPainel}
       rodape={
-        <>
-          Busca uma cuidadora?{" "}
-          <Link to="/familia-entrar" className="underline">
-            Entrar na área da família
-          </Link>
-        </>
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <Link to="/familia-entrar">É família? Entrar na área da família</Link>
+        </Button>
       }
     />
   );
