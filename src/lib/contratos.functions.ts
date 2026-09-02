@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { criarLinkPagamentoInfinitePay } from "./infinitepay.server";
 
 const regimeEnum = z.enum(["hora", "diaria", "plantao12", "plantao24"]);
 
@@ -211,11 +212,16 @@ export const responderContrato = createServerFn({ method: "POST" })
     const familiaAceite = ehFamilia ? agora : contrato.familia_aceite_em;
     const cuidadoraAceite = ehCuidadora ? agora : contrato.cuidadora_aceite_em;
     const status = familiaAceite && cuidadoraAceite ? "aguardando_pagamento" : "aguardando";
+    const checkoutUrl =
+      status === "aguardando_pagamento" && ehFamilia
+        ? await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) })
+        : undefined;
 
     const { error: erroAceite } = await context.supabase
       .from("contratos")
       .update({
         status,
+        ...(checkoutUrl ? { checkout_url: checkoutUrl, pagamento_status: "pendente" } : {}),
         ...(ehFamilia
           ? { familia_aceite_em: agora, familia_aceite_nome: nome }
           : { cuidadora_aceite_em: agora, cuidadora_aceite_nome: nome }),
@@ -223,5 +229,5 @@ export const responderContrato = createServerFn({ method: "POST" })
       .eq("id", contrato.id);
     if (erroAceite) throw erroAceite;
 
-    return { status };
+    return { status, checkoutUrl };
   });

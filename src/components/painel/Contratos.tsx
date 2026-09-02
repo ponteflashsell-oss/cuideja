@@ -197,9 +197,13 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
     setRespondendo(c.id);
     try {
       const r = await responder({ data: { id: c.id, acao, motivo: "" } });
+      if (r.checkoutUrl) {
+        window.location.href = r.checkoutUrl;
+        return;
+      }
       toast.success(
         r.status === "aguardando_pagamento"
-          ? "Os dois consentimentos foram registrados. A família deve concluir o pagamento pela VeoPag."
+          ? "Os dois consentimentos foram registrados."
           : r.status === "recusado"
             ? "Termo recusado."
             : "Consentimento registrado. Aguardando a outra parte.",

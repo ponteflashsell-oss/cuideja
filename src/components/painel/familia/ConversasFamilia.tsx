@@ -96,7 +96,7 @@ export function ConversasFamilia() {
     const operacao = acao === "aceitar" ? setAceitando : acao === "recusar" ? setRecusando : setAceitando;
     operacao(true);
     try {
-      await responder({
+      const resultado = await responder({
         data: {
           id: ativa.id,
           acao,
@@ -106,6 +106,10 @@ export function ConversasFamilia() {
           observacao: acao === "contraproposta" ? "Nova contraproposta enviada pela família." : "",
         },
       });
+      if (acao === "aceitar" && "checkoutUrl" in resultado && resultado.checkoutUrl) {
+        window.location.href = resultado.checkoutUrl;
+        return;
+      }
       toast.success(
         acao === "aceitar"
           ? "Proposta aceita."

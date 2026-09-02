@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { criarLinkPagamentoInfinitePay } from "./infinitepay.server";
 import { nomesDePerfis } from "./propostas.server";
 
 const uuid = z.string().uuid();
@@ -107,7 +108,7 @@ export const responderProposta = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: proposta, error: erroSelecao } = await context.supabase
       .from("propostas")
-      .select("id, familia_id, cuidadora_id, status")
+      .select("id, familia_id, cuidadora_id, status, valor_proposto")
       .eq("id", data.id)
       .single();
 
@@ -167,6 +168,14 @@ export const responderProposta = createServerFn({ method: "POST" })
     }
     update.status = status;
 
+    let checkoutUrl: string | undefined;
+    if (status === "aceita" && ehFamilia) {
+      checkoutUrl = await criarLinkPagamentoInfinitePay({
+        orderNsu: proposta.id,
+        valor: Number(proposta.valor_proposto),
+      });
+    }
+
     const { data: atualizada, error } = await context.supabase
       .from("propostas")
       .update(update)
@@ -175,5 +184,5 @@ export const responderProposta = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw error;
-    return atualizada;
+    return checkoutUrl ? { ...atualizada, checkoutUrl } : atualizada;
   });
