@@ -169,7 +169,24 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
     }
   };
 
+  const entrarComGoogle = async () => {
+    setCarregando(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) throw error;
+    } catch (erro) {
+      toast.error(
+        erro instanceof Error ? erro.message : "Não foi possível entrar com o Google.",
+      );
+      setCarregando(false);
+    }
+  };
+
   const voltar = () => {
+
     setSenha("");
     setConfirmar("");
     setEtapa(etapa === "cadastro2" ? "cadastro1" : "cpf");
