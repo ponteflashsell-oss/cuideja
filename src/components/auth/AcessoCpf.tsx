@@ -322,7 +322,7 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
                 Primeiro acesso — passo 2 de 2
               </p>
               <div className="grid gap-1.5">
-                <Label htmlFor="nome">Nome e sobrenome</Label>
+                <Label htmlFor="nome">Nome completo</Label>
                 <Input
                   id="nome"
                   value={nome}

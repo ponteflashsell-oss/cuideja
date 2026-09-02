@@ -13,15 +13,23 @@ const cadastroSchema = cpfSchema.extend({
   tipo: z.enum(["cuidadora", "familia"]),
 });
 
-/** Verifica se o CPF já tem conta, para decidir entre login e primeiro acesso. */
+/** Verifica se o CPF já tem conta consultando a tabela profiles, que é a fonte do cadastro. */
 export const cpfTemConta = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => cpfSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const login = loginDoCpf(data.cpf);
-    const { data: lista } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    const existe = Boolean(lista?.users.some((u) => u.email?.toLowerCase() === login));
-    return { existe };
+
+    const { data: perfil, error } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("cpf" as never, data.cpf as never)
+      .maybeSingle();
+
+    if (error && error.code !== "PGRST116") {
+      throw new Error("Não foi possível verificar o CPF no cadastro.");
+    }
+
+    return { existe: Boolean(perfil?.id) };
   });
 
 /** Cria a conta usando apenas CPF, data de nascimento, nome e senha (sem e-mail). */
