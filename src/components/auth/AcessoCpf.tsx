@@ -16,7 +16,7 @@ import {
 } from "@/lib/cpf";
 import { cpfTemConta, criarContaCpf } from "@/lib/acesso-cpf.functions";
 
-type Etapa = "cpf" | "senha" | "cadastro1" | "cadastro2";
+type Etapa = "login" | "cadastro1" | "cadastro2";
 
 type Props = {
   tipo: "cuidadora" | "familia";
@@ -63,7 +63,7 @@ function CampoSenha(props: {
 }
 
 export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Props) {
-  const [etapa, setEtapa] = useState<Etapa>("cpf");
+  const [etapa, setEtapa] = useState<Etapa>("login");
   const [cpf, setCpf] = useState("");
   const [nascimento, setNascimento] = useState("");
   const [nome, setNome] = useState("");
@@ -85,16 +85,20 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const verificarCpf = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const irParaCadastro = async () => {
     if (!cpfValido(cpf)) {
-      toast.error("Informe um CPF válido");
+      toast.error("Informe um CPF válido para criar sua conta");
       return;
     }
     setCarregando(true);
     try {
       const { existe } = await cpfTemConta({ data: { cpf: somenteDigitos(cpf) } });
-      setEtapa(existe ? "senha" : "cadastro1");
+      if (existe) {
+        toast.info("Este CPF já tem conta. Informe a senha para entrar.");
+        return;
+      }
+      setSenha("");
+      setEtapa("cadastro1");
     } catch (erro) {
       toast.error(erro instanceof Error ? erro.message : "Não foi possível verificar o CPF.");
     } finally {
@@ -104,6 +108,10 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
 
   const entrar = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cpfValido(cpf)) {
+      toast.error("Informe um CPF válido");
+      return;
+    }
     if (senha.length < 8) {
       toast.error("A senha precisa de ao menos 8 caracteres");
       return;
@@ -114,7 +122,14 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
         email: loginDoCpf(cpf),
         password: senha,
       });
-      if (error) throw new Error("Senha incorreta. Tente novamente.");
+      if (error) {
+        const { existe } = await cpfTemConta({ data: { cpf: somenteDigitos(cpf) } });
+        throw new Error(
+          existe
+            ? "Senha incorreta. Tente novamente."
+            : "CPF ainda não cadastrado. Clique em “Criar conta”.",
+        );
+      }
     } catch (erro) {
       toast.error(erro instanceof Error ? erro.message : "Não foi possível entrar.");
     } finally {
@@ -189,7 +204,7 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
 
     setSenha("");
     setConfirmar("");
-    setEtapa(etapa === "cadastro2" ? "cadastro1" : "cpf");
+    setEtapa(etapa === "cadastro2" ? "cadastro1" : "login");
   };
 
   return (
@@ -211,8 +226,8 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
           <h1 className="text-3xl">{titulo}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{descricao}</p>
 
-          {etapa === "cpf" && (
-            <form onSubmit={verificarCpf} className="mt-6 grid gap-4">
+          {etapa === "login" && (
+            <form onSubmit={entrar} className="mt-6 grid gap-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="cpf">CPF</Label>
                 <Input
@@ -224,10 +239,28 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
                   autoComplete="username"
                 />
               </div>
+              <CampoSenha
+                id="senha"
+                label="Senha"
+                valor={senha}
+                onChange={setSenha}
+                placeholder="Sua senha"
+                autoComplete="current-password"
+              />
               <Button type="submit" disabled={carregando} className="w-full">
                 {carregando && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Continuar
+                Entrar
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-2 bg-background font-medium"
+                disabled={carregando}
+                onClick={irParaCadastro}
+              >
+                Criar conta
+              </Button>
+
 
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
