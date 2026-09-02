@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldCheck, Star, MapPin, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { z } from "zod";
@@ -134,7 +134,9 @@ function CuidadoresPage() {
                 <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Wallet className="size-4" /> R$ {c.diaria}/diária · R$ {c.hora}/hora
                 </p>
-                <Button size="sm">Solicitar atendimento</Button>
+                <Button asChild size="sm">
+                  <Link to="/familia-entrar">Solicitar atendimento</Link>
+                </Button>
               </div>
             </article>
           ))}
