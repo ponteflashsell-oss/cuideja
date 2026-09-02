@@ -169,7 +169,24 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
     }
   };
 
+  const entrarComGoogle = async () => {
+    setCarregando(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) throw error;
+    } catch (erro) {
+      toast.error(
+        erro instanceof Error ? erro.message : "Não foi possível entrar com o Google.",
+      );
+      setCarregando(false);
+    }
+  };
+
   const voltar = () => {
+
     setSenha("");
     setConfirmar("");
     setEtapa(etapa === "cadastro2" ? "cadastro1" : "cpf");
@@ -211,12 +228,36 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
                 {carregando && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Continuar
               </Button>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                ou
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={carregando}
+                onClick={entrarComGoogle}
+              >
+                <svg className="mr-2 size-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 0 1-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6Z" />
+                  <path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.6-2-6.5-4.8H1.7v3A12 12 0 0 0 12 24Z" />
+                  <path fill="#FBBC05" d="M5.5 14.6a7.2 7.2 0 0 1 0-4.6v-3H1.7a12 12 0 0 0 0 10.6l3.8-3Z" />
+                  <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3A11.6 11.6 0 0 0 12 0 12 12 0 0 0 1.7 6l3.8 3c.9-2.8 3.5-4.2 6.5-4.2Z" />
+                </svg>
+                Continuar com Google
+              </Button>
+
               <p className="text-xs text-muted-foreground">
-                Não pedimos e-mail para entrar. Você poderá cadastrar um e-mail depois, nas
+                Não pedimos e-mail para entrar com CPF. Você poderá cadastrar um e-mail depois, nas
                 configurações do seu perfil.
               </p>
             </form>
           )}
+
 
           {etapa === "senha" && (
             <form onSubmit={entrar} className="mt-6 grid gap-4">
