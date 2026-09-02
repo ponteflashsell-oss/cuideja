@@ -204,7 +204,7 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
 
     setSenha("");
     setConfirmar("");
-    setEtapa(etapa === "cadastro2" ? "cadastro1" : "cpf");
+    setEtapa(etapa === "cadastro2" ? "cadastro1" : "login");
   };
 
   return (
@@ -226,8 +226,8 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
           <h1 className="text-3xl">{titulo}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{descricao}</p>
 
-          {etapa === "cpf" && (
-            <form onSubmit={verificarCpf} className="mt-6 grid gap-4">
+          {etapa === "login" && (
+            <form onSubmit={entrar} className="mt-6 grid gap-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="cpf">CPF</Label>
                 <Input
@@ -239,10 +239,28 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
                   autoComplete="username"
                 />
               </div>
+              <CampoSenha
+                id="senha"
+                label="Senha"
+                valor={senha}
+                onChange={setSenha}
+                placeholder="Sua senha"
+                autoComplete="current-password"
+              />
               <Button type="submit" disabled={carregando} className="w-full">
                 {carregando && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Continuar
+                Entrar
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-2 bg-background font-medium"
+                disabled={carregando}
+                onClick={irParaCadastro}
+              >
+                Criar conta
+              </Button>
+
 
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
