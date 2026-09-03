@@ -57,3 +57,23 @@ export function dataNascimentoIso(valor: string): string | null {
 export function loginDoCpf(cpf: string): string {
   return `${somenteDigitos(cpf)}@cpf.cuideja.app`;
 }
+
+/** true quando o e-mail é apenas o identificador interno derivado do CPF. */
+export function ehLoginDeCpf(email: string | null | undefined): boolean {
+  return Boolean(email && /@cpf\.cuideja\.app$/i.test(email));
+}
+
+/** Extrai o CPF (com máscara) de um login interno; "" quando não é login de CPF. */
+export function cpfDoLogin(email: string | null | undefined): string {
+  if (!ehLoginDeCpf(email)) return "";
+  return mascararCpf(email!.split("@")[0] ?? "");
+}
+
+/**
+ * Texto de identificação para exibir na interface: mostra o CPF quando a conta
+ * foi criada sem e-mail, e o e-mail real quando existe.
+ */
+export function identificacaoDaConta(email: string | null | undefined): string {
+  if (ehLoginDeCpf(email)) return `CPF ${cpfDoLogin(email)}`;
+  return email ?? "";
+}
