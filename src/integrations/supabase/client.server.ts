@@ -30,9 +30,37 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
+/** Extrai o "project ref" de uma URL do Supabase (https://<ref>.supabase.co). */
+function refDaUrl(url: string): string | null {
+  return /https:\/\/([a-z0-9]+)\.supabase\./.exec(url)?.[1] ?? null;
+}
+
+/** Extrai o "project ref" de uma service role key legada (JWT com claim ref). */
+function refDaChave(chave: string): string | null {
+  const parte = chave.split('.')[1];
+  if (!parte) return null;
+  try {
+    const json = JSON.parse(atob(parte.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof json?.ref === 'string' ? json.ref : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Ignora chaves que pertencem a outro projeto Supabase (causa de "Invalid API key"). */
+function chaveDoProjeto(chave: string | undefined, url: string): string | undefined {
+  if (!chave) return undefined;
+  const refUrl = refDaUrl(url);
+  const refChave = refDaChave(chave);
+  if (refUrl && refChave && refUrl !== refChave) return undefined;
+  return chave;
+}
+
 function createSupabaseAdminClient() {
   const SUPABASE_URL = PROJECT_SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env['MEU_SUPABASE_SERVICE_ROLE_KEY'] || process.env['SUPABASE_SERVICE_ROLE_KEY'];
+  const SUPABASE_SERVICE_ROLE_KEY =
+    chaveDoProjeto(process.env['MEU_SUPABASE_SERVICE_ROLE_KEY'], SUPABASE_URL) ||
+    chaveDoProjeto(process.env['SUPABASE_SERVICE_ROLE_KEY'], SUPABASE_URL);
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
