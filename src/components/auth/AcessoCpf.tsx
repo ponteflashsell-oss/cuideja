@@ -86,8 +86,11 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
   }, []);
 
   const irParaCadastro = async () => {
+    setSenha("");
+    setConfirmar("");
+    // Sem CPF válido ainda: abre o cadastro para o usuário preencher no passo 1.
     if (!cpfValido(cpf)) {
-      toast.error("Informe um CPF válido para criar sua conta");
+      setEtapa("cadastro1");
       return;
     }
     setCarregando(true);
@@ -97,10 +100,9 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
         toast.info("Este CPF já tem conta. Informe a senha para entrar.");
         return;
       }
-      setSenha("");
       setEtapa("cadastro1");
-    } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não foi possível verificar o CPF.");
+    } catch {
+      setEtapa("cadastro1");
     } finally {
       setCarregando(false);
     }
