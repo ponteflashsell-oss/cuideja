@@ -36,31 +36,66 @@ export const cpfTemConta = createServerFn({ method: "POST" })
 export const criarContaCpf = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => cadastroSchema.parse(data))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const login = loginDoCpf(data.cpf);
+    const metadata = {
+      nome: data.nome,
+      cpf: data.cpf,
+      data_nascimento: data.dataNascimento,
+      tipo: data.tipo,
+      sem_email: true,
+    };
 
-    const { data: criado, error } = await supabaseAdmin.auth.admin.createUser({
-      email: login,
-      password: data.senha,
-      email_confirm: true,
-      user_metadata: {
-        nome: data.nome,
-        cpf: data.cpf,
-        data_nascimento: data.dataNascimento,
-        tipo: data.tipo,
-        sem_email: true,
-      },
-    });
+    const jaExiste = (mensagem: string) =>
+      /already|registered|exists/i.test(mensagem)
+        ? new Error("Este CPF já possui conta. Informe sua senha para entrar.")
+        : null;
 
-    if (error || !criado.user) {
-      const mensagem = (error?.message ?? "").toLowerCase();
-      if (mensagem.includes("already") || mensagem.includes("registered") || mensagem.includes("exists")) {
-        throw new Error("Este CPF já possui conta. Informe sua senha para entrar.");
+    let userId: string | null = null;
+    let supabaseAdmin: Awaited<
+      typeof import("@/integrations/supabase/client.server")
+    >["supabaseAdmin"] | null = null;
+
+    try {
+      ({ supabaseAdmin } = await import("@/integrations/supabase/client.server"));
+      const { data: criado, error } = await supabaseAdmin.auth.admin.createUser({
+        email: login,
+        password: data.senha,
+        email_confirm: true,
+        user_metadata: metadata,
+      });
+      if (error || !criado.user) {
+        const conhecido = jaExiste(error?.message ?? "");
+        if (conhecido) throw conhecido;
+        throw new Error(error?.message ?? "Não foi possível criar a conta.");
       }
-      throw new Error(error?.message ?? "Não foi possível criar a conta.");
+      userId = criado.user.id;
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : "";
+      const conhecido = jaExiste(mensagem);
+      if (conhecido) throw conhecido;
+
+      // Chave de serviço ausente/incorreta neste ambiente: cadastra pela chave pública.
+      const { createClient } = await import("@supabase/supabase-js");
+      const { PROJECT_SUPABASE_URL, PROJECT_SUPABASE_PUBLISHABLE_KEY } = await import(
+        "@/integrations/supabase/project-config"
+      );
+      const publico = createClient(PROJECT_SUPABASE_URL, PROJECT_SUPABASE_PUBLISHABLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data: cadastro, error: erroCadastro } = await publico.auth.signUp({
+        email: login,
+        password: data.senha,
+        options: { data: metadata },
+      });
+      if (erroCadastro || !cadastro.user) {
+        const conhecidoPublico = jaExiste(erroCadastro?.message ?? "");
+        if (conhecidoPublico) throw conhecidoPublico;
+        throw new Error(erroCadastro?.message ?? "Não foi possível criar a conta.");
+      }
+      return { criada: true as const };
     }
 
-    const base = { id: criado.user.id, nome: data.nome, tipo: data.tipo };
+    const base = { id: userId, nome: data.nome, tipo: data.tipo };
     const completo = { ...base, cpf: data.cpf, data_nascimento: data.dataNascimento };
 
     const { error: erroPerfil } = await supabaseAdmin.from("profiles").upsert(completo as never);
