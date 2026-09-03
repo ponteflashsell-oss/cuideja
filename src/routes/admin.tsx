@@ -324,8 +324,11 @@ function ListaCadastros({
   });
 
   const filtrados = itens.filter((c) =>
-    `${c.nome} ${c.email} ${c.cidade}`.toLowerCase().includes(busca.trim().toLowerCase()),
+    `${c.nome} ${identificacaoDaConta(c.email)} ${c.cidade}`
+      .toLowerCase()
+      .includes(busca.trim().toLowerCase()),
   );
+
 
   if (carregando) return <p className="text-sm text-muted-foreground">Carregando cadastros…</p>;
   if (!itens.length) return <p className="text-sm text-muted-foreground">{vazio}</p>;
@@ -335,7 +338,7 @@ function ListaCadastros({
       <Input
         value={busca}
         onChange={(e) => setBusca(e.target.value)}
-        placeholder="Buscar por nome, e-mail ou cidade"
+        placeholder="Buscar por nome, CPF ou cidade"
         className="max-w-sm"
       />
       <div className="grid gap-3">
@@ -361,9 +364,10 @@ function ListaCadastros({
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {c.email || "e-mail indisponível"} · {c.cidade || "cidade não informada"} ·
-                  cadastro {dataBr(c.created_at)}
+                  {identificacaoDaConta(c.email) || "contato indisponível"} ·{" "}
+                  {c.cidade || "cidade não informada"} · cadastro {dataBr(c.created_at)}
                 </p>
+
                 {mostrarVerificacao && (
                   <p className="mt-1 text-xs text-muted-foreground">
                     {c.verificacao

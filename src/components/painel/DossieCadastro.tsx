@@ -76,7 +76,12 @@ export function DossieCadastro({
               <div className="rounded-lg border border-border p-3">
                 <Linha rotulo="Tipo de conta" valor={familia ? "Família" : "Cuidadora"} />
                 <Linha rotulo="Nome" valor={p?.nome ?? ""} />
-                <Linha rotulo="E-mail" valor={d.email} />
+                {ehLoginDeCpf(d.email) ? (
+                  <Linha rotulo="CPF (login)" valor={cpfDoLogin(d.email)} />
+                ) : (
+                  <Linha rotulo="E-mail" valor={d.email} />
+                )}
+
                 <Linha rotulo="Cidade" valor={p?.cidade ?? ""} />
                 <Linha rotulo="Bairros" valor={(p?.bairros ?? []).join(", ")} />
                 <Linha
