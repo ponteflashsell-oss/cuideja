@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Home, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { identificacaoDaConta } from "@/lib/cpf";
 
 export function FamiliaHeader() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export function FamiliaHeader() {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(({ data }) => setEmail(identificacaoDaConta(data.user?.email) || null));
   }, []);
 
   const sair = async () => {

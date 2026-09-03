@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { identificacaoDaConta } from "@/lib/cpf";
 
 export function AdminHeader() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export function AdminHeader() {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(({ data }) => setEmail(identificacaoDaConta(data.user?.email) || null));
   }, []);
 
   const sair = async () => {
