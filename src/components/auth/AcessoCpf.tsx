@@ -292,28 +292,6 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
           )}
 
 
-          {etapa === "senha" && (
-            <form onSubmit={entrar} className="mt-6 grid gap-4">
-              <p className="text-sm text-muted-foreground">
-                CPF <strong>{mascararCpf(cpf)}</strong>
-              </p>
-              <CampoSenha
-                id="senha"
-                label="Senha"
-                valor={senha}
-                onChange={setSenha}
-                placeholder="Sua senha"
-                autoComplete="current-password"
-              />
-              <Button type="submit" disabled={carregando} className="w-full">
-                {carregando && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Entrar
-              </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={voltar}>
-                <ArrowLeft className="mr-1 size-4" /> Usar outro CPF
-              </Button>
-            </form>
-          )}
 
           {etapa === "cadastro1" && (
             <form onSubmit={avancarCadastro} className="mt-6 grid gap-4">
