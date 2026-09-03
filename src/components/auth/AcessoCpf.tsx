@@ -141,6 +141,10 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
 
   const avancarCadastro = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cpfValido(cpf)) {
+      toast.error("Informe um CPF válido");
+      return;
+    }
     if (!dataNascimentoIso(nascimento)) {
       toast.error("Informe uma data de nascimento válida (maior de 18 anos)");
       return;
