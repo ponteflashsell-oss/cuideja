@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { BadgeCheck, Eye, FileText, IdCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cpfDoLogin, ehLoginDeCpf } from "@/lib/cpf";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

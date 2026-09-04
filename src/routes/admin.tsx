@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { identificacaoDaConta } from "@/lib/cpf";
 import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
 import { DossieCadastro } from "@/components/painel/DossieCadastro";
