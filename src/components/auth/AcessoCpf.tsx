@@ -10,6 +10,7 @@ import {
   cpfValido,
   dataNascimentoIso,
   loginDoCpf,
+  loginsDoCpf,
   mascararCpf,
   mascararData,
   somenteDigitos,
@@ -120,10 +121,12 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
     }
     setCarregando(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: loginDoCpf(cpf),
-        password: senha,
-      });
+      let error = null as { message: string } | null;
+      for (const email of loginsDoCpf(cpf)) {
+        const r = await supabase.auth.signInWithPassword({ email, password: senha });
+        error = r.error;
+        if (!r.error) break;
+      }
       if (error) {
         const { existe } = await cpfTemConta({ data: { cpf: somenteDigitos(cpf) } });
         throw new Error(
