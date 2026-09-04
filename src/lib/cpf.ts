@@ -54,19 +54,32 @@ export function dataNascimentoIso(valor: string): string | null {
  * e-mail: o endereço é derivado do CPF apenas para autenticar. O e-mail real
  * poderá ser cadastrado depois, nas configurações do perfil.
  */
+export const DOMINIO_LOGIN = "cuideja.com";
+const DOMINIO_LOGIN_ANTIGO = "cpf.cuideja.app";
+
 export function loginDoCpf(cpf: string): string {
-  return `${somenteDigitos(cpf)}@cpf.cuideja.app`;
+  return `cpf.${somenteDigitos(cpf)}@${DOMINIO_LOGIN}`;
+}
+
+/** Logins possíveis do CPF: o atual e o formato antigo (contas já criadas). */
+export function loginsDoCpf(cpf: string): string[] {
+  const d = somenteDigitos(cpf);
+  return [loginDoCpf(d), `${d}@${DOMINIO_LOGIN_ANTIGO}`];
 }
 
 /** true quando o e-mail é apenas o identificador interno derivado do CPF. */
 export function ehLoginDeCpf(email: string | null | undefined): boolean {
-  return Boolean(email && /@cpf\.cuideja\.app$/i.test(email));
+  if (!email) return false;
+  return (
+    /^cpf\.\d{11}@cuideja\.com$/i.test(email) || /^\d{11}@cpf\.cuideja\.app$/i.test(email)
+  );
 }
 
 /** Extrai o CPF (com máscara) de um login interno; "" quando não é login de CPF. */
 export function cpfDoLogin(email: string | null | undefined): string {
   if (!ehLoginDeCpf(email)) return "";
-  return mascararCpf(email!.split("@")[0] ?? "");
+  const local = email!.split("@")[0] ?? "";
+  return mascararCpf(local.replace(/^cpf\./i, ""));
 }
 
 /**
