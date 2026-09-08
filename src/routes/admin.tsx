@@ -302,11 +302,14 @@ function ListaCadastros({
   const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
   const [excluir, setExcluir] = useState<Cadastro | null>(null);
   const queryClient = useQueryClient();
-  const alternar = useServerFn(definirVerificado);
-  const apagar = useServerFn(excluirPerfil);
-
   const mutacao = useMutation({
-    mutationFn: (v: { userId: string; verificado: boolean }) => alternar({ data: v }),
+    mutationFn: async (v: { userId: string; verificado: boolean }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ verificado: v.verificado })
+        .eq("id", v.userId);
+      if (error) throw new Error(error.message);
+    },
     onSuccess: () => {
       toast.success("Cadastro atualizado.");
       queryClient.invalidateQueries({ queryKey: ["admin"] });
@@ -315,7 +318,10 @@ function ListaCadastros({
   });
 
   const exclusao = useMutation({
-    mutationFn: (userId: string) => apagar({ data: { userId } }),
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase.from("profiles").delete().eq("id", userId);
+      if (error) throw new Error(error.message);
+    },
     onSuccess: () => {
       toast.success("Perfil excluído.");
       setExcluir(null);
