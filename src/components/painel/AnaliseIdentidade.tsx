@@ -41,11 +41,25 @@ function Item({ ok, texto }: { ok: boolean; texto: string }) {
 }
 
 export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
-  const analisar = useServerFn(analisarVerificacao);
-  const buscar = useServerFn(obterUltimaVerificacao);
   const [analisando, setAnalisando] = useState(false);
   const [foto, setFoto] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
+
+  const buscar = async () => {
+    const { data: sessao } = await supabase.auth.getUser();
+    const userId = sessao.user?.id;
+    if (!userId) return null;
+    const { data } = await supabase
+      .from("verificacoes")
+      .select(
+        "status, score, nome_documento, cpf, tipo_documento, cpf_valido, face_confere, antecedentes_status, observacoes, revisao_manual, created_at",
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data ?? null;
+  };
 
   useEffect(() => {
     let ativo = true;
@@ -85,16 +99,68 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
     setAnalisando(true);
     setFoto(imagens.selfie);
     try {
-      const dados = (await analisar({ data: imagens })) as Resultado;
-      setResultado(dados);
+      const { data: sessao } = await supabase.auth.getUser();
+      const userId = sessao.user?.id;
+      if (!userId) throw new Error("Sua sessão expirou. Entre novamente.");
+
+      const agora = Date.now();
+      const subir = async (nome: string, dataUrl: string) => {
+        const blob = await (await fetch(dataUrl)).blob();
+        const caminho = `${userId}/${agora}-${nome}.jpg`;
+        const { error } = await supabase.storage
+          .from("verificacoes")
+          .upload(caminho, blob, { contentType: blob.type || "image/jpeg", upsert: true });
+        if (error) throw error;
+        return caminho;
+      };
+      const selfiePath = await subir("selfie", imagens.selfie);
+      const documentoPath =
+        imagens.documento === imagens.selfie ? selfiePath : await subir("documento", imagens.documento);
+
+      const observacoes = "Aguardando conferência manual da equipe.";
+      const { error: erroInsert } = await supabase.from("verificacoes").insert({
+        user_id: userId,
+        status: "em_analise",
+        nome_documento: "",
+        cpf: "",
+        data_nascimento: "",
+        tipo_documento: "outro",
+        cpf_valido: false,
+        face_confere: false,
+        score: 0,
+        observacoes,
+        antecedentes_status: "nao_consultado",
+        antecedentes_dados: null,
+        selfie_path: selfiePath,
+        documento_path: documentoPath,
+        revisao_manual: true,
+      });
+      if (erroInsert) throw erroInsert;
+
+      const { data: publico } = supabase.storage.from("verificacoes").getPublicUrl(selfiePath);
+      // Marca o perfil como pendente de conferência (colunas opcionais no banco).
+      await supabase
+        .from("profiles")
+        .update({ selfie_url: publico.publicUrl, status_verificacao: "pendente" } as never)
+        .eq("id", userId);
+
+      setResultado({
+        status: "em_analise",
+        score: 0,
+        nome: "",
+        cpf: "",
+        tipoDocumento: "outro",
+        cpfValido: false,
+        faceConfere: false,
+        documentoLegivel: false,
+        antecedentes: "nao_consultado",
+        observacoes,
+        revisaoManual: true,
+      });
       onEnviado?.();
-      if (dados.revisaoManual) {
-        toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
-      } else {
-        toast.success("Documento enviado para aprovação final.");
-      }
+      toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
     } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não conseguimos analisar agora.");
+      toast.error(erro instanceof Error ? erro.message : "Não conseguimos enviar agora.");
     } finally {
       setAnalisando(false);
     }
