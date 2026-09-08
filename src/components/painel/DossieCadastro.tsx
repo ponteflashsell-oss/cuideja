@@ -165,31 +165,41 @@ export function DossieCadastro({
                 <p className="text-sm text-muted-foreground">Nenhum arquivo enviado.</p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {d.arquivos.map((a: any) => (
-                    <figure key={a.chave} className="space-y-2">
-                      <figcaption className="text-xs text-muted-foreground">
-                        {a.titulo} · {a.origem} · {dataHora(a.criado_em)}
-                      </figcaption>
-                      {!a.url ? (
-                        <p className="text-xs text-muted-foreground">Arquivo indisponível.</p>
-                      ) : a.pdf ? (
-                        <div className="space-y-2 rounded-lg border border-border p-3">
-                          <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <FileText className="size-4" /> Arquivo em PDF
-                          </p>
-                          <Button
-                            size="sm"
-                            className="w-full gap-2"
-                            onClick={() => window.open(a.url, "_blank", "noopener,noreferrer")}
-                          >
-                            <Eye className="size-4" /> Abrir PDF em nova aba
-                          </Button>
-                        </div>
-                      ) : (
-                        <FotoAmpliavel src={a.url} alt={a.titulo} legenda={a.origem} />
-                      )}
-                    </figure>
-                  ))}
+                  {d.arquivos.map((a: any) => {
+                    const endereco = enderecoDoArquivo(a);
+                    const ehPdf = Boolean(a.pdf) || /\.pdf(\?|$)/i.test(endereco);
+                    return (
+                      <figure key={a.chave} className="space-y-2">
+                        <figcaption className="text-xs text-muted-foreground">
+                          {a.titulo} · {a.origem} · {dataHora(a.criado_em)}
+                        </figcaption>
+                        {!endereco ? (
+                          <p className="text-xs text-muted-foreground">Arquivo indisponível.</p>
+                        ) : ehPdf ? (
+                          <div className="space-y-2 rounded-lg border border-border p-3">
+                            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <FileText className="size-4" /> Arquivo em PDF
+                            </p>
+                            <object
+                              data={endereco}
+                              type="application/pdf"
+                              className="h-64 w-full rounded-md bg-muted"
+                              aria-label={a.titulo}
+                            />
+                            <Button
+                              size="sm"
+                              className="w-full gap-2"
+                              onClick={() => window.open(endereco, "_blank", "noopener,noreferrer")}
+                            >
+                              <Eye className="size-4" /> Abrir PDF em nova aba
+                            </Button>
+                          </div>
+                        ) : (
+                          <FotoAmpliavel src={endereco} alt={a.titulo} legenda={a.origem} />
+                        )}
+                      </figure>
+                    );
+                  })}
                 </div>
               )}
             </section>
