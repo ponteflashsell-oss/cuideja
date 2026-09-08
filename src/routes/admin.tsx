@@ -45,8 +45,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import {
   decidirVerificacao,
-  definirVerificado,
-  excluirPerfil,
   criarPerfisSimulacao,
   imagensVerificacao,
   listarCadastros,
