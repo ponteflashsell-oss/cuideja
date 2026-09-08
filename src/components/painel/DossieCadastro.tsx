@@ -13,6 +13,24 @@ import {
 } from "@/components/ui/dialog";
 import { FotoAmpliavel } from "@/components/painel/FotoAmpliavel";
 import { dossieCadastro } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
+
+const BUCKET = "verificacoes";
+
+/** Resolve o endereço da imagem/PDF: link completo tem prioridade, depois URL pública do Storage. */
+function enderecoDoArquivo(arquivo: { caminho?: string; url?: string }) {
+  const caminho = (arquivo.caminho ?? "").trim();
+  if (/^https?:\/\//i.test(caminho)) return caminho;
+  if (caminho) {
+    try {
+      const publica = supabase.storage.from(BUCKET).getPublicUrl(caminho).data.publicUrl;
+      if (publica) return publica;
+    } catch {
+      /* cai para o link temporário */
+    }
+  }
+  return (arquivo.url ?? "").trim();
+}
 
 const dataHora = (iso: string) =>
   new Date(iso).toLocaleString("pt-BR", {
