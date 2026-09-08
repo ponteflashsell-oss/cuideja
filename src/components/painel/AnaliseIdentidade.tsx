@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, ScanFace } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { CapturaSelfie } from "@/components/painel/CapturaSelfie";
 import { FotoAmpliavel } from "@/components/painel/FotoAmpliavel";
-import { analisarVerificacao, obterUltimaVerificacao } from "@/lib/verificacao.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 type Resultado = {
   status: string;
