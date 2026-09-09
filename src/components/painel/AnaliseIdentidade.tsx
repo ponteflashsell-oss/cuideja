@@ -44,6 +44,28 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
   const [analisando, setAnalisando] = useState(false);
   const [foto, setFoto] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [tipo, setTipo] = useState<"familia" | "cuidadora">("cuidadora");
+  const ehFamilia = tipo === "familia";
+
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      const { data: sessao } = await supabase.auth.getUser();
+      const userId = sessao.user?.id;
+      if (!userId) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("tipo")
+        .eq("id", userId)
+        .maybeSingle();
+      if (!ativo) return;
+      if (data?.tipo === "familia") setTipo("familia");
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
 
   const buscar = async () => {
     const { data: sessao } = await supabase.auth.getUser();
