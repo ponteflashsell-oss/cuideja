@@ -192,7 +192,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
     <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
       <div className="flex items-center justify-between gap-2">
         <h4 className="flex items-center gap-2 text-sm font-medium">
-          <ScanFace className="size-4 text-primary" /> Conferência manual de identidade
+          <ScanFace className="size-4 text-primary" />
+          {ehFamilia ? "Conferência de identidade do responsável" : "Conferência manual de identidade"}
         </h4>
         {resultado ? (
           <Badge variant={reprovado ? "destructive" : "secondary"}>
@@ -207,9 +208,11 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         ) : null}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Envie uma foto do seu rosto com o documento ao lado. A equipe confere manualmente os dados,
-        a autenticidade do documento e a correspondência da foto.
+        {ehFamilia
+          ? "Envie uma foto do seu rosto com o documento ao lado. A equipe confere se a foto e o documento são da mesma pessoa — é a única etapa exigida das famílias."
+          : "Envie uma foto do seu rosto com o documento ao lado. A equipe confere manualmente os dados, a autenticidade do documento e a correspondência da foto."}
       </p>
+
 
       {resultado && !reprovado ? (
         <p className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground">
