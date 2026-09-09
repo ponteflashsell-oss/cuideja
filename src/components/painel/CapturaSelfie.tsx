@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, RefreshCw, ShieldCheck, SwitchCamera } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -96,7 +95,6 @@ export function CapturaSelfie({
     setAberto(false);
     // Uma única foto comprova rosto + documento juntos (prova de vida).
     onConcluir?.({ selfie: captura, documento: captura });
-    toast.success("Foto do rosto com o documento enviada para análise antifraude.");
     setCaptura(null);
   };
 

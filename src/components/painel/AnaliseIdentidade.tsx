@@ -132,7 +132,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         const { error } = await supabase.storage
           .from("verificacoes")
           .upload(caminho, blob, { contentType: blob.type || "image/jpeg", upsert: true });
-        if (error) throw error;
+        if (error) throw new Error(`Falha ao guardar a foto: ${error.message}`);
         return caminho;
       };
       const selfiePath = await subir("selfie", imagens.selfie);
@@ -145,7 +145,6 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         status: "em_analise",
         nome_documento: "",
         cpf: "",
-        data_nascimento: "",
         tipo_documento: "outro",
         cpf_valido: false,
         face_confere: false,
@@ -157,14 +156,20 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         documento_path: documentoPath,
         revisao_manual: true,
       });
-      if (erroInsert) throw erroInsert;
+      if (erroInsert) {
+        await supabase.storage.from("verificacoes").remove([selfiePath]);
+        throw new Error(`Falha ao registrar a conferência: ${erroInsert.message}`);
+      }
 
       const { data: publico } = supabase.storage.from("verificacoes").getPublicUrl(selfiePath);
       // Marca o perfil como pendente de conferência (colunas opcionais no banco).
-      await supabase
+      const { error: erroPerfil } = await supabase
         .from("profiles")
         .update({ selfie_url: publico.publicUrl, status_verificacao: "pendente" } as never)
         .eq("id", userId);
+      if (erroPerfil) {
+        console.warn("[verificacao] perfil sem campos complementares", erroPerfil.message);
+      }
 
       setResultado({
         status: "em_analise",
@@ -182,7 +187,8 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
       onEnviado?.();
       toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
     } catch (erro) {
-      toast.error(erro instanceof Error ? erro.message : "Não conseguimos enviar agora.");
+      console.error("[verificacao] envio direto", erro);
+      toast.error(erro instanceof Error ? erro.message : "Não conseguimos enviar a foto agora.");
     } finally {
       setAnalisando(false);
     }
