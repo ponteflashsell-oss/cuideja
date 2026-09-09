@@ -74,7 +74,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
     const { data } = await supabase
       .from("verificacoes")
       .select(
-        "status, score, nome_documento, cpf, tipo_documento, cpf_valido, face_confere, antecedentes_status, observacoes, revisao_manual, created_at",
+        "status, score, nome_documento, cpf, tipo_documento, cpf_valido, face_confere, antecedentes_status, observacoes, created_at",
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -100,7 +100,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
           documentoLegivel: registro.cpf_valido || registro.score > 0,
           antecedentes: registro.antecedentes_status,
           observacoes: registro.observacoes,
-          revisaoManual: registro.revisao_manual,
+          revisaoManual: registro.status === "em_analise",
         });
         onEnviado?.();
       })
@@ -154,7 +154,6 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         antecedentes_dados: null,
         selfie_path: selfiePath,
         documento_path: documentoPath,
-        revisao_manual: true,
       });
       if (erroInsert) {
         await supabase.storage.from("verificacoes").remove([selfiePath]);
@@ -185,7 +184,7 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
         revisaoManual: true,
       });
       onEnviado?.();
-      toast.success("Fotos recebidas e guardadas para conferência manual da nossa equipe.");
+      toast.success("Foto enviada com sucesso.");
     } catch (erro) {
       console.error("[verificacao] envio direto", erro);
       toast.error(erro instanceof Error ? erro.message : "Não conseguimos enviar a foto agora.");

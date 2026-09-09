@@ -138,7 +138,7 @@ export function DossieCadastro({
                         <Badge variant={v.status === "aprovado" ? "default" : "outline"}>
                           {v.status}
                         </Badge>
-                        {v.revisao_manual && <Badge variant="secondary">conferência manual</Badge>}
+                        {v.status === "em_analise" && <Badge variant="secondary">conferência manual</Badge>}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         CPF {v.cpf || "não identificado"} · nascimento {v.data_nascimento || "—"} ·{" "}

@@ -472,7 +472,6 @@ export type Database = {
           id: string
           nome_documento: string
           observacoes: string
-          revisao_manual: boolean
           score: number
           selfie_path: string
           status: string
@@ -492,7 +491,6 @@ export type Database = {
           id?: string
           nome_documento?: string
           observacoes?: string
-          revisao_manual?: boolean
           score?: number
           selfie_path?: string
           status?: string
@@ -512,7 +510,6 @@ export type Database = {
           id?: string
           nome_documento?: string
           observacoes?: string
-          revisao_manual?: boolean
           score?: number
           selfie_path?: string
           status?: string

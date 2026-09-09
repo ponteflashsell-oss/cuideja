@@ -41,7 +41,7 @@ export const listarCadastros = createServerFn({ method: "GET" })
 
     const { data: verificacoes } = await context.supabase
       .from("verificacoes")
-      .select("user_id, status, score, revisao_manual, created_at")
+      .select("user_id, status, score, created_at")
       .order("created_at", { ascending: false });
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -54,7 +54,11 @@ export const listarCadastros = createServerFn({ method: "GET" })
     }
 
     const ultima = new Map<string, { status: string; score: number; revisao_manual: boolean }>();
-    for (const v of verificacoes ?? []) if (!ultima.has(v.user_id)) ultima.set(v.user_id, v);
+    for (const v of verificacoes ?? []) {
+      if (!ultima.has(v.user_id)) {
+        ultima.set(v.user_id, { ...v, revisao_manual: v.status === "em_analise" });
+      }
+    }
 
     return (perfis ?? []).map((p) => ({
       ...p,
@@ -151,7 +155,6 @@ export const decidirVerificacao = createServerFn({ method: "POST" })
 
     const atualizacao = {
       status: data.decisao,
-      revisao_manual: false,
       ...(data.observacoes !== undefined ? { observacoes: data.observacoes } : {}),
     };
 
