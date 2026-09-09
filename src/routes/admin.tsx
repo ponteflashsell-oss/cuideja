@@ -89,7 +89,7 @@ type Cadastro = {
   created_at: string;
   tarifa_hora: number;
   especialidades: string[];
-  verificacao: { status: string; score: number; revisao_manual: boolean } | null;
+  verificacao: { status: string; score: number; cpf: string; revisao_manual: boolean } | null;
 };
 
 const dataBr = (iso: string) =>
@@ -297,7 +297,7 @@ function ListaCadastros({
   mostrarVerificacao?: boolean;
 }) {
   const [busca, setBusca] = useState("");
-  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
+  const [dossie, setDossie] = useState<{ id: string; nome: string; cpf?: string } | null>(null);
   const [excluir, setExcluir] = useState<Cadastro | null>(null);
   const queryClient = useQueryClient();
   const mutacao = useMutation({
@@ -353,7 +353,7 @@ function ListaCadastros({
               <button
                 type="button"
                 className="min-w-[200px] flex-1 text-left"
-                onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                onClick={() => setDossie({ id: c.id, nome: c.nome, cpf: c.verificacao?.cpf })}
                 aria-label={`Abrir dossiê completo de ${c.nome || "cadastro"}`}
               >
                 <div className="flex items-center gap-2">
@@ -391,7 +391,7 @@ function ListaCadastros({
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => setDossie({ id: c.id, nome: c.nome })}
+                  onClick={() => setDossie({ id: c.id, nome: c.nome, cpf: c.verificacao?.cpf })}
                 >
                   <Eye className="size-4" /> Ver dossiê
                 </Button>
@@ -467,7 +467,7 @@ function FilaVerificacoes({
   const decidir = useServerFn(decidirVerificacao);
   const buscarImagens = useServerFn(imagensVerificacao);
   const [aberta, setAberta] = useState<any | null>(null);
-  const [dossie, setDossie] = useState<{ id: string; nome: string } | null>(null);
+  const [dossie, setDossie] = useState<{ id: string; nome: string; cpf?: string } | null>(null);
   const [imagens, setImagens] = useState<{
     selfie: string;
     documento: string;
@@ -543,6 +543,7 @@ function FilaVerificacoes({
                   setDossie({
                     id: v.user_id,
                     nome: v.nome_documento || emailDe(v.user_id) || "Cadastro",
+                    cpf: v.cpf,
                   })
                 }
               >

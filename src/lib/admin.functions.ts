@@ -41,7 +41,7 @@ export const listarCadastros = createServerFn({ method: "GET" })
 
     const { data: verificacoes } = await context.supabase
       .from("verificacoes")
-      .select("user_id, status, score, created_at")
+      .select("user_id, status, score, cpf, created_at")
       .order("created_at", { ascending: false });
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -53,7 +53,7 @@ export const listarCadastros = createServerFn({ method: "GET" })
       console.error("[admin] listUsers", erro);
     }
 
-    const ultima = new Map<string, { status: string; score: number; revisao_manual: boolean }>();
+    const ultima = new Map<string, { status: string; score: number; cpf: string; revisao_manual: boolean }>();
     for (const v of verificacoes ?? []) {
       if (!ultima.has(v.user_id)) {
         ultima.set(v.user_id, { ...v, revisao_manual: v.status === "em_analise" });
@@ -510,24 +510,35 @@ export const listarAuditoria = createServerFn({ method: "GET" })
 /** Dossiê completo de um cadastro (cuidadora ou família) para inspeção de rotina. */
 export const dossieCadastro = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .inputValidator((input) =>
+    z.object({ userId: z.string().uuid(), cpf: z.string().trim().optional() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     await exigirAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: perfil }, { data: verificacoes }, { data: documentos }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("*").eq("id", data.userId).maybeSingle(),
-      supabaseAdmin
+    const verificacoesQuery = supabaseAdmin
         .from("verificacoes")
         .select("*")
-        .eq("user_id", data.userId)
-        .order("created_at", { ascending: false }),
+        .or(
+          data.cpf
+            ? `user_id.eq.${data.userId},cpf.eq.${data.cpf}`
+            : `user_id.eq.${data.userId}`,
+        )
+        .order("created_at", { ascending: false });
+    const [{ data: perfil, error: erroPerfil }, { data: verificacoes, error: erroVerificacoes }, { data: documentos, error: erroDocumentos }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", data.userId).maybeSingle(),
+      verificacoesQuery,
       supabaseAdmin
         .from("documentos")
         .select("id, tipo, nome_arquivo, caminho, mime, tamanho, origem, created_at")
         .eq("user_id", data.userId)
         .order("created_at", { ascending: false }),
     ]);
+    if (erroPerfil || erroVerificacoes || erroDocumentos) {
+      console.error("[admin] dossie", erroPerfil ?? erroVerificacoes ?? erroDocumentos);
+      throw new Error("Não foi possível carregar os dados do dossiê.");
+    }
 
     let email = "";
     try {

@@ -55,23 +55,28 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
 
 export function DossieCadastro({
   userId,
+  cpf,
   nome,
   onClose,
 }: {
   userId: string | null;
+  cpf?: string;
   nome: string;
   onClose: () => void;
 }) {
   const buscar = useServerFn(dossieCadastro);
   const dossie = useQuery({
     queryKey: ["admin", "dossie", userId],
-    queryFn: () => buscar({ data: { userId: userId as string } }),
+    queryFn: () => buscar({ data: { userId: userId as string, cpf } }),
     enabled: Boolean(userId),
   });
 
   const d = dossie.data as any;
   const p = d?.perfil;
   const familia = p?.tipo === "familia";
+  const mensagemErro = dossie.error instanceof Error
+    ? dossie.error.message
+    : "Não foi possível carregar os dados do dossiê.";
 
   return (
     <Dialog open={Boolean(userId)} onOpenChange={(o) => !o && onClose()}>
@@ -86,8 +91,12 @@ export function DossieCadastro({
           </DialogDescription>
         </DialogHeader>
 
-        {dossie.isLoading || !d ? (
+        {dossie.isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando dossiê…</p>
+        ) : dossie.isError ? (
+          <p className="text-sm text-destructive">{mensagemErro}</p>
+        ) : !d ? (
+          <p className="text-sm text-muted-foreground">Nenhum documento encontrado para este perfil</p>
         ) : (
           <div className="grid gap-6">
             <section>
@@ -162,7 +171,9 @@ export function DossieCadastro({
                 <BadgeCheck className="size-4 text-primary" /> Fotos e documentos
               </h3>
               {d.arquivos.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum arquivo enviado.</p>
+                <p className="text-sm text-muted-foreground">
+                  Nenhum documento encontrado para este perfil
+                </p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   {d.arquivos.map((a: any) => {
