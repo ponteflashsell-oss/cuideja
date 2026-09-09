@@ -261,14 +261,16 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
                   : "Documento aguardando conferência manual"
               }
             />
-            <Item
-              ok={resultado.cpfValido}
-              texto={
-                resultado.cpfValido
-                  ? `CPF ${resultado.cpf} validado`
-                  : "CPF será conferido manualmente pela equipe"
-              }
-            />
+            {ehFamilia ? null : (
+              <Item
+                ok={resultado.cpfValido}
+                texto={
+                  resultado.cpfValido
+                    ? `CPF ${resultado.cpf} validado`
+                    : "CPF será conferido manualmente pela equipe"
+                }
+              />
+            )}
             <Item
               ok={resultado.faceConfere}
               texto={
@@ -278,18 +280,23 @@ export function AnaliseIdentidade({ onEnviado }: { onEnviado?: () => void }) {
               }
             />
           </ul>
-          <p className="text-xs text-muted-foreground">
-            Nome no documento:{" "}
-            <strong>{resultado.nome || "aguardando conferência manual"}</strong>
-            {resultado.tipoDocumento && resultado.tipoDocumento !== "outro"
-              ? ` · ${resultado.tipoDocumento.toUpperCase()}`
-              : ""}{" "}
-            · pontuação automática {resultado.score}/100
-          </p>
-          <p className="flex items-start gap-2 text-xs text-muted-foreground">
-            <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-primary" />
-            Antecedentes: {rotuloAntecedentes[resultado.antecedentes] ?? resultado.antecedentes}
-          </p>
+          {ehFamilia ? null : (
+            <p className="text-xs text-muted-foreground">
+              Nome no documento:{" "}
+              <strong>{resultado.nome || "aguardando conferência manual"}</strong>
+              {resultado.tipoDocumento && resultado.tipoDocumento !== "outro"
+                ? ` · ${resultado.tipoDocumento.toUpperCase()}`
+                : ""}{" "}
+              · pontuação automática {resultado.score}/100
+            </p>
+          )}
+          {ehFamilia ? null : (
+            <p className="flex items-start gap-2 text-xs text-muted-foreground">
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-primary" />
+              Antecedentes: {rotuloAntecedentes[resultado.antecedentes] ?? resultado.antecedentes}
+            </p>
+          )}
+
           {resultado.revisaoManual ? (
             <p className="text-xs text-muted-foreground">
               Seu envio foi salvo e está na fila de análise humana — você não precisa refazer as
