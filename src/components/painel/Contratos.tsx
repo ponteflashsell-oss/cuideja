@@ -203,7 +203,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
       }
       toast.success(
         r.status === "aguardando_pagamento"
-          ? "Os dois consentimentos foram registrados."
+            ? "Os dois consentimentos foram registrados. Aguardando pagamento pela plataforma."
           : r.status === "recusado"
             ? "Termo recusado."
             : "Consentimento registrado. Aguardando a outra parte.",

@@ -27,7 +27,12 @@ export const Route = createFileRoute("/api/public/payments/infinitepay")({
             .eq("id", id).maybeSingle();
           if (erroProposta) throw erroProposta;
           if (!contrato && !proposta) return new Response("Pedido não encontrado", { status: 404 });
-          if (contrato?.pagamento_status === "confirmado" || proposta?.status === "aceita") return Response.json({ ok: true });
+          if (contrato?.pagamento_status === "confirmado" || proposta?.status === "aceita") {
+            const { conferirPagamentoInfinitePay: conferir } = await import("@/lib/infinitepay.server");
+            const valorPago = contrato ? Number(contrato.valor) : Number(proposta?.valor_proposto);
+            return await conferir({ orderNsu: id, transactionNsu: transacao, slug, valor: valorPago })
+              ? Response.json({ ok: true }) : new Response("Pagamento não confirmado", { status: 400 });
+          }
           if ((contrato && (contrato.pagamento_status !== "pendente" || contrato.status !== "aguardando_pagamento")) ||
             (proposta && proposta.status !== "aguardando_pagamento")) {
             return new Response("Pedido indisponível", { status: 409 });
