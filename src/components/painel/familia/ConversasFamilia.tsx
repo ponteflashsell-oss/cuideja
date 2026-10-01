@@ -15,7 +15,8 @@ const rotuloStatus = {
   pendente_cuidadora: "Pendente da cuidadora",
   pendente_familia: "Aguardando sua decisão",
   contraproposta: "Contraproposta",
-  aceita: "Aceita",
+  aguardando_pagamento: "Aguardando pagamento",
+  aceita: "Pagamento confirmado",
   recusada: "Recusada",
   expirada: "Expirada",
 } as const;
@@ -126,7 +127,7 @@ export function ConversasFamilia() {
       }
       toast.success(
         acao === "aceitar"
-          ? "Proposta aceita."
+          ? "Aceite registrado. Aguarde a confirmação do pagamento."
           : acao === "recusar"
             ? "Proposta recusada."
             : "Nova contraproposta enviada para a cuidadora.",
@@ -236,6 +237,13 @@ export function ConversasFamilia() {
               <p><strong className="text-foreground">Valor:</strong> {moeda(Number(ativa.valor_proposto))} · {moeda(Number(ativa.valor_proposto) / horasEntre(ativa.hora_inicio, ativa.hora_fim))}/hora</p>
               <p><strong className="text-foreground">Observação:</strong> {ativa.observacao || "Sem observações."}</p>
             </div>
+
+            {ativa.status === "aguardando_pagamento" && <div className="mt-4 rounded-lg bg-muted p-3 text-sm">
+              <p>O atendimento ainda não está confirmado. Conclua o pagamento pela plataforma.</p>
+              <Button className="mt-3" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
+                <Banknote className="size-4" /> {aceitando ? "Abrindo cobrança…" : "Pagar pela plataforma"}
+              </Button>
+            </div>}
 
             {(ativa.status === "pendente_familia" || ativa.status === "contraproposta") && (
               <div className="mt-4 space-y-3 rounded-lg border border-dashed border-border p-3">

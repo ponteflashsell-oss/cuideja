@@ -21,6 +21,49 @@ export const souAdmin = createServerFn({ method: "GET" })
     return { admin: Boolean(data) };
   });
 
+/** Visão financeira restrita à equipe; sem expor CPF, endereço ou documentos. */
+export const listarPagamentosAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await exigirAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [contratos, propostas] = await Promise.all([
+      supabaseAdmin.from("contratos")
+        .select("id, reserva_id, familia_nome, cuidadora_nome, valor, taxa_percentual, status, pagamento_status, pago_em, created_at, data_inicio, checkout_url")
+        .not("reserva_id", "ilike", "RES-DEMO-%")
+        .order("created_at", { ascending: false }).limit(200),
+      supabaseAdmin.from("propostas")
+        .select("id, familia_id, cuidadora_id, valor_proposto, status, created_at, data_servico")
+        .in("status", ["aguardando_pagamento", "aceita"])
+        .order("created_at", { ascending: false }).limit(200),
+    ]);
+    if (contratos.error || propostas.error) throw new Error("Não foi possível carregar os pagamentos.");
+    const ids = [...new Set((propostas.data ?? []).flatMap((p) => [p.familia_id, p.cuidadora_id]))];
+    const { data: perfis, error: erroPerfis } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, nome").in("id", ids)
+      : { data: [], error: null };
+    if (erroPerfis) throw new Error("Não foi possível carregar os participantes.");
+    const nomes = new Map((perfis ?? []).map((p) => [p.id, p.nome]));
+    return [
+      ...(contratos.data ?? []).map((c) => ({
+        id: c.id, tipo: "Contrato", referencia: c.reserva_id,
+        familia: c.familia_nome, cuidadora: c.cuidadora_nome,
+        valor: Number(c.valor), taxa: Number(c.taxa_percentual),
+        situacao: c.pagamento_status === "confirmado" ? "Pago" : "Aguardando pagamento",
+        pagoEm: c.pago_em, criadoEm: c.created_at, dataServico: c.data_inicio,
+        link: c.checkout_url,
+      })),
+      ...(propostas.data ?? []).map((p) => ({
+        id: p.id, tipo: "Proposta", referencia: p.id.slice(0, 8).toUpperCase(),
+        familia: nomes.get(p.familia_id) ?? "Família", cuidadora: nomes.get(p.cuidadora_id) ?? "Cuidadora",
+        valor: Number(p.valor_proposto), taxa: 15,
+        situacao: p.status === "aceita" ? "Pago" : "Aguardando pagamento",
+        pagoEm: null as string | null, criadoEm: p.created_at, dataServico: p.data_servico,
+        link: null as string | null,
+      })),
+    ].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+  });
+
 export const listarCadastros = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -371,7 +414,7 @@ export const criarPerfisSimulacao = createServerFn({ method: "POST" })
         hora_inicio: "07:00",
         hora_fim: "19:00",
         valor: 320,
-        taxa_percentual: 10,
+        taxa_percentual: 15,
         observacoes: "Refeição da cuidadora combinada. Diário de bordo pelo aplicativo.",
         termo_texto: "TERMO DE SIMULAÇÃO — reserva criada para testar o fluxo completo do CuideJá.",
         status: "ativo",

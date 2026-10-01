@@ -119,6 +119,16 @@ export const responderProposta = createServerFn({ method: "POST" })
     if (!ehFamilia && !ehCuidadora) {
       throw new Error("Você não tem acesso a esta proposta.");
     }
+    if (proposta.status === "aguardando_pagamento") {
+      if (ehFamilia && data.acao === "aceitar") {
+        const checkoutUrl = await criarLinkPagamentoInfinitePay({ orderNsu: proposta.id, valor: Number(proposta.valor_proposto) });
+        return { ...proposta, checkoutUrl };
+      }
+      throw new Error("Esta proposta já aguarda pagamento pela plataforma.");
+    }
+    if (!["pendente_cuidadora", "pendente_familia", "contraproposta"].includes(proposta.status)) {
+      throw new Error("Esta proposta não aceita mais alterações.");
+    }
 
     let status = proposta.status;
     const update: {
@@ -141,7 +151,7 @@ export const responderProposta = createServerFn({ method: "POST" })
       if (ehCuidadora && (proposta.status === "pendente_cuidadora" || proposta.status === "contraproposta")) {
         status = "pendente_familia";
       } else if (ehFamilia && (proposta.status === "pendente_familia" || proposta.status === "contraproposta")) {
-        status = "aceita";
+        status = "aguardando_pagamento";
       } else {
         throw new Error("Esta ação não está disponível para o status atual da proposta.");
       }
@@ -157,19 +167,10 @@ export const responderProposta = createServerFn({ method: "POST" })
       update.expira_em = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
     }
 
-    if (data.acao !== "contraproposta" && data.valorProposto) {
-      update.valor_proposto = data.valorProposto;
-    }
-    if (data.acao !== "contraproposta" && data.horaInicio) {
-      update.hora_inicio = data.horaInicio;
-    }
-    if (data.acao !== "contraproposta" && data.horaFim) {
-      update.hora_fim = data.horaFim;
-    }
     update.status = status;
 
     let checkoutUrl: string | undefined;
-    if (status === "aceita" && ehFamilia) {
+    if (data.acao === "aceitar" && ehFamilia) {
       checkoutUrl = await criarLinkPagamentoInfinitePay({
         orderNsu: proposta.id,
         valor: Number(proposta.valor_proposto),
@@ -180,6 +181,7 @@ export const responderProposta = createServerFn({ method: "POST" })
       .from("propostas")
       .update(update)
       .eq("id", data.id)
+      .eq("status", proposta.status)
       .select("*")
       .single();
 

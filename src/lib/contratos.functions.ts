@@ -154,7 +154,7 @@ export const criarContrato = createServerFn({ method: "POST" })
         hora_inicio: data.horaInicio,
         hora_fim: data.horaFim,
         valor: data.valor,
-        taxa_percentual: 10,
+        taxa_percentual: 15,
         observacoes: data.observacoes,
         termo_texto: montarTermo(dados),
         status: "aguardando",
@@ -213,7 +213,7 @@ export const responderContrato = createServerFn({ method: "POST" })
     const cuidadoraAceite = ehCuidadora ? agora : contrato.cuidadora_aceite_em;
     const status = familiaAceite && cuidadoraAceite ? "aguardando_pagamento" : "aguardando";
     const checkoutUrl =
-      status === "aguardando_pagamento" && ehFamilia
+      status === "aguardando_pagamento"
         ? await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) })
         : undefined;
 
@@ -226,8 +226,24 @@ export const responderContrato = createServerFn({ method: "POST" })
           ? { familia_aceite_em: agora, familia_aceite_nome: nome }
           : { cuidadora_aceite_em: agora, cuidadora_aceite_nome: nome }),
       })
-      .eq("id", contrato.id);
+      .eq("id", contrato.id)
+      .eq("status", "aguardando");
     if (erroAceite) throw erroAceite;
 
     return { status, checkoutUrl };
+  });
+
+export const retomarPagamentoContrato = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: contrato, error } = await context.supabase.from("contratos")
+      .select("id, familia_id, status, pagamento_status, checkout_url, valor")
+      .eq("id", data.id).single();
+    if (error) throw error;
+    if (contrato.familia_id !== context.userId) throw new Error("Acesso restrito à família.");
+    if (contrato.status !== "aguardando_pagamento" || contrato.pagamento_status !== "pendente") {
+      throw new Error("Esta cobrança não está mais disponível.");
+    }
+    return { checkoutUrl: contrato.checkout_url || await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) }) };
   });

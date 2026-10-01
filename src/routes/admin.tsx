@@ -19,6 +19,7 @@ import { AdminHeader } from "@/components/painel/AdminHeader";
 import { ArquivoDocumentos } from "@/components/painel/ArquivoDocumentos";
 import { DossieCadastro } from "@/components/painel/DossieCadastro";
 import { GatewayDados } from "@/components/painel/GatewayDados";
+import { PagamentosAdmin } from "@/components/painel/PagamentosAdmin";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -220,6 +221,7 @@ function AdminPage() {
             <TabsTrigger value="familias">Famílias</TabsTrigger>
             <TabsTrigger value="documentos">Documentos</TabsTrigger>
             <TabsTrigger value="gateway">Gateway de dados</TabsTrigger>
+            <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="documentos" className="mt-5">
@@ -228,6 +230,10 @@ function AdminPage() {
 
           <TabsContent value="gateway" className="mt-5">
             <GatewayDados />
+          </TabsContent>
+
+          <TabsContent value="pagamentos" className="mt-5">
+            <PagamentosAdmin />
           </TabsContent>
 
 

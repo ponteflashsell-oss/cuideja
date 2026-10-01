@@ -29,6 +29,7 @@ import {
   listarCuidadorasContrato,
   listarMeusContratos,
   responderContrato,
+  retomarPagamentoContrato,
 } from "@/lib/contratos.functions";
 
 type Contrato = Awaited<ReturnType<typeof listarMeusContratos>>["contratos"][number];
@@ -63,6 +64,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
   const carregarCuidadoras = useServerFn(listarCuidadorasContrato);
   const gerar = useServerFn(criarContrato);
   const responder = useServerFn(responderContrato);
+  const retomarPagamento = useServerFn(retomarPagamentoContrato);
   const buscarAlertas = useServerFn(listarAlertasPlantao);
   const marcarAlerta = useServerFn(marcarAlertaPlantaoLido);
 
@@ -203,7 +205,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
       }
       toast.success(
         r.status === "aguardando_pagamento"
-          ? "Os dois consentimentos foram registrados."
+            ? "Os dois consentimentos foram registrados. Aguardando pagamento pela plataforma."
           : r.status === "recusado"
             ? "Termo recusado."
             : "Consentimento registrado. Aguardando a outra parte.",
@@ -500,6 +502,20 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => setAberto(c)}>
                     <FileText className="size-4" /> Ler termo completo
                   </Button>
+                  {c.status === "aguardando_pagamento" && papel === "familia" && (
+                    <Button size="sm" disabled={respondendo === c.id} onClick={async () => {
+                      setRespondendo(c.id);
+                      try {
+                        const resultado = await retomarPagamento({ data: { id: c.id } });
+                        window.location.href = resultado.checkoutUrl;
+                      } catch (erro) {
+                        toast.error(erro instanceof Error ? erro.message : "Não foi possível abrir o pagamento.");
+                      } finally { setRespondendo(""); }
+                    }}>
+                      {respondendo === c.id && <Loader2 className="mr-2 size-4 animate-spin" />}
+                      Pagar pela plataforma
+                    </Button>
+                  )}
                   {c.status === "ativo" && papel === "familia" && <BoasVindasReserva reserva={c} />}
                   {c.status === "ativo" && papel === "cuidadora" && <PreparacaoPlantao reserva={c} />}
                   {c.status === "aguardando" && !meuAceite(c) && (
