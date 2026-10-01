@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, CalendarClock, CheckCircle2, MessageSquare, Send, XCircle } from "lucide-react";
+import { Banknote, CalendarClock, CheckCircle2, Clock3, MessageSquare, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listarPropostasCuidadora, responderProposta } from "@/lib/propostas.functions";
+import { horarioFinal, horasEntre, moeda } from "@/lib/proposta-horario";
 
 const rotuloStatus = {
   pendente_cuidadora: "Pendente da sua resposta",
@@ -20,9 +21,9 @@ const rotuloStatus = {
 export function Negociacoes() {
   const [propostas, setPropostas] = useState<any[]>([]);
   const [ativa, setAtiva] = useState<any | null>(null);
-  const [valorContraproposta, setValorContraproposta] = useState(220);
+  const [valorContraproposta, setValorContraproposta] = useState(0);
+  const [quantidadeHoras, setQuantidadeHoras] = useState(8);
   const [horaInicio, setHoraInicio] = useState("09:00");
-  const [horaFim, setHoraFim] = useState("19:00");
   const [enviando, setEnviando] = useState(false);
   const ultimoIdsRef = useRef<string[]>([]);
   const listar = useServerFn(listarPropostasCuidadora);
@@ -66,8 +67,19 @@ export function Negociacoes() {
     return () => window.clearInterval(timer);
   }, [listar]);
 
+  useEffect(() => {
+    if (!ativa) return;
+    setValorContraproposta(Number(ativa.valor_proposto));
+    setHoraInicio(ativa.hora_inicio);
+    setQuantidadeHoras(horasEntre(ativa.hora_inicio, ativa.hora_fim));
+  }, [ativa?.id, ativa?.updated_at]);
+
   const responderPropostaAtual = async (acao: "aceitar" | "recusar" | "contraproposta") => {
     if (!ativa) return;
+    if (acao === "contraproposta" && (quantidadeHoras < 1 || quantidadeHoras > 24 || valorContraproposta <= 0)) {
+      toast.error("Informe entre 1 e 24 horas e um valor válido.");
+      return;
+    }
     setEnviando(true);
     try {
       await responder({
@@ -76,14 +88,14 @@ export function Negociacoes() {
           acao,
           valorProposto: acao === "contraproposta" ? Number(valorContraproposta) : undefined,
           horaInicio: acao === "contraproposta" ? horaInicio : undefined,
-          horaFim: acao === "contraproposta" ? horaFim : undefined,
+          horaFim: acao === "contraproposta" ? horarioFinal(horaInicio, quantidadeHoras) : undefined,
           observacao: acao === "contraproposta" ? "Contraproposta enviada pela cuidadora." : "",
         },
       });
       toast.success(acao === "aceitar" ? "Proposta aceita." : acao === "recusar" ? "Proposta recusada." : "Contraproposta enviada.");
       await carregar();
     } catch {
-      toast.error("Não foi possível carregar as propostas.");
+      toast.error("Não foi possível enviar sua resposta.");
     } finally {
       setEnviando(false);
     }
@@ -110,8 +122,8 @@ export function Negociacoes() {
                   <p className="text-sm font-medium">{proposta.familia?.nome ?? "Família"}</p>
                   <Badge variant="outline">{rotuloStatus[proposta.status as keyof typeof rotuloStatus] ?? proposta.status}</Badge>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{proposta.data_servico} · {proposta.hora_inicio} às {proposta.hora_fim}</p>
-                <p className="mt-2 text-sm font-medium text-primary">R$ {Number(proposta.valor_proposto).toFixed(2).replace(".", ",")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{proposta.data_servico} · {horasEntre(proposta.hora_inicio, proposta.hora_fim)}h de atendimento</p>
+                <p className="mt-2 text-sm font-medium text-primary">{moeda(Number(proposta.valor_proposto))}</p>
               </button>
             ))
           )}
@@ -130,28 +142,48 @@ export function Negociacoes() {
               <Badge variant="secondary" className="ml-auto">{rotuloStatus[ativa.status as keyof typeof rotuloStatus] ?? ativa.status}</Badge>
             </div>
 
-            <div className="mt-5 grid gap-3 text-sm text-muted-foreground">
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-xs text-muted-foreground">Horas</p>
+                <p className="mt-1 text-xl font-semibold">{horasEntre(ativa.hora_inicio, ativa.hora_fim)}h</p>
+              </div>
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-xs text-muted-foreground">Valor total</p>
+                <p className="mt-1 text-xl font-semibold text-primary">{moeda(Number(ativa.valor_proposto))}</p>
+              </div>
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-xs text-muted-foreground">Valor por hora</p>
+                <p className="mt-1 text-xl font-semibold">{moeda(Number(ativa.valor_proposto) / horasEntre(ativa.hora_inicio, ativa.hora_fim))}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-1 text-sm text-muted-foreground">
               <p><strong className="text-foreground">Data:</strong> {ativa.data_servico}</p>
               <p><strong className="text-foreground">Horário:</strong> {ativa.hora_inicio} às {ativa.hora_fim}</p>
-              <p><strong className="text-foreground">Valor:</strong> R$ {Number(ativa.valor_proposto).toFixed(2).replace(".", ",")}</p>
               <p><strong className="text-foreground">Observação:</strong> {ativa.observacao || "Sem observações."}</p>
             </div>
 
-            <div className="mt-5 rounded-xl border border-border p-4">
-              <h4 className="text-base font-medium">Responder proposta</h4>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {(ativa.status === "pendente_cuidadora" || ativa.status === "contraproposta") && (
+            <div className="mt-5 rounded-lg border border-border p-4">
+              <h4 className="text-base font-medium">Sua contraproposta</h4>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="valor-contraproposta">Novo valor (R$)</Label>
+                  <Label htmlFor="horas-contraproposta">Quantidade de horas</Label>
+                  <Input id="horas-contraproposta" type="number" min={1} max={24} step={0.5} value={quantidadeHoras} onChange={(e) => setQuantidadeHoras(Number(e.target.value) || 0)} />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="valor-contraproposta">Valor total (R$)</Label>
                   <Input id="valor-contraproposta" type="number" min={1} value={valorContraproposta} onChange={(e) => setValorContraproposta(Number(e.target.value) || 0)} />
                 </div>
                 <div className="grid gap-1.5">
                   <Label htmlFor="inicio-contraproposta">Início</Label>
                   <Input id="inicio-contraproposta" type="time" value={horaInicio} onChange={(e) => setHoraInicio(e.target.value)} />
                 </div>
-                <div className="grid gap-1.5 sm:col-span-2">
-                  <Label htmlFor="fim-contraproposta">Término</Label>
-                  <Input id="fim-contraproposta" type="time" value={horaFim} onChange={(e) => setHoraFim(e.target.value)} />
-                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 rounded-lg bg-muted px-3 py-2 text-sm">
+                <span className="flex items-center gap-1.5"><Clock3 className="size-4 text-primary" /> {horaInicio} às {horarioFinal(horaInicio, quantidadeHoras)}</span>
+                <strong>{quantidadeHoras > 0 ? moeda(valorContraproposta / quantidadeHoras) : moeda(0)} por hora</strong>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -166,6 +198,7 @@ export function Negociacoes() {
                 </Button>
               </div>
             </div>
+            )}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">Selecione uma proposta para responder.</p>
@@ -174,7 +207,7 @@ export function Negociacoes() {
         <div className="mt-6 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
           <Banknote className="size-4 text-primary" />
           <span>Resumo da resposta</span>
-          <strong className="ml-auto">R$ {Number(valorContraproposta || 0).toFixed(2).replace(".", ",")} · {horaInicio} às {horaFim}</strong>
+          <strong className="ml-auto">{quantidadeHoras}h × {moeda(quantidadeHoras > 0 ? valorContraproposta / quantidadeHoras : 0)} = {moeda(valorContraproposta)}</strong>
         </div>
       </section>
     </div>
