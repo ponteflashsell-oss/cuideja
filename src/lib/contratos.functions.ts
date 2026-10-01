@@ -232,3 +232,18 @@ export const responderContrato = createServerFn({ method: "POST" })
 
     return { status, checkoutUrl };
   });
+
+export const retomarPagamentoContrato = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: contrato, error } = await context.supabase.from("contratos")
+      .select("id, familia_id, status, pagamento_status, checkout_url, valor")
+      .eq("id", data.id).single();
+    if (error) throw error;
+    if (contrato.familia_id !== context.userId) throw new Error("Acesso restrito à família.");
+    if (contrato.status !== "aguardando_pagamento" || contrato.pagamento_status !== "pendente") {
+      throw new Error("Esta cobrança não está mais disponível.");
+    }
+    return { checkoutUrl: contrato.checkout_url || await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) }) };
+  });

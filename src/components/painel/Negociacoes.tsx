@@ -14,7 +14,7 @@ const rotuloStatus = {
   pendente_cuidadora: "Pendente da sua resposta",
   pendente_familia: "Aguardando família",
   contraproposta: "Contraproposta aberta",
-  aceita: "Aceita",
+  aceita: "Pagamento confirmado",
   recusada: "Recusada",
   expirada: "Expirada",
 } as const;
