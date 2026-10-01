@@ -6,10 +6,8 @@ const HANDLE = "cuideja";
 
 function origemPublica() {
   const request = getRequest();
-  const origem = new URL(request.url).origin;
-  if (origem.includes("localhost")) {
-    throw new Error("Configure uma URL pública HTTPS para receber confirmação de pagamento.");
-  }
+  const origem = process.env['PAYMENT_PUBLIC_ORIGIN'] || new URL(request.url).origin;
+  if (!origem.startsWith("https://") || origem.includes("localhost")) throw new Error("Configure PAYMENT_PUBLIC_ORIGIN com uma URL pública HTTPS para receber a confirmação do pagamento.");
   return origem;
 }
 

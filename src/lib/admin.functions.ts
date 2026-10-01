@@ -26,11 +26,13 @@ export const listarPagamentosAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await exigirAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [contratos, propostas] = await Promise.all([
-      context.supabase.from("contratos")
+      supabaseAdmin.from("contratos")
         .select("id, reserva_id, familia_nome, cuidadora_nome, valor, taxa_percentual, status, pagamento_status, pago_em, created_at, data_inicio, checkout_url")
+        .not("reserva_id", "ilike", "RES-DEMO-%")
         .order("created_at", { ascending: false }).limit(200),
-      context.supabase.from("propostas")
+      supabaseAdmin.from("propostas")
         .select("id, familia_id, cuidadora_id, valor_proposto, status, created_at, data_servico")
         .in("status", ["aguardando_pagamento", "aceita"])
         .order("created_at", { ascending: false }).limit(200),
@@ -38,7 +40,7 @@ export const listarPagamentosAdmin = createServerFn({ method: "GET" })
     if (contratos.error || propostas.error) throw new Error("Não foi possível carregar os pagamentos.");
     const ids = [...new Set((propostas.data ?? []).flatMap((p) => [p.familia_id, p.cuidadora_id]))];
     const { data: perfis, error: erroPerfis } = ids.length
-      ? await context.supabase.from("profiles").select("id, nome").in("id", ids)
+      ? await supabaseAdmin.from("profiles").select("id, nome").in("id", ids)
       : { data: [], error: null };
     if (erroPerfis) throw new Error("Não foi possível carregar os participantes.");
     const nomes = new Map((perfis ?? []).map((p) => [p.id, p.nome]));
