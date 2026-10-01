@@ -1,5 +1,7 @@
 export function minutosDoHorario(horario: string) {
-  const [horas, minutos] = horario.split(":").map(Number);
+  const partes = horario.split(":").map(Number);
+  const horas = partes[0] ?? Number.NaN;
+  const minutos = partes[1] ?? Number.NaN;
   if (!Number.isFinite(horas) || !Number.isFinite(minutos)) return 0;
   return horas * 60 + minutos;
 }
