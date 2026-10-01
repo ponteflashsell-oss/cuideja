@@ -353,7 +353,13 @@ function ListaCadastros({
               <button
                 type="button"
                 className="min-w-[200px] flex-1 text-left"
-                onClick={() => setDossie({ id: c.id, nome: c.nome, cpf: c.verificacao?.cpf })}
+                onClick={() =>
+                  setDossie({
+                    id: c.id,
+                    nome: c.nome,
+                    ...(c.verificacao?.cpf ? { cpf: c.verificacao.cpf } : {}),
+                  })
+                }
                 aria-label={`Abrir dossiê completo de ${c.nome || "cadastro"}`}
               >
                 <div className="flex items-center gap-2">
@@ -391,7 +397,13 @@ function ListaCadastros({
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => setDossie({ id: c.id, nome: c.nome, cpf: c.verificacao?.cpf })}
+                  onClick={() =>
+                    setDossie({
+                      id: c.id,
+                      nome: c.nome,
+                      ...(c.verificacao?.cpf ? { cpf: c.verificacao.cpf } : {}),
+                    })
+                  }
                 >
                   <Eye className="size-4" /> Ver dossiê
                 </Button>
