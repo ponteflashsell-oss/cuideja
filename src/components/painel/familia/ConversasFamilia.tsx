@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, CalendarClock, CheckCircle2, ClipboardList, MessageSquare, Send } from "lucide-react";
+import { Banknote, CalendarClock, CheckCircle2, Clock3, ClipboardList, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { listarCuidadorasContrato } from "@/lib/contratos.functions";
 import { criarProposta, listarPropostasFamilia, responderProposta } from "@/lib/propostas.functions";
+import { horarioFinal, horasEntre, moeda } from "@/lib/proposta-horario";
 
 const rotuloStatus = {
   pendente_cuidadora: "Pendente da cuidadora",
@@ -28,7 +29,7 @@ export function ConversasFamilia() {
   const [enviando, setEnviando] = useState(false);
   const [aceitando, setAceitando] = useState(false);
   const [recusando, setRecusando] = useState(false);
-  const [contraproposta, setContraproposta] = useState({ valor: 220, inicio: "09:00", fim: "19:00" });
+  const [contraproposta, setContraproposta] = useState({ valor: 0, inicio: "09:00", horas: 8 });
   const buscarCuidadoras = useServerFn(listarCuidadorasContrato);
   const listar = useServerFn(listarPropostasFamilia);
   const criar = useServerFn(criarProposta);
@@ -64,6 +65,15 @@ export function ConversasFamilia() {
     });
   }, [buscarCuidadoras, listar]);
 
+  useEffect(() => {
+    if (!ativa) return;
+    setContraproposta({
+      valor: Number(ativa.valor_proposto),
+      inicio: ativa.hora_inicio,
+      horas: horasEntre(ativa.hora_inicio, ativa.hora_fim),
+    });
+  }, [ativa?.id, ativa?.updated_at]);
+
   const enviarProposta = async () => {
     if (!form.cuidadoraId || !form.dataServico || form.valorProposto <= 0) {
       toast.error("Selecione uma cuidadora e informe um valor válido.");
@@ -93,6 +103,10 @@ export function ConversasFamilia() {
 
   const atualizarStatus = async (acao: "aceitar" | "recusar" | "contraproposta") => {
     if (!ativa) return;
+    if (acao === "contraproposta" && (contraproposta.horas < 1 || contraproposta.horas > 24 || contraproposta.valor <= 0)) {
+      toast.error("Informe entre 1 e 24 horas e um valor válido.");
+      return;
+    }
     const operacao = acao === "aceitar" ? setAceitando : acao === "recusar" ? setRecusando : setAceitando;
     operacao(true);
     try {
@@ -102,7 +116,7 @@ export function ConversasFamilia() {
           acao,
           valorProposto: acao === "contraproposta" ? Number(contraproposta.valor) : undefined,
           horaInicio: acao === "contraproposta" ? contraproposta.inicio : undefined,
-          horaFim: acao === "contraproposta" ? contraproposta.fim : undefined,
+          horaFim: acao === "contraproposta" ? horarioFinal(contraproposta.inicio, contraproposta.horas) : undefined,
           observacao: acao === "contraproposta" ? "Nova contraproposta enviada pela família." : "",
         },
       });
@@ -146,8 +160,8 @@ export function ConversasFamilia() {
                   <p className="text-sm font-medium">{proposta.cuidadora?.nome ?? "Cuidadora"}</p>
                   <Badge variant="outline">{rotuloStatus[proposta.status as keyof typeof rotuloStatus] ?? proposta.status}</Badge>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{proposta.data_servico} · {proposta.hora_inicio} às {proposta.hora_fim}</p>
-                <p className="mt-2 text-sm font-medium text-primary">R$ {Number(proposta.valor_proposto).toFixed(2).replace(".", ",")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{proposta.data_servico} · {horasEntre(proposta.hora_inicio, proposta.hora_fim)}h de atendimento</p>
+                <p className="mt-2 text-sm font-medium text-primary">{moeda(Number(proposta.valor_proposto))}</p>
               </button>
             ))
           )}
@@ -218,26 +232,30 @@ export function ConversasFamilia() {
             <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
               <p><strong className="text-foreground">Cuidadora:</strong> {ativa.cuidadora?.nome ?? "Cuidadora"}</p>
               <p><strong className="text-foreground">Data:</strong> {ativa.data_servico}</p>
-              <p><strong className="text-foreground">Horário:</strong> {ativa.hora_inicio} às {ativa.hora_fim}</p>
-              <p><strong className="text-foreground">Valor:</strong> R$ {Number(ativa.valor_proposto).toFixed(2).replace(".", ",")}</p>
+              <p><strong className="text-foreground">Horário:</strong> {ativa.hora_inicio} às {ativa.hora_fim} ({horasEntre(ativa.hora_inicio, ativa.hora_fim)}h)</p>
+              <p><strong className="text-foreground">Valor:</strong> {moeda(Number(ativa.valor_proposto))} · {moeda(Number(ativa.valor_proposto) / horasEntre(ativa.hora_inicio, ativa.hora_fim))}/hora</p>
               <p><strong className="text-foreground">Observação:</strong> {ativa.observacao || "Sem observações."}</p>
             </div>
 
             {(ativa.status === "pendente_familia" || ativa.status === "contraproposta") && (
               <div className="mt-4 space-y-3 rounded-lg border border-dashed border-border p-3">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-3">
                   <div className="grid gap-1.5">
-                    <Label htmlFor="valor-contraproposta-familia">Novo valor (R$)</Label>
+                    <Label htmlFor="horas-contraproposta-familia">Quantidade de horas</Label>
+                    <Input id="horas-contraproposta-familia" type="number" min={1} max={24} step={0.5} value={contraproposta.horas} onChange={(e) => setContraproposta((atual) => ({ ...atual, horas: Number(e.target.value) || 0 }))} />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="valor-contraproposta-familia">Valor total (R$)</Label>
                     <Input id="valor-contraproposta-familia" type="number" min={1} value={contraproposta.valor} onChange={(e) => setContraproposta((atual) => ({ ...atual, valor: Number(e.target.value) || 0 }))} />
                   </div>
                   <div className="grid gap-1.5">
                     <Label htmlFor="inicio-contraproposta-familia">Início</Label>
                     <Input id="inicio-contraproposta-familia" type="time" value={contraproposta.inicio} onChange={(e) => setContraproposta((atual) => ({ ...atual, inicio: e.target.value }))} />
                   </div>
-                  <div className="grid gap-1.5 sm:col-span-2">
-                    <Label htmlFor="fim-contraproposta-familia">Término</Label>
-                    <Input id="fim-contraproposta-familia" type="time" value={contraproposta.fim} onChange={(e) => setContraproposta((atual) => ({ ...atual, fim: e.target.value }))} />
-                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1 rounded-lg bg-muted px-3 py-2 text-sm">
+                  <span className="flex items-center gap-1.5"><Clock3 className="size-4 text-primary" /> {contraproposta.inicio} às {horarioFinal(contraproposta.inicio, contraproposta.horas)}</span>
+                  <strong>{contraproposta.horas > 0 ? moeda(contraproposta.valor / contraproposta.horas) : moeda(0)} por hora</strong>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
