@@ -1,3 +1,6 @@
+## Product architecture
+
+- Keep negotiations asynchronous and structured around service hours and total value; free-form live chat is intentionally excluded to make offers auditable.
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
