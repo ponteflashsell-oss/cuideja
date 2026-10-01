@@ -22,6 +22,7 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedPainelCuidadoraRouteImport } from './routes/_authenticated/painel-cuidadora'
 import { Route as AuthenticatedPainelFamiliaRouteImport } from './routes/_authenticated/painel-familia'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ApiPublicPaymentsInfinitepayRouteImport } from './routes/api/public/payments/infinitepay'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,6 +90,12 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsInfinitepayRoute =
+  ApiPublicPaymentsInfinitepayRouteImport.update({
+    id: '/api/public/payments/infinitepay',
+    path: '/api/public/payments/infinitepay',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/api/public/payments/infinitepay': typeof ApiPublicPaymentsInfinitepayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/painel-familia': typeof AuthenticatedPainelFamiliaRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/api/public/payments/infinitepay': typeof ApiPublicPaymentsInfinitepayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/_authenticated/painel-cuidadora': typeof AuthenticatedPainelCuidadoraRoute
   '/_authenticated/painel-familia': typeof AuthenticatedPainelFamiliaRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/api/public/payments/infinitepay': typeof ApiPublicPaymentsInfinitepayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/painel-cuidadora'
     | '/painel-familia'
     | '/auth/callback'
+    | '/api/public/payments/infinitepay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/painel-cuidadora'
     | '/painel-familia'
     | '/auth/callback'
+    | '/api/public/payments/infinitepay'
   id:
     | '__root__'
     | '/'
@@ -178,6 +190,7 @@ export interface FileRouteTypes {
     | '/_authenticated/painel-cuidadora'
     | '/_authenticated/painel-familia'
     | '/auth/callback'
+    | '/api/public/payments/infinitepay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,6 +205,7 @@ export interface RootRouteChildren {
   SegurancaRoute: typeof SegurancaRoute
   TermosRoute: typeof TermosRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  ApiPublicPaymentsInfinitepayRoute: typeof ApiPublicPaymentsInfinitepayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -287,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/infinitepay': {
+      id: '/api/public/payments/infinitepay'
+      path: '/api/public/payments/infinitepay'
+      fullPath: '/api/public/payments/infinitepay'
+      preLoaderRoute: typeof ApiPublicPaymentsInfinitepayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -315,6 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   SegurancaRoute: SegurancaRoute,
   TermosRoute: TermosRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  ApiPublicPaymentsInfinitepayRoute: ApiPublicPaymentsInfinitepayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
