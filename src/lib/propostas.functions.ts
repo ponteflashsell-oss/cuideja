@@ -108,7 +108,7 @@ export const responderProposta = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: proposta, error: erroSelecao } = await context.supabase
       .from("propostas")
-      .select("id, familia_id, cuidadora_id, status, valor_proposto")
+      .select("id, familia_id, cuidadora_id, status, valor_proposto, checkout_url, pagamento_status")
       .eq("id", data.id)
       .single();
 
@@ -118,6 +118,15 @@ export const responderProposta = createServerFn({ method: "POST" })
 
     if (!ehFamilia && !ehCuidadora) {
       throw new Error("Você não tem acesso a esta proposta.");
+    }
+    if (proposta.pagamento_status === "pendente") {
+      if (ehFamilia && data.acao === "aceitar" && proposta.checkout_url) {
+        return { ...proposta, checkoutUrl: proposta.checkout_url };
+      }
+      throw new Error("Esta proposta já aguarda pagamento pela plataforma.");
+    }
+    if (!["pendente_cuidadora", "pendente_familia", "contraproposta"].includes(proposta.status)) {
+      throw new Error("Esta proposta não aceita mais alterações.");
     }
 
     let status = proposta.status;
@@ -129,6 +138,8 @@ export const responderProposta = createServerFn({ method: "POST" })
       hora_fim?: string;
       expira_em?: string;
       updated_at?: string;
+      pagamento_status?: string;
+      checkout_url?: string;
     } = {
       status,
       ...(data.observacao ? { observacao: data.observacao } : {}),
@@ -141,7 +152,7 @@ export const responderProposta = createServerFn({ method: "POST" })
       if (ehCuidadora && (proposta.status === "pendente_cuidadora" || proposta.status === "contraproposta")) {
         status = "pendente_familia";
       } else if (ehFamilia && (proposta.status === "pendente_familia" || proposta.status === "contraproposta")) {
-        status = "aceita";
+        status = "pendente_familia";
       } else {
         throw new Error("Esta ação não está disponível para o status atual da proposta.");
       }
@@ -169,17 +180,20 @@ export const responderProposta = createServerFn({ method: "POST" })
     update.status = status;
 
     let checkoutUrl: string | undefined;
-    if (status === "aceita" && ehFamilia) {
+    if (data.acao === "aceitar" && ehFamilia) {
       checkoutUrl = await criarLinkPagamentoInfinitePay({
         orderNsu: proposta.id,
         valor: Number(proposta.valor_proposto),
       });
+      update.pagamento_status = "pendente";
+      update.checkout_url = checkoutUrl;
     }
 
     const { data: atualizada, error } = await context.supabase
       .from("propostas")
       .update(update)
       .eq("id", data.id)
+      .eq("status", proposta.status)
       .select("*")
       .single();
 

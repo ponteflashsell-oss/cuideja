@@ -154,7 +154,7 @@ export const criarContrato = createServerFn({ method: "POST" })
         hora_inicio: data.horaInicio,
         hora_fim: data.horaFim,
         valor: data.valor,
-        taxa_percentual: 10,
+        taxa_percentual: 15,
         observacoes: data.observacoes,
         termo_texto: montarTermo(dados),
         status: "aguardando",
@@ -213,7 +213,7 @@ export const responderContrato = createServerFn({ method: "POST" })
     const cuidadoraAceite = ehCuidadora ? agora : contrato.cuidadora_aceite_em;
     const status = familiaAceite && cuidadoraAceite ? "aguardando_pagamento" : "aguardando";
     const checkoutUrl =
-      status === "aguardando_pagamento" && ehFamilia
+      status === "aguardando_pagamento"
         ? await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) })
         : undefined;
 
@@ -226,7 +226,8 @@ export const responderContrato = createServerFn({ method: "POST" })
           ? { familia_aceite_em: agora, familia_aceite_nome: nome }
           : { cuidadora_aceite_em: agora, cuidadora_aceite_nome: nome }),
       })
-      .eq("id", contrato.id);
+      .eq("id", contrato.id)
+      .eq("status", "aguardando");
     if (erroAceite) throw erroAceite;
 
     return { status, checkoutUrl };
