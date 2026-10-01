@@ -1,11 +1,16 @@
-const INFINITEPAY_LINKS_URL = "https://api.checkout.infinitepay.io/links";
 import { getRequest } from "@tanstack/react-start/server";
+
+const INFINITEPAY_LINKS_URL = "https://api.checkout.infinitepay.io/links";
 
 const HANDLE = "cuideja";
 
 function origemPublica() {
-  const origem = new URL(getRequest().url).origin;
-  return origem.includes("localhost") ? "https://project--d13f1784-7821-49f4-90c7-cc4d054e3358-dev.lovable.app" : origem;
+  const request = getRequest();
+  const origem = new URL(request.url).origin;
+  if (origem.includes("localhost")) {
+    throw new Error("Configure uma URL pública HTTPS para receber confirmação de pagamento.");
+  }
+  return origem;
 }
 
 type InfinitePayResponse = {

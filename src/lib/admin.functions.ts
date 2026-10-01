@@ -412,7 +412,7 @@ export const criarPerfisSimulacao = createServerFn({ method: "POST" })
         hora_inicio: "07:00",
         hora_fim: "19:00",
         valor: 320,
-        taxa_percentual: 10,
+        taxa_percentual: 15,
         observacoes: "Refeição da cuidadora combinada. Diário de bordo pelo aplicativo.",
         termo_texto: "TERMO DE SIMULAÇÃO — reserva criada para testar o fluxo completo do CuideJá.",
         status: "ativo",

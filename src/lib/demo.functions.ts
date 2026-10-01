@@ -46,7 +46,7 @@ export const finalizarContratoDemo = createServerFn({ method: "POST" })
       hora_inicio: data.horaInicio,
       hora_fim: data.horaFim,
       valor: data.valor,
-      taxa_percentual: 10,
+      taxa_percentual: 15,
       observacoes: "Negociação realizada no bate-papo demo.",
       termo_texto: "TERMO DE SIMULAÇÃO - contratação realizada no bate-papo demo.",
       status: "ativo",

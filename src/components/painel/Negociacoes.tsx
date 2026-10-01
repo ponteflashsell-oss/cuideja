@@ -10,6 +10,7 @@ import { listarPropostasCuidadora, responderProposta } from "@/lib/propostas.fun
 import { horarioFinal, horasEntre, moeda } from "@/lib/proposta-horario";
 
 const rotuloStatus = {
+  aguardando_pagamento: "Aguardando pagamento da família",
   pendente_cuidadora: "Pendente da sua resposta",
   pendente_familia: "Aguardando família",
   contraproposta: "Contraproposta aberta",

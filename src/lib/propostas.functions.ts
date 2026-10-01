@@ -167,15 +167,6 @@ export const responderProposta = createServerFn({ method: "POST" })
       update.expira_em = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
     }
 
-    if (data.acao !== "contraproposta" && data.valorProposto) {
-      update.valor_proposto = data.valorProposto;
-    }
-    if (data.acao !== "contraproposta" && data.horaInicio) {
-      update.hora_inicio = data.horaInicio;
-    }
-    if (data.acao !== "contraproposta" && data.horaFim) {
-      update.hora_fim = data.horaFim;
-    }
     update.status = status;
 
     let checkoutUrl: string | undefined;
