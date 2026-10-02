@@ -2,3 +2,4 @@
 - [ ] Criar aba Pagamentos no admin com cobrança, taxa e situação de repasse.
 - [ ] Aplicar taxa de 15% e registrar regra de cancelamento gratuito até 24h.
 - [ ] Validar a prévia; apontar dependências externas para ativar repasses e cobrança ao vivo.
+- [ ] Adicionar produtos e checkout ao sistema de pagamentos; confirmar catálogo e regras para compras, assinaturas, cancelamentos e mudanças de plano.
