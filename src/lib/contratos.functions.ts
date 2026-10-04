@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { criarLinkPagamentoInfinitePay } from "./infinitepay.server";
 
 const regimeEnum = z.enum(["hora", "diaria", "plantao12", "plantao24"]);
 
@@ -212,16 +211,11 @@ export const responderContrato = createServerFn({ method: "POST" })
     const familiaAceite = ehFamilia ? agora : contrato.familia_aceite_em;
     const cuidadoraAceite = ehCuidadora ? agora : contrato.cuidadora_aceite_em;
     const status = familiaAceite && cuidadoraAceite ? "aguardando_pagamento" : "aguardando";
-    const checkoutUrl =
-      status === "aguardando_pagamento"
-        ? await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) })
-        : undefined;
-
     const { error: erroAceite } = await context.supabase
       .from("contratos")
       .update({
         status,
-        ...(checkoutUrl ? { checkout_url: checkoutUrl, pagamento_status: "pendente" } : {}),
+        ...(status === "aguardando_pagamento" ? { pagamento_status: "pendente" } : {}),
         ...(ehFamilia
           ? { familia_aceite_em: agora, familia_aceite_nome: nome }
           : { cuidadora_aceite_em: agora, cuidadora_aceite_nome: nome }),
@@ -230,7 +224,7 @@ export const responderContrato = createServerFn({ method: "POST" })
       .eq("status", "aguardando");
     if (erroAceite) throw erroAceite;
 
-    return { status, checkoutUrl };
+    return { status };
   });
 
 export const retomarPagamentoContrato = createServerFn({ method: "POST" })
@@ -245,5 +239,5 @@ export const retomarPagamentoContrato = createServerFn({ method: "POST" })
     if (contrato.status !== "aguardando_pagamento" || contrato.pagamento_status !== "pendente") {
       throw new Error("Esta cobrança não está mais disponível.");
     }
-    return { checkoutUrl: contrato.checkout_url || await criarLinkPagamentoInfinitePay({ orderNsu: contrato.id, valor: Number(contrato.valor) }) };
+    return { id: contrato.id };
   });

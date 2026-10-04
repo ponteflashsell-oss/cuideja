@@ -31,6 +31,7 @@ import {
   responderContrato,
   retomarPagamentoContrato,
 } from "@/lib/contratos.functions";
+import { CheckoutAtendimento } from "@/components/painel/CheckoutAtendimento";
 
 type Contrato = Awaited<ReturnType<typeof listarMeusContratos>>["contratos"][number];
 type Cuidadora = Awaited<ReturnType<typeof listarCuidadorasContrato>>[number];
@@ -75,6 +76,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
   const [salvando, setSalvando] = useState(false);
   const [respondendo, setRespondendo] = useState("");
   const [aberto, setAberto] = useState<Contrato | null>(null);
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [notificacoesAtivas, setNotificacoesAtivas] = useState(
     typeof Notification !== "undefined" && Notification.permission === "granted",
   );
@@ -199,10 +201,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
     setRespondendo(c.id);
     try {
       const r = await responder({ data: { id: c.id, acao, motivo: "" } });
-      if (r.checkoutUrl) {
-        window.location.href = r.checkoutUrl;
-        return;
-      }
+      if (r.status === "aguardando_pagamento" && papel === "familia") setCheckoutId(c.id);
       toast.success(
         r.status === "aguardando_pagamento"
             ? "Os dois consentimentos foram registrados. Aguardando pagamento pela plataforma."
@@ -507,7 +506,7 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
                       setRespondendo(c.id);
                       try {
                         const resultado = await retomarPagamento({ data: { id: c.id } });
-                        window.location.href = resultado.checkoutUrl;
+                        setCheckoutId(resultado.id);
                       } catch (erro) {
                         toast.error(erro instanceof Error ? erro.message : "Não foi possível abrir o pagamento.");
                       } finally { setRespondendo(""); }
@@ -549,6 +548,15 @@ export function Contratos({ papel }: { papel: "familia" | "cuidadora" }) {
           </ul>
         )}
       </section>
+      <Dialog open={Boolean(checkoutId)} onOpenChange={(open) => !open && setCheckoutId(null)}>
+        <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle>Pagamento do atendimento</DialogTitle>
+            <DialogDescription>A reserva será ativada somente após o pagamento aprovado.</DialogDescription>
+          </DialogHeader>
+          <div className="min-h-[540px] px-2 pb-4">{checkoutId && <CheckoutAtendimento origem="contrato" id={checkoutId} />}</div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={Boolean(aberto)} onOpenChange={(o) => !o && setAberto(null)}>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
