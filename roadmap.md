@@ -1,5 +1,5 @@
-- [ ] Bloquear confirmação de propostas e contratos até a cobrança ser verificada pelo provedor.
-- [ ] Criar aba Pagamentos no admin com cobrança, taxa e situação de repasse.
-- [ ] Aplicar taxa de 15% e registrar regra de cancelamento gratuito até 24h.
+- [x] Bloquear confirmação de propostas e contratos até a cobrança ser verificada pelo provedor.
+- [x] Criar aba Pagamentos no admin com cobrança, taxa e situação de repasse.
+- [x] Aplicar taxa de 15% e registrar regra de cancelamento gratuito até 24h.
 - [ ] Validar a prévia; apontar dependências externas para ativar repasses e cobrança ao vivo.
-- [ ] Adicionar produtos e checkout ao sistema de pagamentos; confirmar catálogo e regras para compras, assinaturas, cancelamentos e mudanças de plano.
+- [x] Adicionar checkout por atendimento com valor negociado; não oferecer produtos ou assinaturas.

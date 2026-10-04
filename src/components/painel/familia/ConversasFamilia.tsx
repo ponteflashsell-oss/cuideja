@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { listarCuidadorasContrato } from "@/lib/contratos.functions";
 import { criarProposta, listarPropostasFamilia, responderProposta } from "@/lib/propostas.functions";
 import { horarioFinal, horasEntre, moeda } from "@/lib/proposta-horario";
+import { CheckoutAtendimento } from "@/components/painel/CheckoutAtendimento";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const rotuloStatus = {
   pendente_cuidadora: "Pendente da cuidadora",
@@ -30,6 +32,7 @@ export function ConversasFamilia() {
   const [enviando, setEnviando] = useState(false);
   const [aceitando, setAceitando] = useState(false);
   const [recusando, setRecusando] = useState(false);
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [contraproposta, setContraproposta] = useState({ valor: 0, inicio: "09:00", horas: 8 });
   const buscarCuidadoras = useServerFn(listarCuidadorasContrato);
   const listar = useServerFn(listarPropostasFamilia);
@@ -121,10 +124,7 @@ export function ConversasFamilia() {
           observacao: acao === "contraproposta" ? "Nova contraproposta enviada pela família." : "",
         },
       });
-      if (acao === "aceitar" && "checkoutUrl" in resultado && resultado.checkoutUrl) {
-        window.location.href = resultado.checkoutUrl;
-        return;
-      }
+      if (acao === "aceitar" && resultado.status === "aguardando_pagamento") setCheckoutId(resultado.id);
       toast.success(
         acao === "aceitar"
           ? "Aceite registrado. Aguarde a confirmação do pagamento."
@@ -240,7 +240,7 @@ export function ConversasFamilia() {
 
             {ativa.status === "aguardando_pagamento" && <div className="mt-4 rounded-lg bg-muted p-3 text-sm">
               <p>O atendimento ainda não está confirmado. Conclua o pagamento pela plataforma.</p>
-              <Button className="mt-3" onClick={() => void atualizarStatus("aceitar")} disabled={aceitando}>
+              <Button className="mt-3" onClick={() => setCheckoutId(ativa.id)} disabled={aceitando}>
                 <Banknote className="size-4" /> {aceitando ? "Abrindo cobrança…" : "Pagar pela plataforma"}
               </Button>
             </div>}
@@ -281,6 +281,15 @@ export function ConversasFamilia() {
           </div>
         )}
       </section>
+      <Dialog open={Boolean(checkoutId)} onOpenChange={(open) => !open && setCheckoutId(null)}>
+        <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle>Pagamento do atendimento</DialogTitle>
+            <DialogDescription>A reserva será confirmada somente após o pagamento aprovado.</DialogDescription>
+          </DialogHeader>
+          <div className="min-h-[540px] px-2 pb-4">{checkoutId && <CheckoutAtendimento origem="proposta" id={checkoutId} />}</div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
