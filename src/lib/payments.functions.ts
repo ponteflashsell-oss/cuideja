@@ -46,23 +46,30 @@ export const criarCheckoutAtendimento = createServerFn({ method: 'POST' })
   }).parse(input))
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     try {
-      const tabela = data.origem === 'contrato' ? 'contratos' : 'propostas';
-      const valorColuna = data.origem === 'contrato' ? 'valor' : 'valor_proposto';
-      const { data: atendimento, error } = await context.supabase
-        .from(tabela)
-        .select(`id, familia_id, status, ${valorColuna}`)
-        .eq('id', data.id)
-        .single();
-      if (error) throw error;
+      let atendimento: { id: string; familia_id: string; status: string; valor: number };
+      if (data.origem === 'contrato') {
+        const { data: contrato, error } = await context.supabase
+          .from('contratos').select('id, familia_id, status, valor').eq('id', data.id).single();
+        if (error) throw error;
+        atendimento = { ...contrato, valor: Number(contrato.valor) };
+      } else {
+        const { data: proposta, error } = await context.supabase
+          .from('propostas').select('id, familia_id, status, valor_proposto').eq('id', data.id).single();
+        if (error) throw error;
+        atendimento = { ...proposta, valor: Number(proposta.valor_proposto) };
+      }
       if (atendimento.familia_id !== context.userId) throw new Error('Pagamento restrito à família.');
       if (atendimento.status !== 'aguardando_pagamento') throw new Error('Este atendimento não aguarda pagamento.');
 
-      const valor = Number(atendimento[valorColuna]);
+      const valor = atendimento.valor;
       if (!Number.isFinite(valor) || valor < 0.5) throw new Error('Valor do atendimento inválido.');
 
-      const email = typeof context.claims.email === 'string' ? context.claims.email : undefined;
+      const email = typeof context.claims['email'] === 'string' ? context.claims['email'] : undefined;
       const stripe = createStripeClient(data.environment as StripeEnv);
-      const customerId = await resolveOrCreateCustomer(stripe, { email, userId: context.userId });
+      const customerId = await resolveOrCreateCustomer(stripe, {
+        ...(email ? { email } : {}),
+        userId: context.userId,
+      });
       const description = `Atendimento CuideJá — ${data.id.slice(0, 8).toUpperCase()}`;
       const session = await stripe.checkout.sessions.create({
         line_items: [{
