@@ -35,7 +35,7 @@ export function PagamentosAdmin() {
     </div>
 
     <div className="border-l-2 border-primary bg-muted px-4 py-3 text-sm text-foreground">
-      <p className="font-medium">InfinitePay · cobrança pela plataforma</p>
+      <p className="font-medium">Stripe · cobrança integrada pela plataforma</p>
       <p className="mt-1 text-muted-foreground">Taxa de intermediação: 15%. Cancelamento gratuito até 24 horas antes do início. O valor só é considerado pago após confirmação da operadora.</p>
     </div>
     <div className="flex gap-2 border-l-2 border-border px-4 py-3 text-sm text-muted-foreground">
@@ -61,7 +61,6 @@ export function PagamentosAdmin() {
             <td className="px-3 py-3">{moeda(item.valor * item.taxa / 100)}<span className="block text-muted-foreground">{moeda(item.valor * (1 - item.taxa / 100))}</span></td>
             <td className="px-3 py-3"><Badge variant={item.situacao === "Pago" ? "default" : "outline"}>{item.situacao}</Badge>
               {item.pagoEm && <span className="mt-1 block text-xs text-muted-foreground">{dataBr(item.pagoEm)}</span>}
-              {item.link && item.situacao !== "Pago" && <a className="mt-1 block text-xs text-primary underline" href={item.link} target="_blank" rel="noreferrer">Abrir cobrança</a>}
             </td>
           </tr>)}</tbody>
         </table>
