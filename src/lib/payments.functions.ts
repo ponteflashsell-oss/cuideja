@@ -21,7 +21,7 @@ async function resolveOrCreateCustomer(
     const existing = await stripe.customers.list({ email: options.email, limit: 1 });
     const customer = existing.data[0];
     if (customer) {
-      if (options.userId && customer.metadata?.userId !== options.userId) {
+      if (options.userId && customer.metadata?.['userId'] !== options.userId) {
         await stripe.customers.update(customer.id, {
           metadata: { ...customer.metadata, userId: options.userId },
         });
