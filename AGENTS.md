@@ -4,6 +4,7 @@
 - Verify provider payment server-side before activating any care booking; a checkout redirect or user-supplied callback alone is not proof of payment.
 - Keep payout state distinct from collection state because the existing checkout provider exposes no documented automated marketplace transfer API.
 - Sell only negotiated care appointments through embedded checkout; do not introduce subscriptions or fixed-price products.
+- Maintain the application schema through Cloud migrations and regenerate database types from that schema; connecting an empty backend must not leave client queries without table definitions.
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting

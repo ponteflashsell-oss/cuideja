@@ -3,3 +3,4 @@
 - [x] Aplicar taxa de 15% e registrar regra de cancelamento gratuito até 24h.
 - [x] Validar a prévia; cobrança real aguarda a conclusão da ativação do Stripe e repasses continuam manuais.
 - [x] Adicionar checkout por atendimento com valor negociado; não oferecer produtos ou assinaturas.
+- [x] Restaurar a estrutura vazia e protegida de dados no Cloud e corrigir os erros da prévia após a conexão, sem importar registros anteriores.
