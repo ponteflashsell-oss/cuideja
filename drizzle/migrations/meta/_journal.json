@@ -8,6 +8,13 @@
       "when": 1791312798152,
       "tag": "0000_restore_cloud_application_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791339631338,
+      "tag": "0001_gateway_pagamento_contas",
+      "breakpoints": true
     }
   ]
 }

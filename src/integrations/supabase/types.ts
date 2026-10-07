@@ -283,6 +283,45 @@ export type Database = {
         }
         Relationships: []
       }
+      gateway_pagamento_contas: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          documento: string | null
+          id: string
+          identificador: string
+          mensagem: string | null
+          provedor: string
+          status: string
+          titular: string | null
+          validado_em: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          documento?: string | null
+          id?: string
+          identificador: string
+          mensagem?: string | null
+          provedor?: string
+          status?: string
+          titular?: string | null
+          validado_em?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          documento?: string | null
+          id?: string
+          identificador?: string
+          mensagem?: string | null
+          provedor?: string
+          status?: string
+          titular?: string | null
+          validado_em?: string | null
+        }
+        Relationships: []
+      }
       mensagens: {
         Row: {
           conversa_id: string
