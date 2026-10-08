@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/seguranca")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Verificação de antecedentes e LGPD | CuideJá" },
       {
         name: "description",

@@ -19,6 +19,8 @@ export const Route = createFileRoute("/cuidadores")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Cuidadores verificados por cidade | CuideJá" },
       {
         name: "description",
