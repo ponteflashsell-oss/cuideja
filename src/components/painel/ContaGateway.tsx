@@ -15,7 +15,7 @@ import {
   validarContaGateway,
 } from "@/lib/gateway-pagamento.functions";
 
-const rotulo: Record<string, string> = { nao_validado: "Não validada", validada: "Validada", erro: "Com erro" };
+const rotulo: Record<string, string> = { nao_validado: "Não validada", validada: "Validada", erro: "Com erro", pendente_configuracao: "Configuração pendente" };
 
 export function ContaGateway() {
   const qc = useQueryClient();
@@ -32,7 +32,7 @@ export function ContaGateway() {
   const falha = (e: unknown) => toast.error(e instanceof Error ? e.message : "Operação não concluída.");
 
   const mSalvar = useMutation({
-    mutationFn: () => salvar({ data: { provedor: "infinitepay", identificador, titular, documento } }),
+    mutationFn: () => salvar({ data: { provedor: "veopag", identificador, titular, documento } }),
     onSuccess: () => { toast.success("Conta adicionada. Agora clique em Validar."); setIdentificador(""); setTitular(""); setDocumento(""); recarregar(); },
     onError: falha,
   });
@@ -50,11 +50,11 @@ export function ContaGateway() {
   return (
     <div className="space-y-5">
       <Card>
-        <CardHeader><CardTitle>Adicionar conta do gateway</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Adicionar conta Veopag</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="gw-handle">Usuário InfinitePay</Label>
-            <Input id="gw-handle" placeholder="ex.: cuideja" value={identificador} onChange={(e) => setIdentificador(e.target.value)} />
+            <Label htmlFor="gw-handle">Nome da conta</Label>
+            <Input id="gw-handle" placeholder="Conta CuideJá" value={identificador} onChange={(e) => setIdentificador(e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="gw-titular">Titular</Label>
@@ -82,16 +82,14 @@ export function ContaGateway() {
             <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">${c.identificador}</span>
+                  <span className="font-medium">{c.identificador}</span>
                   <Badge variant={c.status === "validada" ? "default" : c.status === "erro" ? "destructive" : "secondary"}>{rotulo[c.status] ?? c.status}</Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">InfinitePay{c.titular ? ` · ${c.titular}` : ""}{c.documento ? ` · ${c.documento}` : ""}</p>
+                <p className="text-xs text-muted-foreground">{c.provedor === "veopag" ? "Veopag" : c.provedor}{c.titular ? ` · ${c.titular}` : ""}{c.documento ? ` · ${c.documento}` : ""}</p>
                 {c.mensagem && <p className="text-xs text-muted-foreground">{c.mensagem}{c.validado_em ? ` (${new Date(c.validado_em).toLocaleString("pt-BR")})` : ""}</p>}
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => {
-                  if (window.confirm("A validação criará um link real de R$ 1,00 na InfinitePay, sem efetuar pagamento. Ela não confirma a titularidade nem altera o checkout atual. Continuar?")) mValidar.mutate(c.id);
-                }} disabled={mValidar.isPending}>
+                <Button size="sm" variant="outline" onClick={() => mValidar.mutate(c.id)} disabled={mValidar.isPending}>
                   {mValidar.isPending && mValidar.variables === c.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1 h-4 w-4" />}Validar
                 </Button>
                 <Button size="icon" variant="ghost" aria-label="Remover conta" title="Remover conta" disabled={mExcluir.isPending} onClick={() => {
