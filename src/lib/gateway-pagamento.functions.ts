@@ -25,8 +25,8 @@ export const salvarContaGateway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z.object({
-      provedor: z.enum(["infinitepay"]),
-      identificador: z.string().trim().transform((v) => v.replace(/^\$/, "")).pipe(z.string().min(2, "Informe o usuário da conta.").max(80).regex(/^[a-zA-Z0-9_.-]+$/, "Use apenas letras, números, ponto, hífen ou sublinhado.")),
+      provedor: z.enum(["veopag"]),
+      identificador: z.string().trim().min(2, "Informe um nome para a conta.").max(80),
       titular: z.string().trim().max(120).optional(),
       documento: z.string().trim().max(20).optional(),
     }).parse(d),
@@ -35,7 +35,7 @@ export const salvarContaGateway = createServerFn({ method: "POST" })
     await exigirAdmin(context);
     const { error } = await context.supabase.from("gateway_pagamento_contas").insert({
       provedor: data.provedor,
-      identificador: data.identificador.replace(/^\$/, ""),
+      identificador: data.identificador,
       titular: data.titular || null,
       documento: data.documento || null,
     });
@@ -52,33 +52,14 @@ export const validarContaGateway = createServerFn({ method: "POST" })
       .from("gateway_pagamento_contas").select("*").eq("id", data.id).maybeSingle();
     if (error || !conta) throw new Error("Conta não encontrada.");
 
-    let ok = false;
-    let mensagem = "";
-    try {
-      const r = await fetch("https://api.checkout.infinitepay.io/links", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(15000),
-        body: JSON.stringify({
-          handle: conta.identificador,
-          order_nsu: `validacao-${crypto.randomUUID()}`,
-          items: [{ quantity: 1, price: 100, description: "Validação de conta CuideJá" }],
-        }),
-      });
-      const corpo: unknown = await r.json().catch(() => null);
-      if (r.ok && corpo && typeof corpo === "object" && "url" in corpo && typeof corpo.url === "string") {
-        const link = new URL(corpo.url);
-        ok = link.protocol === "https:" && (link.hostname === "infinitepay.io" || link.hostname.endsWith(".infinitepay.io"));
-      }
-      mensagem = ok ? "Gateway gerou um link de R$ 1,00; nenhum pagamento foi efetuado. Titularidade não verificada." : `O gateway não validou a conta (${r.status}). Confira o usuário e tente novamente.`;
-    } catch {
-      mensagem = "Gateway indisponível ou resposta inválida. Tente novamente.";
-    }
+    if (conta.provedor !== "veopag") return { ok: false, mensagem: "Esta conta não é Veopag. Cadastre a conta do gateway escolhido." };
+    const ok = false;
+    const mensagem = "Validação Veopag pendente: configure as credenciais no formulário seguro da integração. Nenhuma cobrança foi criada.";
 
     const { error: erroSalvar } = await context.supabase.from("gateway_pagamento_contas").update({
-      status: ok ? "validada" : "erro",
+      status: "pendente_configuracao",
       mensagem,
-      validado_em: new Date().toISOString(),
+      validado_em: null,
     }).eq("id", data.id);
     if (erroSalvar) return { ok: false, mensagem: "Não foi possível salvar o resultado da validação." };
     return { ok, mensagem };
