@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Eye, EyeOff, HeartHandshake, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { prepararPerfilAcesso } from "@/lib/google-acesso";
 import {
   cpfValido,
   dataNascimentoIso,
@@ -72,16 +73,33 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
   const [senha, setSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const seguindo = useRef(false);
+
+  const concluirAcesso = async () => {
+    if (seguindo.current) return;
+    seguindo.current = true;
+    try {
+      const tipoPerfil = await prepararPerfilAcesso(tipo);
+      if (tipoPerfil !== tipo) {
+        window.location.assign(tipoPerfil === "familia" ? "/painel-familia" : "/painel-cuidadora");
+        return;
+      }
+      await aoAutenticar();
+    } catch (erro) {
+      seguindo.current = false;
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível abrir seu perfil.");
+    }
+  };
 
   useEffect(() => {
     supabase.auth
       .getSession()
       .then(({ data }) => {
-        if (data.session) void aoAutenticar();
+         if (data.session) void concluirAcesso();
       })
       .catch((erro) => console.error("[acesso] sessão", erro));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void aoAutenticar();
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) setTimeout(() => void concluirAcesso(), 0);
     });
     return () => sub.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,7 +221,7 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
-      await aoAutenticar();
+      await concluirAcesso();
     } catch (erro) {
       toast.error(
         erro instanceof Error ? erro.message : "Não foi possível entrar com o Google.",
