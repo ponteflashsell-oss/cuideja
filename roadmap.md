@@ -5,4 +5,5 @@
 - [x] Adicionar checkout por atendimento com valor negociado; não oferecer produtos ou assinaturas.
 - [x] Restaurar a estrutura vazia e protegida de dados no Cloud e corrigir os erros da prévia após a conexão, sem importar registros anteriores.
 - [x] Criar aba administrativa para cadastrar conta Veopag e botão de validação com estado pendente honesto, sem alterar o checkout atual.
-- [ ] Adaptar cadastro e validação ao Veopag escolhido pelo usuário; integrar cobranças após obter documentação oficial e credenciais seguras.
+- [x] Adaptar o cadastro ao Veopag sem criar links no gateway anterior.
+- [ ] Implementar validação real e cobranças Veopag — aguarda autorização para configuração e credenciais fornecidas no formulário seguro; documentação oficial localizada.
