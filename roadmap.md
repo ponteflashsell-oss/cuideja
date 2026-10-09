@@ -7,3 +7,4 @@
 - [x] Criar aba administrativa para cadastrar conta Veopag e botão de validação com estado pendente honesto, sem alterar o checkout atual.
 - [x] Adaptar o cadastro ao Veopag sem criar links no gateway anterior.
 - [ ] Implementar validação real e cobranças Veopag — usuário adiou a conexão; aguarda credenciais no formulário seguro. Documentação oficial localizada; cobrança atual não alterada.
+- [x] Ativar Google e corrigir cadastro nas duas áreas, criando apenas perfis ausentes e preservando tipo existente; botões e início da conexão verificados, conclusão com conta Google requer teste do usuário.

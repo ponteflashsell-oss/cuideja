@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { prepararPerfilAcesso } from "@/lib/google-acesso";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -26,31 +27,22 @@ function AuthCallbackPage() {
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const redirecionar = async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) {
-        setErro("Não foi possível confirmar o login. Tente entrar novamente.");
-        return;
-      }
-
-      const { data: perfil } = await supabase
-        .from("profiles")
-        .select("tipo")
-        .eq("id", auth.user.id)
-        .maybeSingle();
-
-      if (perfil?.tipo === "familia") {
+      try {
+      const tipo = await prepararPerfilAcesso("familia");
+      if (tipo === "familia") {
         navigate({ to: "/painel-familia", replace: true });
-      } else if (perfil?.tipo === "cuidadora") {
-        navigate({ to: "/painel-cuidadora", replace: true });
       } else {
-        navigate({ to: "/entrar", replace: true });
+        navigate({ to: "/painel-cuidadora", replace: true });
+      }
+      } catch (error) {
+        setErro(error instanceof Error ? error.message : "Não foi possível abrir seu perfil.");
       }
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+      if (event === "SIGNED_IN") {
         if (timeout) clearTimeout(timeout);
-        void redirecionar();
+        timeout = setTimeout(() => void redirecionar(), 0);
       }
     });
 
@@ -68,7 +60,7 @@ function AuthCallbackPage() {
   if (erro) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6">
-        <p className="text-red-500">{erro}</p>
+        <p className="text-destructive">{erro}</p>
         <Link to="/entrar" className="mt-4 text-primary underline">
           Voltar para entrar
         </Link>

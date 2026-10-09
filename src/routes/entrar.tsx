@@ -41,7 +41,7 @@ function EntrarPage() {
     <AcessoCpf
       tipo="cuidadora"
       titulo="Área da cuidadora"
-      descricao="Espaço privado para gerenciar seu perfil, vagas, agenda e ganhos. Acesso apenas com CPF e senha."
+       descricao="Espaço privado para gerenciar seu perfil, vagas, agenda e ganhos. Entre com CPF e senha ou Google."
       aoAutenticar={acessarPainel}
       rodape={
         <Button asChild variant="outline" className="mt-2 w-full">
