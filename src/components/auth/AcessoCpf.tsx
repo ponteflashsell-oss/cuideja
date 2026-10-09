@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import {
   cpfValido,
   dataNascimentoIso,
@@ -196,15 +197,18 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
   const entrarComGoogle = async () => {
     setCarregando(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      window.sessionStorage.setItem("cuideja:google:tipo", tipo);
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
-      if (error) throw error;
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      await aoAutenticar();
     } catch (erro) {
       toast.error(
         erro instanceof Error ? erro.message : "Não foi possível entrar com o Google.",
       );
+    } finally {
       setCarregando(false);
     }
   };
@@ -329,6 +333,10 @@ export function AcessoCpf({ tipo, titulo, descricao, rodape, aoAutenticar }: Pro
               </div>
               <Button type="submit" className="w-full">
                 Avançar
+              </Button>
+              <Button type="button" variant="outline" disabled={carregando} onClick={entrarComGoogle}>
+                {carregando && <Loader2 className="mr-2 size-4 animate-spin" />}
+                Cadastrar com Google
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={voltar}>
                 <ArrowLeft className="mr-1 size-4" /> Voltar
